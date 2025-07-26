@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import styles from './LandingPage.module.css';
 import heroImage from '../assets/images/fisk1.jpg';
+import Footer from '../components/Footer';
 
 interface LandingPageProps {
   onLogin: () => void;
@@ -35,11 +36,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
         </div>
       </main>
 
-      <footer className={styles.footer}>
-        <div className={styles.container}>
-          <p>© {new Date().getFullYear()} Fangstportalen. Alle rettigheter forbeholdt.</p>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 };

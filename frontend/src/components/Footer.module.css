@@ -1,0 +1,110 @@
+.footer {
+  background-color: var(--primary-color);
+  color: #E0F7FA; /* En litt mykere hvitfarge for bedre lesbarhet */
+  padding: 4rem 0 2rem 0;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* --- Hovedseksjon --- */
+.mainFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 4rem;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brandSection {
+  flex-basis: 30%; /* Gir merkevare-seksjonen en fast bredde */
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logoImage {
+  height: 40px;
+}
+
+.brandSection h2 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: white;
+}
+
+.brandSection p {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  opacity: 0.8;
+}
+
+/* --- Link-kolonner --- */
+.linksSection {
+  flex-basis: 65%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 jevnstore kolonner */
+  gap: 2rem;
+}
+
+.linkColumn h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+}
+
+.footerLink {
+  display: block;
+  margin-bottom: 0.75rem;
+  color: #E0F7FA;
+  text-decoration: none;
+  opacity: 0.8;
+  transition: all 0.2s ease-in-out;
+}
+
+.footerLink:hover {
+  opacity: 1;
+  padding-left: 5px; /* Liten effekt på hover */
+}
+
+
+/* --- Sub-Footer --- */
+.subFooter {
+  padding-top: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.copyright {
+  font-size: 0.85rem;
+  opacity: 0.6;
+}
+
+.socialLinks {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.socialLinks a {
+  color: #E0F7FA;
+  font-size: 1.25rem;
+  opacity: 0.6;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.socialLinks a:hover {
+  opacity: 1;
+}
