@@ -1,6 +1,6 @@
 .footer {
   background-color: var(--primary-color);
-  color: #E0F7FA; /* En litt mykere hvitfarge for bedre lesbarhet */
+  color: #E0F7FA; 
   padding: 4rem 0 2rem 0;
 }
 
@@ -11,7 +11,7 @@
   padding: 0 2rem;
 }
 
-/* --- Hovedseksjon --- */
+
 .mainFooter {
   display: flex;
   justify-content: space-between;
@@ -21,7 +21,7 @@
 }
 
 .brandSection {
-  flex-basis: 30%; /* Gir merkevare-seksjonen en fast bredde */
+  flex-basis: 30%; 
 }
 
 .logo {
@@ -47,11 +47,11 @@
   opacity: 0.8;
 }
 
-/* --- Link-kolonner --- */
+
 .linksSection {
   flex-basis: 65%;
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 jevnstore kolonner */
+  grid-template-columns: repeat(3, 1fr); 
   gap: 2rem;
 }
 
@@ -76,11 +76,11 @@
 
 .footerLink:hover {
   opacity: 1;
-  padding-left: 5px; /* Liten effekt på hover */
+  padding-left: 5px; 
 }
 
 
-/* --- Sub-Footer --- */
+
 .subFooter {
   padding-top: 2rem;
   display: flex;

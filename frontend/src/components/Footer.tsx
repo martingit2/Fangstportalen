@@ -7,7 +7,6 @@ const Footer: React.FC = () => {
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
-        {/* --- Hovedseksjon med kolonner --- */}
         <div className={styles.mainFooter}>
           <div className={styles.brandSection}>
             <div className={styles.logo}>
@@ -16,7 +15,6 @@ const Footer: React.FC = () => {
             </div>
             <p>Den komplette digitale løsningen for førstehåndsomsetning av fisk.</p>
           </div>
-
           <div className={styles.linksSection}>
             <div className={styles.linkColumn}>
               <h4>Produkt</h4>
@@ -40,7 +38,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* --- Sub-Footer med copyright og sosiale medier --- */}
+        
         <div className={styles.subFooter}>
           <p className={styles.copyright}>© {new Date().getFullYear()} Fangstportalen. Alle rettigheter forbeholdt.</p>
           <div className={styles.socialLinks}>
