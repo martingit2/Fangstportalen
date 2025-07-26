@@ -13,7 +13,7 @@ const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
       <div className={styles.container}>
         <div className={styles.logo}>
           <img src={logoSrc} alt="FangstPortalen Logo" className={styles.logoImage} />
-          <h1>FangstPortalen</h1>
+          <h1>Fangstportalen</h1>
         </div>
         <nav>
           <button className={styles.loginButton} onClick={onLogin}>

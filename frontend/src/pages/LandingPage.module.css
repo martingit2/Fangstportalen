@@ -1,37 +1,53 @@
-/* src/pages/LandingPage.module.css */
-
 .container {
   width: 100%;
-  max-width: 1200px; 
-  margin: 0 auto; 
-  padding: 0 2rem; 
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
-
 .hero {
-  text-align: center;
-  padding: 8rem 0; 
+  padding: 6rem 0;
+}
+
+.hero .container {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+}
+
+.heroContent {
+  flex: 1;
+  text-align: left;
 }
 
 .heroTitle {
   font-size: 3.5rem;
   font-weight: 700;
-  margin: 0 0 1rem 0; 
+  margin: 0 0 1rem 0;
   color: var(--primary-color);
-  line-height: 1.2; 
+  line-height: 1.2;
 }
 
 .heroSubtitle {
   font-size: 1.25rem;
   color: var(--text-color);
   opacity: 0.8;
-  margin-bottom: 2.5rem;
-  max-width: 600px; 
-  margin-left: auto;
-  margin-right: auto;
+  margin-bottom: 2rem;
+  max-width: 500px;
 }
 
-.ctaButton { 
+.featureList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2.5rem 0;
+  font-size: 1.1rem;
+}
+
+.featureList li {
+  margin-bottom: 0.75rem;
+}
+
+.ctaButton {
   background-color: var(--primary-color);
   color: white;
   border: none;
@@ -45,4 +61,27 @@
 
 .ctaButton:hover {
   background-color: var(--accent-color);
+}
+
+.heroImageContainer {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.heroImage {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.footer {
+  border-top: 1px solid var(--border-color);
+  padding: 2rem 0;
+  text-align: center;
+  color: var(--text-color);
+  opacity: 0.7;
 }
