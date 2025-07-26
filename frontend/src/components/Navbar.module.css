@@ -1,20 +1,23 @@
-/* src/components/Navbar.module.css */
-
 .header {
+  position: sticky;
+  top: 0;
   width: 100%;
-  /* ENDRING: Reduserer padding under for å minske gapet */
-  padding: 1.5rem 0 1rem 0; 
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--background-color);
+  z-index: 1000;
+  background-color: var(--primary-color);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 0;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.header:not([data-at-top]) {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .container {
   width: 100%;
-  /* ENDRING: Øker maksbredde for å skyve innholdet lenger fra hverandre */
-  max-width: 1400px; 
+  max-width: 1200px;
   margin: 0 auto;
-  /* ENDRING: Øker padding på sidene for å flytte innholdet lenger ut */
-  padding: 0 4rem; 
+  padding: 0 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -23,27 +26,63 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.75rem; 
-  font-size: 1.2rem;
-  color: var(--primary-color);
-  font-weight: 600;
+  gap: 0.75rem;
 }
 
 .logo h1 {
   margin: 0;
   font-size: 1.5rem;
+  color: white;
+  font-weight: 600;
 }
 
+/* KORREKSJON: filter-linjen er fjernet. */
 .logoImage {
-  height: 50px;
+  height: 40px;
   width: auto;
+}
+
+.navLinks {
+  display: flex;
+  gap: 2.5rem;
+}
+
+.navLink {
+  position: relative;
+  padding-bottom: 0.25rem;
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.navLink::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0%;
+  height: 2px;
+  background-color: var(--accent-color);
+  transition: width 0.3s ease-in-out;
+}
+
+.navLink:hover::after {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .loginButton {
   background-color: transparent;
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
-  padding: 0.5rem 1.5rem;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 0.5rem 1.25rem;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
@@ -51,6 +90,22 @@
 }
 
 .loginButton:hover {
-  background-color: var(--primary-color);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: white;
+}
+
+.ctaButton {
+  background-color: white;
+  color: var(--primary-color);
+  border: 1px solid white;
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+
+.ctaButton:hover {
+  background-color: transparent;
   color: white;
 }

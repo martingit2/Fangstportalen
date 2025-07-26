@@ -2,11 +2,12 @@
 
 
 :root {
-  --primary-color: #0D4751;  
-  --accent-color: #5F99B1;    
-  --background-color: #FFFFFF; 
-  --text-color: #212121;      
-  --border-color: #E0E0E0;   
+  --primary-color: #04434b; 
+  --accent-color: #5F99B1;
+  --background-color: #FFFFFF;
+  --text-color: #212121;
+  --border-color: #E0E0E0;
+   --footer-background: #fcfcfd; 
 }
 
 

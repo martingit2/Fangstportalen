@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './Footer.module.css';
-import logoSrc from '../assets/images/logo.png';
-import { FaFacebook, FaLinkedin, FaTwitter } from 'react-icons/fa'; // Importerer ikoner
+import logoSrc from '../assets/images/logo3.png';
+import { FaFacebook, FaLinkedin, FaTwitter, FaServer, FaBuilding, FaBookOpen } from 'react-icons/fa'; 
 
 const Footer: React.FC = () => {
   return (
@@ -15,32 +15,37 @@ const Footer: React.FC = () => {
             </div>
             <p>Den komplette digitale løsningen for førstehåndsomsetning av fisk.</p>
           </div>
+
           <div className={styles.linksSection}>
             <div className={styles.linkColumn}>
-              <h4>Produkt</h4>
-              <a href="#" className={styles.footerLink}>Funksjoner</a>
-              <a href="#" className={styles.footerLink}>Priser</a>
-              <a href="#" className={styles.footerLink}>Demo</a>
+              <h4><FaServer /> Plattform</h4>
+              <a href="#" className={styles.footerLink}>Teknologi</a>
               <a href="#" className={styles.footerLink}>Sikkerhet</a>
+              <a href="#" className={styles.footerLink}>Integrasjoner</a>
+              <a href="#" className={styles.footerLink}>Systemkrav</a>
             </div>
             <div className={styles.linkColumn}>
-              <h4>Selskap</h4>
+              <h4><FaBuilding /> Selskap</h4>
               <a href="#" className={styles.footerLink}>Om oss</a>
               <a href="#" className={styles.footerLink}>Karriere</a>
-              <a href="#" className={styles.footerLink}>Kontakt</a>
+              <a href="#" className={styles.footerLink}>Presse</a>
             </div>
             <div className={styles.linkColumn}>
-              <h4>Ressurser</h4>
-              <a href="#" className={styles.footerLink}>FAQ</a>
-              <a href="#" className={styles.footerLink}>Support</a>
+              <h4><FaBookOpen /> Ressurser</h4>
+              <a href="#" className={styles.footerLink}>Hjelpesenter</a>
+              <a href="#" className={styles.footerLink}>API-dokumentasjon</a>
+              <a href="#" className={styles.footerLink}>Driftsstatus</a>
               <a href="#" className={styles.footerLink}>Blogg</a>
             </div>
           </div>
         </div>
 
-        
         <div className={styles.subFooter}>
           <p className={styles.copyright}>© {new Date().getFullYear()} Fangstportalen. Alle rettigheter forbeholdt.</p>
+          <div className={styles.legalLinks}>
+            <a href="#" className={styles.footerLink}>Brukervilkår</a>
+            <a href="#" className={styles.footerLink}>Personvern</a>
+          </div>
           <div className={styles.socialLinks}>
             <a href="#" aria-label="Facebook"><FaFacebook /></a>
             <a href="#" aria-label="LinkedIn"><FaLinkedin /></a>

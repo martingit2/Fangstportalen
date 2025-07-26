@@ -1,7 +1,9 @@
 .footer {
-  background-color: var(--primary-color);
-  color: #E0F7FA; 
+  background-color: #f9fafb;
+  color: var(--text-color);
   padding: 4rem 0 2rem 0;
+  font-size: 0.9rem;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .container {
@@ -11,17 +13,16 @@
   padding: 0 2rem;
 }
 
-
 .mainFooter {
   display: flex;
   justify-content: space-between;
   gap: 4rem;
   padding-bottom: 3rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #eef2f6;
 }
 
 .brandSection {
-  flex-basis: 30%; 
+  flex-basis: 30%;
 }
 
 .logo {
@@ -37,49 +38,47 @@
 .brandSection h2 {
   font-size: 1.5rem;
   margin: 0;
-  color: white;
+  color: var(--primary-color);
 }
 
 .brandSection p {
   margin-top: 1rem;
-  font-size: 0.9rem;
   line-height: 1.6;
-  opacity: 0.8;
+  opacity: 0.7;
 }
-
 
 .linksSection {
   flex-basis: 65%;
   display: grid;
-  grid-template-columns: repeat(3, 1fr); 
+  grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
 }
 
 .linkColumn h4 {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 700;
   margin-bottom: 1rem;
-  color: white;
+  color: var(--text-color);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  opacity: 0.9;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .footerLink {
   display: block;
   margin-bottom: 0.75rem;
-  color: #E0F7FA;
+  color: var(--primary-color); 
   text-decoration: none;
-  opacity: 0.8;
-  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+  transition: transform 0.2s ease-in-out;
 }
 
 .footerLink:hover {
-  opacity: 1;
-  padding-left: 5px; 
+  text-decoration: none; 
+  transform: translateX(3px); 
 }
-
-
 
 .subFooter {
   padding-top: 2rem;
@@ -90,7 +89,17 @@
 
 .copyright {
   font-size: 0.85rem;
-  opacity: 0.6;
+  opacity: 0.5;
+}
+
+.legalLinks {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.legalLinks .footerLink {
+  font-size: 0.85rem;
+  font-weight: 400;
 }
 
 .socialLinks {
@@ -99,12 +108,11 @@
 }
 
 .socialLinks a {
-  color: #E0F7FA;
+  color: var(--primary-color);
   font-size: 1.25rem;
-  opacity: 0.6;
-  transition: opacity 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out;
 }
 
 .socialLinks a:hover {
-  opacity: 1;
+  transform: translateY(-2px);
 }
