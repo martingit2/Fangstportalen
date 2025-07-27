@@ -67,12 +67,12 @@ const NyOrdrePage: React.FC = () => {
                             <input id="forventetLeveringsdato" type="date" {...register('forventetLeveringsdato')} className={inputStyles.input} />
                             {errors.forventetLeveringsdato && <p className={inputStyles.error}>{errors.forventetLeveringsdato.message}</p>}
                         </div>
-                        <div className={styles.formRow}>
+                        <div className={inputStyles.formRow}>
                             <label htmlFor="forventetLeveringstidFra" className={inputStyles.label}>Levering mellom</label>
                             <input id="forventetLeveringstidFra" type="time" {...register('forventetLeveringstidFra')} className={inputStyles.input} />
                             {errors.forventetLeveringstidFra && <p className={inputStyles.error}>{errors.forventetLeveringstidFra.message}</p>}
                         </div>
-                        <div className={styles.formRow}>
+                        <div className={inputStyles.formRow}>
                             <label htmlFor="forventetLeveringstidTil" className={inputStyles.label}>og</label>
                             <input id="forventetLeveringstidTil" type="time" {...register('forventetLeveringstidTil')} className={inputStyles.input} />
                             {errors.forventetLeveringstidTil && <p className={inputStyles.error}>{errors.forventetLeveringstidTil.message}</p>}
@@ -97,7 +97,7 @@ const NyOrdrePage: React.FC = () => {
 
                     <div className={styles.actions}>
                         <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? 'Oppretter...' : 'Publiser ordre'}
+                            {isSubmitting ? 'Publiserer...' : 'Publiser ordre'}
                         </Button>
                         <Button type="button" variant="secondary" onClick={() => navigate('/dashboard')}>Avbryt</Button>
                     </div>

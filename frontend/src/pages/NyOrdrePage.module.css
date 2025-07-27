@@ -36,14 +36,13 @@
     margin-bottom: 1rem;
 }
 
-
 .ordrelinje > input {
     min-width: 0;
 }
 
-.ordrelinje > input:nth-of-type(1) { flex-grow: 2; } /* Fiskeslag */
-.ordrelinje > input:nth-of-type(2) { flex-grow: 1; } /* Pris */
-.ordrelinje > input:nth-of-type(3) { flex-grow: 1; } /* Kvantum */
+.ordrelinje > input:nth-of-type(1) { flex-grow: 2; }
+.ordrelinje > input:nth-of-type(2) { flex-grow: 1; }
+.ordrelinje > input:nth-of-type(3) { flex-grow: 1; }
 
 .ordrelinje > button {
     flex-shrink: 0;
@@ -53,9 +52,10 @@
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
     gap: 1rem;
-    align-items: flex-end;
+    align-items: flex-start;
 }
 
-.formGrid label {
-    margin-bottom: 0.5rem;
+.formGrid .formRow {
+    display: flex;
+    flex-direction: column;
 }
