@@ -109,3 +109,13 @@
     font-style: italic;
     color: #4b5563;
 }
+
+.timeRange {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+}
+
+.table td {
+    font-weight: 500;
+    vertical-align: middle;
+}

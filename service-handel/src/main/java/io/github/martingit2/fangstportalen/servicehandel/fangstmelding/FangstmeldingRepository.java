@@ -9,4 +9,6 @@ import java.util.List;
 public interface FangstmeldingRepository extends JpaRepository<Fangstmelding, Long> {
 
     List<Fangstmelding> findByStatusOrderByTilgjengeligFraDatoAsc(FangstmeldingStatus status);
+
+    List<Fangstmelding> findBySelgerOrganisasjonIdAndStatus(Long selgerOrganisasjonId, FangstmeldingStatus status);
 }

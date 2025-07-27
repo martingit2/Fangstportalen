@@ -47,6 +47,14 @@ public class FangstmeldingService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<FangstmeldingResponseDto> findMineAktiveFangstmeldinger(Long selgerOrganisasjonId) {
+        List<Fangstmelding> fangstmeldinger = fangstmeldingRepository.findBySelgerOrganisasjonIdAndStatus(selgerOrganisasjonId, FangstmeldingStatus.AAPEN_FOR_BUD);
+        return fangstmeldinger.stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
     private FangstmeldingResponseDto convertToResponseDto(Fangstmelding fangstmelding) {
         List<FangstlinjeResponseDto> fangstlinjeDtos = fangstmelding.getFangstlinjer().stream()
                 .map(linje -> new FangstlinjeResponseDto(
@@ -59,7 +67,7 @@ public class FangstmeldingService {
 
         return new FangstmeldingResponseDto(
                 fangstmelding.getId(),
-                null,
+                String.valueOf(fangstmelding.getSelgerOrganisasjonId()),
                 fangstmelding.getFartoyNavn(),
                 fangstmelding.getStatus().name(),
                 fangstmelding.getLeveringssted(),

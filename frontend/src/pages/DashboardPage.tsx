@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { getMineOrdrer, getAktiveFangstmeldinger, createOrdreFromFangstmelding } from '../services/apiService';
+import { 
+    getMineOrdrer, 
+    getAktiveFangstmeldinger, 
+    createOrdreFromFangstmelding,
+    getMineFangstmeldinger,
+    getTilgjengeligeOrdrer,
+    aksepterOrdre
+} from '../services/apiService';
 import styles from './DashboardPage.module.css';
 import Button from '../components/ui/Button';
 import { useRoles } from '../hooks/usePermissions';
@@ -7,32 +14,143 @@ import type { OrdreResponseDto } from '../types/ordre';
 import type { FangstmeldingResponseDto } from '../types/fangstmelding';
 
 const SkipperDashboard: React.FC = () => {
-    const [isLoading] = useState(false);
-    const [error] = useState<string | null>(null);
+    const [mineFangstmeldinger, setMineFangstmeldinger] = useState<FangstmeldingResponseDto[]>([]);
+    const [tilgjengeligeOrdrer, setTilgjengeligeOrdrer] = useState<OrdreResponseDto[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const { roles, isLoading: rolesLoading } = useRoles();
+    const [isAcceptingId, setIsAcceptingId] = useState<number | null>(null);
+
+    const fetchData = useCallback(async () => {
+        try {
+            const [fangstmeldingerRes, ordrerRes] = await Promise.all([
+                getMineFangstmeldinger(),
+                getTilgjengeligeOrdrer()
+            ]);
+            setMineFangstmeldinger(fangstmeldingerRes.data);
+            setTilgjengeligeOrdrer(ordrerRes.data);
+            setError(null);
+        } catch (err) {
+            console.error("Feil ved henting av skipper-dashboard data:", err);
+            setError("Kunne ikke laste inn data.");
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        setIsLoading(true);
+        fetchData();
+    }, [fetchData]);
+
+    const handleAksepterOrdre = async (ordreId: number) => {
+        setIsAcceptingId(ordreId);
+        try {
+            await aksepterOrdre(ordreId);
+            await fetchData();
+        } catch (err) {
+            console.error("Feil ved aksept av ordre:", err);
+            alert("Kunne ikke akseptere ordren. Den kan ha blitt tatt av en annen skipper. Siden oppdateres.");
+            await fetchData();
+        } finally {
+            setIsAcceptingId(null);
+        }
+    };
 
     const isSkipper = roles.includes('REDERI_SKIPPER');
-    
-    const renderContent = () => {
+
+    const renderMineFangstmeldinger = () => {
         if (isLoading) return <div className={styles.loading}>Laster...</div>;
-        if (error) return <div className={styles.error}>{error}</div>;
-        return <div className={styles.empty}>Du har ingen aktive fangstmeldinger.</div>;
+        if (mineFangstmeldinger.length === 0) return <div className={styles.empty}>Du har ingen aktive fangstmeldinger.</div>;
+
+        return (
+            <div className={styles.marketplaceGrid}>
+                {mineFangstmeldinger.map(melding => (
+                    <div key={melding.id} className={styles.fangstmeldingCard}>
+                         <div className={styles.fangstInfo}>
+                            <h3>{melding.fartoyNavn} - {melding.leveringssted}</h3>
+                            <p className={styles.fangstlinjer}>
+                                {melding.fangstlinjer.map(l => `${l.fiskeslag} (~${l.estimertKvantum} kg)`).join(', ')}
+                            </p>
+                        </div>
+                        <Button variant="secondary" disabled>Publisert</Button>
+                    </div>
+                ))}
+            </div>
+        );
     };
+
+    const renderTilgjengeligeOrdrer = () => {
+        if (isLoading) return <div className={styles.loading}>Laster...</div>;
+        if (tilgjengeligeOrdrer.length === 0) return <div className={styles.empty}>Ingen åpne ordrer i markedet.</div>;
+
+        return (
+             <table className={styles.table}>
+                <thead>
+                    <tr>
+                        <th>Fiskebruk</th>
+                        <th>Leveringssted</th>
+                        <th>Dato & Tid</th>
+                        <th>Etterspørsel</th>
+                        <th className={styles.alignRight}>Handlinger</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {tilgjengeligeOrdrer.map(ordre => (
+                        <tr key={ordre.id}>
+                            <td>{ordre.kjoperOrganisasjonNavn}</td>
+                            <td>{ordre.leveringssted}</td>
+                            <td>
+                                {new Date(ordre.forventetLeveringsdato).toLocaleDateString('nb-NO')}
+                                <br/>
+                                <span className={styles.timeRange}>{ordre.forventetLeveringstidFra} - {ordre.forventetLeveringstidTil}</span>
+                            </td>
+                            <td>
+                                {ordre.ordrelinjer.map(l => `${l.forventetKvantum} kg ${l.fiskeslag}`).join(', ')}
+                            </td>
+                            <td className={styles.alignRight}>
+                                <Button 
+                                    onClick={() => handleAksepterOrdre(ordre.id)}
+                                    disabled={isAcceptingId === ordre.id}
+                                >
+                                    {isAcceptingId === ordre.id ? 'Aksepterer...' : 'Aksepter'}
+                                </Button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        );
+    }
 
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <h1 className={styles.title}>Mine Fangstmeldinger</h1>
+                <h1 className={styles.title}>Markedsplass</h1>
                 {!rolesLoading && isSkipper && (
                     <Button to="/ny-fangstmelding">Annonser ny fangst</Button>
                 )}
             </header>
-            <div className={styles.content}>{renderContent()}</div>
+
+            <div className={styles.marketplaceSection}>
+                <h2 className={styles.marketplaceTitle}>Mine Aktive Fangstmeldinger</h2>
+                <div className={styles.content}>
+                    {error ? <div className={styles.error}>{error}</div> : renderMineFangstmeldinger()}
+                </div>
+            </div>
+
+            <div className={styles.marketplaceSection}>
+                <h2 className={styles.marketplaceTitle}>Etterspørsel i Markedet</h2>
+                <div className={styles.content}>
+                    {error ? <div className={styles.error}>{error}</div> : renderTilgjengeligeOrdrer()}
+                </div>
+            </div>
         </div>
     );
 };
 
 const InnkjoperDashboard: React.FC = () => {
+    // ... (Denne komponenten forblir uendret for nå)
     const [ordrer, setOrdrer] = useState<OrdreResponseDto[]>([]);
     const [fangstmeldinger, setFangstmeldinger] = useState<FangstmeldingResponseDto[]>([]);
     const [isLoading, setIsLoading] = useState(true);

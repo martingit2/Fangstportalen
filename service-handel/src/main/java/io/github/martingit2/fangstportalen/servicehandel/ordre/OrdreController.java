@@ -14,6 +14,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.bind.annotation.PatchMapping;
+
 
 import java.net.URI;
 import java.util.List;
@@ -75,6 +77,22 @@ public class OrdreController {
         }
     }
 
+    @PatchMapping("/{id}/aksepter")
+    @PreAuthorize("hasRole('REDERI_SKIPPER')")
+    public ResponseEntity<OrdreResponseDto> aksepterOrdre(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        logger.info("Skipper forsøker å akseptere ordre med ID: {}", id);
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long selgerOrganisasjonId = principal.getOrganisasjonId();
+
+        OrdreResponseDto oppdatertOrdre = ordreService.aksepterOrdre(id, selgerOrganisasjonId);
+
+        logger.info("Ordre {} ble akseptert av organisasjon {}", id, selgerOrganisasjonId);
+        return ResponseEntity.ok(oppdatertOrdre);
+    }
+
     @GetMapping("/mine")
     @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
     public ResponseEntity<List<OrdreResponseDto>> getMineOrdrer(@AuthenticationPrincipal Jwt jwt) {
@@ -82,5 +100,14 @@ public class OrdreController {
         Long kjoperOrganisasjonId = principal.getOrganisasjonId();
         List<OrdreResponseDto> ordrer = ordreService.findMineOrdrer(kjoperOrganisasjonId);
         return ResponseEntity.ok(ordrer);
+    }
+
+    @GetMapping("/tilgjengelige")
+    @PreAuthorize("hasRole('REDERI_SKIPPER')")
+    public ResponseEntity<List<OrdreResponseDto>> getTilgjengeligeOrdrer(@AuthenticationPrincipal Jwt jwt) {
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long selgerOrganisasjonId = principal.getOrganisasjonId();
+        List<OrdreResponseDto> tilgjengeligeOrdrer = ordreService.findTilgjengeligeOrdrer(selgerOrganisasjonId);
+        return ResponseEntity.ok(tilgjengeligeOrdrer);
     }
 }

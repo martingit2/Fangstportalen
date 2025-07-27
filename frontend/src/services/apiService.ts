@@ -56,4 +56,16 @@ export const createFangstmelding = (data: FangstmeldingFormData): Promise<AxiosR
     return apiClient.post('/fangstmeldinger', payload);
 };
 
+export const getMineFangstmeldinger = (): Promise<AxiosResponse<FangstmeldingResponseDto[]>> => {
+    return apiClient.get('/fangstmeldinger/mine');
+};
+
+export const getTilgjengeligeOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => {
+    return apiClient.get('/ordrer/tilgjengelige');
+};
+
+export const aksepterOrdre = (ordreId: number): Promise<AxiosResponse<OrdreResponseDto>> => {
+    return apiClient.patch(`/ordrer/${ordreId}/aksepter`);
+};
+
 export default apiClient;

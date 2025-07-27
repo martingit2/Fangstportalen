@@ -25,8 +25,8 @@ const Navbar: React.FC<NavbarProps> = ({ onLogin }) => {
     <header className={styles.header} data-at-top={isAtTop ? '' : undefined}>
       <div className={styles.container}>
         <div className={styles.logo}>
-          <img src={logoSrc} alt="Fangstportalen Logo" className={styles.logoImage} />
           <h1>Fangstportalen</h1>
+          <img src={logoSrc} alt="Fangstportalen Logo" className={styles.logoImage} />
         </div>
         
         <nav className={styles.desktopNav}>

@@ -36,7 +36,7 @@
     margin-bottom: 1rem;
 }
 
-/* DENNE REGELEN ER DEN KRITISKE LØSNINGEN */
+
 .ordrelinje > input {
     min-width: 0;
 }
@@ -47,4 +47,15 @@
 
 .ordrelinje > button {
     flex-shrink: 0;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.formGrid label {
+    margin-bottom: 0.5rem;
 }

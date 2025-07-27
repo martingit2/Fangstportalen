@@ -19,7 +19,10 @@ const NyOrdrePage: React.FC = () => {
     } = useForm<OrdreFormData>({
         resolver: zodResolver(ordreSchema),
         defaultValues: {
+            leveringssted: '',
             forventetLeveringsdato: new Date().toISOString().split('T')[0],
+            forventetLeveringstidFra: '08:00',
+            forventetLeveringstidTil: '16:00',
             ordrelinjer: [{ fiskeslag: '', kvalitet: '', storrelse: '', avtaltPrisPerKg: '', forventetKvantum: '' }],
         },
     });
@@ -49,16 +52,34 @@ const NyOrdrePage: React.FC = () => {
 
     return (
         <div className={styles.container}>
-            <h1 className={styles.title}>Opprett ny ordre</h1>
+            <h1 className={styles.title}>Opprett ny åpen ordre</h1>
             <div className={styles.form}>
                 <form onSubmit={handleSubmit(onSubmit)} noValidate>
                     <div className={inputStyles.formRow}>
-                        <label htmlFor="forventetLeveringsdato" className={inputStyles.label}>Forventet Leveringsdato</label>
-                        <input id="forventetLeveringsdato" type="date" {...register('forventetLeveringsdato')} className={inputStyles.input} />
-                        {errors.forventetLeveringsdato && <p className={inputStyles.error}>{errors.forventetLeveringsdato.message}</p>}
+                        <label htmlFor="leveringssted" className={inputStyles.label}>Leveringssted</label>
+                        <input id="leveringssted" type="text" {...register('leveringssted')} className={inputStyles.input} />
+                        {errors.leveringssted && <p className={inputStyles.error}>{errors.leveringssted.message}</p>}
+                    </div>
+                    
+                    <div className={styles.formGrid}>
+                        <div className={inputStyles.formRow}>
+                            <label htmlFor="forventetLeveringsdato" className={inputStyles.label}>Ønsket leveringsdato</label>
+                            <input id="forventetLeveringsdato" type="date" {...register('forventetLeveringsdato')} className={inputStyles.input} />
+                            {errors.forventetLeveringsdato && <p className={inputStyles.error}>{errors.forventetLeveringsdato.message}</p>}
+                        </div>
+                        <div className={styles.formRow}>
+                            <label htmlFor="forventetLeveringstidFra" className={inputStyles.label}>Levering mellom</label>
+                            <input id="forventetLeveringstidFra" type="time" {...register('forventetLeveringstidFra')} className={inputStyles.input} />
+                            {errors.forventetLeveringstidFra && <p className={inputStyles.error}>{errors.forventetLeveringstidFra.message}</p>}
+                        </div>
+                        <div className={styles.formRow}>
+                            <label htmlFor="forventetLeveringstidTil" className={inputStyles.label}>og</label>
+                            <input id="forventetLeveringstidTil" type="time" {...register('forventetLeveringstidTil')} className={inputStyles.input} />
+                            {errors.forventetLeveringstidTil && <p className={inputStyles.error}>{errors.forventetLeveringstidTil.message}</p>}
+                        </div>
                     </div>
 
-                    <h2 className={styles.subTitle}>Ordrelinjer</h2>
+                    <h2 className={styles.subTitle}>Etterspørsel (ordrelinjer)</h2>
                     {fields.map((field, index) => (
                         <div key={field.id} className={styles.ordrelinje}>
                             <input {...register(`ordrelinjer.${index}.fiskeslag`)} placeholder="Fiskeslag" className={inputStyles.input} />
@@ -76,7 +97,7 @@ const NyOrdrePage: React.FC = () => {
 
                     <div className={styles.actions}>
                         <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? 'Oppretter...' : 'Opprett ordre'}
+                            {isSubmitting ? 'Oppretter...' : 'Publiser ordre'}
                         </Button>
                         <Button type="button" variant="secondary" onClick={() => navigate('/dashboard')}>Avbryt</Button>
                     </div>

@@ -6,6 +6,8 @@ import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.Fangstmel
 import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.CreateOrdreRequestDto;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.OrdreResponseDto;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.OrdrelinjeDto;
+import io.github.martingit2.fangstportalen.servicehandel.organisasjon.Organisasjon;
+import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -13,7 +15,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +27,7 @@ public class OrdreService {
 
     private final OrdreRepository ordreRepository;
     private final FangstmeldingRepository fangstmeldingRepository;
+    private final OrganisasjonRepository organisasjonRepository;
     private static final Logger logger = LoggerFactory.getLogger(OrdreService.class);
 
     @Transactional
@@ -39,7 +45,9 @@ public class OrdreService {
         Ordre ordre = Ordre.builder()
                 .kjoperOrganisasjonId(kjoperOrganisasjonId)
                 .fangstmeldingId(fangstmelding.getId())
-                .status(OrdreStatus.AKTIV)
+                .selgerOrganisasjonId(fangstmelding.getSelgerOrganisasjonId())
+                .status(OrdreStatus.AVTALT)
+                .leveringssted(fangstmelding.getLeveringssted())
                 .forventetLeveringsdato(fangstmelding.getTilgjengeligFraDato())
                 .build();
 
@@ -49,7 +57,7 @@ public class OrdreService {
                     .forventetKvantum(fangstlinje.getEstimertKvantum())
                     .kvalitet(fangstlinje.getKvalitet())
                     .storrelse(fangstlinje.getStorrelse())
-                    .avtaltPrisPerKg(0.0) // LØSNINGEN: Setter en standardverdi for pris
+                    .avtaltPrisPerKg(0.0)
                     .build();
             ordre.addOrdrelinje(ordrelinje);
         });
@@ -66,7 +74,10 @@ public class OrdreService {
         Ordre ordre = Ordre.builder()
                 .kjoperOrganisasjonId(kjoperOrganisasjonId)
                 .status(OrdreStatus.AKTIV)
+                .leveringssted(dto.leveringssted())
                 .forventetLeveringsdato(dto.forventetLeveringsdato())
+                .forventetLeveringstidFra(LocalTime.parse(dto.forventetLeveringstidFra()))
+                .forventetLeveringstidTil(LocalTime.parse(dto.forventetLeveringstidTil()))
                 .build();
 
         dto.ordrelinjer().forEach(linjeDto -> {
@@ -89,12 +100,57 @@ public class OrdreService {
     public List<OrdreResponseDto> findMineOrdrer(Long kjoperOrganisasjonId) {
         logger.info("Henter ordrer for organisasjon: {}", kjoperOrganisasjonId);
         List<Ordre> ordrer = ordreRepository.findByKjoperOrganisasjonIdOrderByOpprettetTidspunktDesc(kjoperOrganisasjonId);
+        return convertToResponseDtoList(ordrer);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrdreResponseDto> findTilgjengeligeOrdrer(Long ekskluderOrgId) {
+        List<Ordre> ordrer = ordreRepository.findByStatusAndFangstmeldingIdIsNullAndKjoperOrganisasjonIdNot(OrdreStatus.AKTIV, ekskluderOrgId);
+        return convertToResponseDtoList(ordrer);
+    }
+
+    @Transactional
+    public OrdreResponseDto aksepterOrdre(Long ordreId, Long selgerOrganisasjonId) {
+        Ordre ordre = ordreRepository.findById(ordreId)
+                .orElseThrow(() -> new EntityNotFoundException("Finner ikke ordre med ID: " + ordreId));
+
+        if (ordre.getStatus() != OrdreStatus.AKTIV || ordre.getSelgerOrganisasjonId() != null) {
+            throw new IllegalStateException("Ordren er ikke lenger tilgjengelig for aksept.");
+        }
+
+        ordre.setSelgerOrganisasjonId(selgerOrganisasjonId);
+        ordre.setStatus(OrdreStatus.AVTALT);
+        Ordre savedOrdre = ordreRepository.save(ordre);
+
+        logger.info("Organisasjon {} aksepterte ordre {}", selgerOrganisasjonId, ordreId);
+        return convertToResponseDto(savedOrdre);
+    }
+
+    private List<OrdreResponseDto> convertToResponseDtoList(List<Ordre> ordrer) {
+        if (ordrer.isEmpty()) {
+            return List.of();
+        }
+        List<Long> orgIds = ordrer.stream().map(Ordre::getKjoperOrganisasjonId).distinct().toList();
+        Map<Long, Organisasjon> organisasjonMap = organisasjonRepository.findAllById(orgIds).stream()
+                .collect(Collectors.toMap(Organisasjon::getId, Function.identity()));
+
         return ordrer.stream()
-                .map(this::convertToResponseDto)
+                .map(ordre -> {
+                    Organisasjon org = organisasjonMap.get(ordre.getKjoperOrganisasjonId());
+                    String orgNavn = (org != null) ? org.getNavn() : "Ukjent Kjøper";
+                    return convertToResponseDto(ordre, orgNavn);
+                })
                 .collect(Collectors.toList());
     }
 
     private OrdreResponseDto convertToResponseDto(Ordre ordre) {
+        String kjoperNavn = organisasjonRepository.findById(ordre.getKjoperOrganisasjonId())
+                .map(Organisasjon::getNavn)
+                .orElse("Ukjent Kjøper");
+        return convertToResponseDto(ordre, kjoperNavn);
+    }
+
+    private OrdreResponseDto convertToResponseDto(Ordre ordre, String kjoperNavn) {
         List<OrdrelinjeDto> linjeDtos = ordre.getOrdrelinjer().stream()
                 .map(linje -> new OrdrelinjeDto(
                         linje.getId(),
@@ -108,7 +164,11 @@ public class OrdreService {
         return new OrdreResponseDto(
                 ordre.getId(),
                 ordre.getStatus().name(),
+                kjoperNavn,
+                ordre.getLeveringssted(),
                 ordre.getForventetLeveringsdato(),
+                ordre.getForventetLeveringstidFra(),
+                ordre.getForventetLeveringstidTil(),
                 ordre.getOpprettetTidspunkt(),
                 linjeDtos
         );

@@ -7,5 +7,8 @@ import java.util.List;
 
 @Repository
 public interface OrdreRepository extends JpaRepository<Ordre, Long> {
+
     List<Ordre> findByKjoperOrganisasjonIdOrderByOpprettetTidspunktDesc(Long kjoperOrganisasjonId);
+
+    List<Ordre> findByStatusAndFangstmeldingIdIsNullAndKjoperOrganisasjonIdNot(OrdreStatus status, Long kjoperOrganisasjonId);
 }

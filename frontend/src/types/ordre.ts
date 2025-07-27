@@ -10,7 +10,11 @@ export interface OrdrelinjeDto {
 export interface OrdreResponseDto {
     id: number;
     status: string;
-    forventetLeveringsdato: string;
+    kjoperOrganisasjonNavn: string; 
+    leveringssted: string; 
+    forventetLeveringsdato: string; 
+    forventetLeveringstidFra: string | null; 
+    forventetLeveringstidTil: string | null; 
     opprettetTidspunkt: string;
     ordrelinjer: OrdrelinjeDto[];
 }

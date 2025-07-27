@@ -1,5 +1,6 @@
 package io.github.martingit2.fangstportalen.servicehandel.sluttseddel;
 
+import io.github.martingit2.fangstportalen.servicehandel.ordre.Ordre;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +25,10 @@ public class Sluttseddel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToOne
+    @JoinColumn(name = "ordre_id", referencedColumnName = "id")
+    private Ordre ordre;
 
     @Column(name = "selger_organisasjon_id", nullable = false, updatable = false)
     private Long selgerOrganisasjonId;

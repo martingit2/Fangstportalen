@@ -48,4 +48,13 @@ public class FangstmeldingController {
         List<FangstmeldingResponseDto> aktiveMeldinger = fangstmeldingService.findAktiveFangstmeldinger();
         return ResponseEntity.ok(aktiveMeldinger);
     }
+
+    @GetMapping("/mine")
+    @PreAuthorize("hasRole('REDERI_SKIPPER') or hasRole('REDERI_ADMIN')")
+    public ResponseEntity<List<FangstmeldingResponseDto>> getMineAktiveFangstmeldinger(@AuthenticationPrincipal Jwt jwt) {
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long selgerOrganisasjonId = principal.getOrganisasjonId();
+        List<FangstmeldingResponseDto> aktiveMeldinger = fangstmeldingService.findMineAktiveFangstmeldinger(selgerOrganisasjonId);
+        return ResponseEntity.ok(aktiveMeldinger);
+    }
 }
