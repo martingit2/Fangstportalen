@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './Button.module.css';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'primary' | 'secondary';
@@ -8,19 +8,20 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     children: React.ReactNode;
 }
 
-const Button: React.FC<ButtonProps> = ({ variant = 'primary', to, children, ...props }) => {
+const Button: React.FC<ButtonProps> = ({ variant = 'primary', to, children, onClick, ...props }) => {
+    const navigate = useNavigate();
     const className = `${styles.button} ${styles[variant]}`;
 
-    if (to) {
-        return (
-            <Link to={to} className={className}>
-                {children}
-            </Link>
-        );
-    }
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        if (to) {
+            navigate(to);
+        } else if (onClick) {
+            onClick(event);
+        }
+    };
 
     return (
-        <button className={className} {...props}>
+        <button className={className} onClick={handleClick} {...props}>
             {children}
         </button>
     );

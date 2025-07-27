@@ -7,6 +7,7 @@ import { setupInterceptors } from './services/apiService';
 import { useEffect } from 'react';
 import NySluttseddelPage from './pages/NySluttseddelPage';
 import AuthenticatedLayout from './components/AuthenticatedLayout';
+import NyOrdrePage from './pages/NyOrdrePage';
 
 function App() {
   const { loginWithRedirect, getAccessTokenSilently } = useAuth0();
@@ -23,6 +24,7 @@ function App() {
           <Route element={<AuthenticatedLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/dashboard/ny-sluttseddel" element={<NySluttseddelPage />} />
+            <Route path="/dashboard/ny-ordre" element={<NyOrdrePage />} />
           </Route>
         </Route>
       </Routes>

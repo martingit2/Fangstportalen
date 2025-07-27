@@ -1,5 +1,7 @@
 import axios from 'axios';
 import type { GetTokenSilentlyOptions } from '@auth0/auth0-react';
+import type { OrdreResponseDto } from '../types/ordre';
+import type { AxiosResponse } from 'axios';
 
 const apiClient = axios.create({
     baseURL: 'http://localhost:8080/api/v1',
@@ -27,6 +29,10 @@ export const setupInterceptors = (getAccessTokenSilently: (options?: GetTokenSil
             return Promise.reject(error);
         }
     );
+};
+
+export const getMineOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => {
+    return apiClient.get('/ordrer/mine');
 };
 
 export default apiClient;
