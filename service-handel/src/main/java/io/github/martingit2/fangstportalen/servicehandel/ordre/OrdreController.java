@@ -16,6 +16,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/ordrer")
@@ -24,6 +25,24 @@ public class OrdreController {
 
     private final OrdreService ordreService;
     private static final Logger logger = LoggerFactory.getLogger(OrdreController.class);
+
+    @PostMapping("/fra-fangstmelding")
+    @PreAuthorize("hasRole('fiskebruk-innkjoper')")
+    public ResponseEntity<OrdreResponseDto> createOrdreFromFangstmelding(
+            @RequestBody Map<String, Long> payload,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        Long fangstmeldingId = payload.get("fangstmeldingId");
+        String kjoperBrukerId = jwt.getSubject();
+
+        OrdreResponseDto createdOrdre = ordreService.createOrdreFromFangstmelding(fangstmeldingId, kjoperBrukerId);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentContextPath().path("/api/v1/ordrer/{id}")
+                .buildAndExpand(createdOrdre.id()).toUri();
+
+        return ResponseEntity.created(location).body(createdOrdre);
+    }
 
     @PostMapping
     @PreAuthorize("hasRole('fiskebruk-innkjoper')")

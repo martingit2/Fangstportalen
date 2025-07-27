@@ -1,0 +1,61 @@
+.topBar {
+    grid-area: topbar;
+    background-color: var(--primary-color);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+    height: 65px;
+}
+
+.searchContainer {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.searchInputWrapper {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 0.7rem 1rem 0.7rem 2.5rem;
+    border-radius: 8px;
+    background-color: #ffffff; /* Løsningen: Hvitt felt */
+    border: 1px solid transparent;
+    font-size: 0.9rem;
+    color: var(--text-color); /* Mørk tekst for lesbarhet på hvit bakgrunn */
+    transition: all 0.2s ease;
+}
+
+.searchInput::placeholder {
+    color: #6b7280;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(95, 153, 177, 0.3);
+}
+
+.searchIcon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+}
+
+.userMenu {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.userName {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}

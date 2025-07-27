@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "ordrer")
+@Table(name = "ordrer", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "fangstmelding_id", name = "uk_ordre_fangstmelding_id")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,6 +26,9 @@ public class Ordre {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "fangstmelding_id")
+    private Long fangstmeldingId;
+
     @Column(name = "kjoper_bruker_id", nullable = false)
     private String kjoperBrukerId;
 
@@ -32,7 +37,7 @@ public class Ordre {
     private OrdreStatus status;
 
     @OneToMany(mappedBy = "ordre", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default // <-- DENNE LINJEN ER LØSNINGEN
+    @Builder.Default
     private List<Ordrelinje> ordrelinjer = new ArrayList<>();
 
     @Column(name = "forventet_leveringsdato")

@@ -1,5 +1,5 @@
 .container {
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto;
 }
 
@@ -7,22 +7,20 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 2rem;
 }
 
 .title {
     margin: 0;
     font-size: 1.875rem;
+    font-weight: 700;
     color: var(--text-color);
 }
 
 .content {
-    background-color: #ffffff;
-    padding: 1.5rem;
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 }
 
 .table {
@@ -32,18 +30,20 @@
 
 .table th, .table td {
     border-bottom: 1px solid var(--border-color);
-    padding: 0.75rem 1rem;
+    padding: 1rem 1.5rem;
     text-align: left;
 }
 
 .table th {
     font-weight: 600;
-    color: #4b5563;
-    font-size: 0.875rem;
+    color: var(--text-color-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .table td {
-    color: #111827;
+    font-weight: 500;
 }
 
 .table tr:last-child td {
@@ -56,6 +56,56 @@
 
 .loading, .error, .empty {
     text-align: center;
-    padding: 2rem;
-    color: #6b7280;
+    padding: 3rem 1.5rem;
+    color: var(--text-color-secondary);
+}
+
+.marketplaceSection {
+    margin-top: 3rem;
+}
+
+.marketplaceTitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+}
+
+.marketplaceGrid {
+    display: grid;
+    gap: 1rem;
+}
+
+.fangstmeldingCard {
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.fangstmeldingCard:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.fangstInfo h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.125rem;
+}
+
+.fangstInfo p {
+    margin: 0;
+    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+}
+
+.fangstlinjer {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    font-style: italic;
+    color: #4b5563;
 }

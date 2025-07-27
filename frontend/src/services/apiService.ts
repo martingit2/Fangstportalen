@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { GetTokenSilentlyOptions } from '@auth0/auth0-react';
 import type { OrdreResponseDto } from '../types/ordre';
+import type { FangstmeldingResponseDto } from '../types/fangstmelding';
 import type { AxiosResponse } from 'axios';
 
 const apiClient = axios.create({
@@ -33,6 +34,14 @@ export const setupInterceptors = (getAccessTokenSilently: (options?: GetTokenSil
 
 export const getMineOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => {
     return apiClient.get('/ordrer/mine');
+};
+
+export const getAktiveFangstmeldinger = (): Promise<AxiosResponse<FangstmeldingResponseDto[]>> => {
+    return apiClient.get('/fangstmeldinger/aktive');
+};
+
+export const createOrdreFromFangstmelding = (fangstmeldingId: number): Promise<AxiosResponse<OrdreResponseDto>> => {
+    return apiClient.post('/ordrer/fra-fangstmelding', { fangstmeldingId });
 };
 
 export default apiClient;

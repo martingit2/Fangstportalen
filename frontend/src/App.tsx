@@ -6,7 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { setupInterceptors } from './services/apiService';
 import { useEffect } from 'react';
 import NySluttseddelPage from './pages/NySluttseddelPage';
-import AuthenticatedLayout from './components/AuthenticatedLayout';
+import AppLayout from './components/AppLayout';
 import NyOrdrePage from './pages/NyOrdrePage';
 
 function App() {
@@ -21,10 +21,15 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage onLogin={() => loginWithRedirect()} />} />
         <Route element={<ProtectedRoute />}>
-          <Route element={<AuthenticatedLayout />}>
+          <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/dashboard/ny-sluttseddel" element={<NySluttseddelPage />} />
-            <Route path="/dashboard/ny-ordre" element={<NyOrdrePage />} />
+            <Route path="/sluttsedler" element={<div>Sluttsedler Side (TODO)</div>} />
+            <Route path="/ordrer" element={<div>Ordrer Side (TODO)</div>} />
+            <Route path="/statistikk" element={<div>Statistikk Side (TODO)</div>} />
+            <Route path="/kart" element={<div>Kart Side (TODO)</div>} />
+            <Route path="/innstillinger" element={<div>Innstillinger Side (TODO)</div>} />
+            <Route path="/ny-sluttseddel" element={<NySluttseddelPage />} />
+            <Route path="/ny-ordre" element={<NyOrdrePage />} />
           </Route>
         </Route>
       </Routes>

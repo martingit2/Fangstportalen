@@ -3,7 +3,7 @@ import styles from './Button.module.css';
 import { useNavigate } from 'react-router-dom';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary';
+    variant?: 'primary' | 'secondary' | 'ghost';
     to?: string;
     children: React.ReactNode;
 }

@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import apiClient from '../services/apiService';
+import apiClient, { getMineOrdrer, getAktiveFangstmeldinger, createOrdreFromFangstmelding } from '../services/apiService';
 import styles from './DashboardPage.module.css';
 import Button from '../components/ui/Button';
 import StatusBadge from '../components/ui/StatusBadge';
 import { useRoles } from '../hooks/usePermissions';
-import { getMineOrdrer } from '../services/apiService';
 import type { OrdreResponseDto } from '../types/ordre';
+import type { FangstmeldingResponseDto } from '../types/fangstmelding';
 
 type SluttseddelStatus = 'KLADD' | 'SIGNERT_AV_FISKER' | 'BEKREFTET_AV_MOTTAK' | 'AVVIST';
 
@@ -97,7 +97,7 @@ const SkipperDashboard: React.FC = () => {
             <header className={styles.header}>
                 <h1 className={styles.title}>Mine Sluttsedler</h1>
                 {!rolesLoading && isSkipper && (
-                    <Button to="/dashboard/ny-sluttseddel">Registrer ny sluttseddel</Button>
+                    <Button to="/ny-sluttseddel">Registrer ny sluttseddel</Button>
                 )}
             </header>
             <div className={styles.content}>{renderContent()}</div>
@@ -107,34 +107,49 @@ const SkipperDashboard: React.FC = () => {
 
 const InnkjoperDashboard: React.FC = () => {
     const [ordrer, setOrdrer] = useState<OrdreResponseDto[]>([]);
+    const [fangstmeldinger, setFangstmeldinger] = useState<FangstmeldingResponseDto[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isAcceptingId, setIsAcceptingId] = useState<number | null>(null);
 
-    useEffect(() => {
-        const fetchOrdrer = async () => {
-            try {
-                const response = await getMineOrdrer();
-                setOrdrer(response.data);
-            } catch (err) {
-                console.error("Feil ved henting av ordrer:", err);
-                setError("Kunne ikke laste inn ordreoversikten.");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchOrdrer();
+    const fetchData = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const [ordrerResponse, fangstmeldingerResponse] = await Promise.all([
+                getMineOrdrer(),
+                getAktiveFangstmeldinger()
+            ]);
+            setOrdrer(ordrerResponse.data);
+            setFangstmeldinger(fangstmeldingerResponse.data);
+            setError(null);
+        } catch (err) {
+            console.error("Feil ved henting av dashboard-data:", err);
+            setError("Kunne ikke laste inn data.");
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
-    const renderContent = () => {
-        if (isLoading) {
-            return <div className={styles.loading}>Laster dine ordrer...</div>;
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const handleAcceptFangstmelding = async (fangstmeldingId: number) => {
+        setIsAcceptingId(fangstmeldingId);
+        try {
+            await createOrdreFromFangstmelding(fangstmeldingId);
+            await fetchData();
+        } catch (err) {
+            console.error("Feil ved opprettelse av ordre fra fangstmelding:", err);
+            alert("Kunne ikke opprette ordre. Fangsten kan allerede være solgt.");
+        } finally {
+            setIsAcceptingId(null);
         }
-        if (error) {
-            return <div className={styles.error}>{error}</div>;
-        }
-        if (ordrer.length === 0) {
-            return <div className={styles.empty}>Du har ingen aktive ordrer.</div>;
-        }
+    };
+
+    const renderOrdreContent = () => {
+        if (isLoading) return <div className={styles.loading}>Laster dine ordrer...</div>;
+        if (ordrer.length === 0) return <div className={styles.empty}>Du har ingen aktive ordrer.</div>;
 
         return (
             <table className={styles.table}>
@@ -159,19 +174,54 @@ const InnkjoperDashboard: React.FC = () => {
             </table>
         );
     };
+    
+    const renderMarketplaceContent = () => {
+        if (isLoading) return <div className={styles.loading}>Laster markedsplass...</div>;
+        if (fangstmeldinger.length === 0) return <div className={styles.empty}>Ingen fangster er tilgjengelig i markedet akkurat nå.</div>;
+
+        return (
+            <div className={styles.marketplaceGrid}>
+                {fangstmeldinger.map(melding => (
+                    <div key={melding.id} className={styles.fangstmeldingCard}>
+                        <div className={styles.fangstInfo}>
+                            <h3>{melding.fartoyNavn}</h3>
+                            <p>Ankommer {melding.leveringssted} den {new Date(melding.tilgjengeligFraDato).toLocaleDateString('nb-NO')}</p>
+                            <p className={styles.fangstlinjer}>
+                                {melding.fangstlinjer.map(l => `${l.fiskeslag} (~${l.estimertKvantum} kg)`).join(', ')}
+                            </p>
+                        </div>
+                        <Button
+                            onClick={() => handleAcceptFangstmelding(melding.id)}
+                            disabled={isAcceptingId === melding.id}
+                        >
+                            {isAcceptingId === melding.id ? 'Oppretter...' : 'Opprett Ordre'}
+                        </Button>
+                    </div>
+                ))}
+            </div>
+        );
+    };
 
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <h1 className={styles.title}>Ordreadministrasjon</h1>
-                <Button to="/dashboard/ny-ordre">Opprett ny ordre</Button>
+                <h1 className={styles.title}>Mine Ordrer</h1>
+                <Button to="/ny-ordre">Opprett Åpen Ordre</Button>
             </header>
             <div className={styles.content}>
-                {renderContent()}
+                {error ? <div className={styles.error}>{error}</div> : renderOrdreContent()}
+            </div>
+
+            <div className={styles.marketplaceSection}>
+                <h2 className={styles.marketplaceTitle}>Tilgjengelig i Markedet</h2>
+                <div className={styles.content}>
+                    {error ? <div className={styles.error}>{error}</div> : renderMarketplaceContent()}
+                </div>
             </div>
         </div>
     );
 };
+
 
 const DashboardPage: React.FC = () => {
     const { roles, isLoading } = useRoles();
