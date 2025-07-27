@@ -1,8 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import apiClient from '../services/apiService';
 import styles from './DashboardPage.module.css';
 import Button from '../components/ui/Button';
-import { usePermissions } from '../hooks/usePermissions';
+
+import StatusBadge from '../components/ui/StatusBadge';
+import { isAxiosError } from 'axios';
+import { useRoles } from '../hooks/usePermissions';
+
+type SluttseddelStatus = 'KLADD' | 'SIGNERT_AV_FISKER' | 'BEKREFTET_AV_MOTTAK' | 'AVVIST';
 
 interface Sluttseddel {
     id: number;
@@ -11,32 +16,50 @@ interface Sluttseddel {
     leveringssted: string;
     fiskeslag: string;
     kvantum: number;
+    status: SluttseddelStatus;
 }
 
 const DashboardPage: React.FC = () => {
     const [sluttsedler, setSluttsedler] = useState<Sluttseddel[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { permissions, isLoading: permissionsLoading } = usePermissions();
+    const [signingId, setSigningId] = useState<number | null>(null);
+    const { roles, isLoading: rolesLoading } = useRoles();
 
-    useEffect(() => {
-        const fetchSluttsedler = async () => {
-            try {
-                setIsLoading(true);
-                setError(null);
-                const response = await apiClient.get<Sluttseddel[]>('/sluttsedler/mine');
-                setSluttsedler(response.data);
-            } catch (err) {
+    const fetchSluttsedler = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            const response = await apiClient.get<Sluttseddel[]>('/sluttsedler/mine');
+            setSluttsedler(response.data);
+        } catch (err) {
+            if (isAxiosError(err)) {
                 setError('Kunne ikke hente sluttsedler. Prøv igjen senere.');
-                console.error(err);
-            } finally {
-                setIsLoading(false);
             }
-        };
-        fetchSluttsedler();
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
-    const canCreateSluttseddel = permissions.includes('create:sluttseddel');
+    useEffect(() => {
+        fetchSluttsedler();
+    }, [fetchSluttsedler]);
+
+    const handleSign = async (sluttseddelId: number) => {
+        setSigningId(sluttseddelId);
+        try {
+            await apiClient.post(`/sluttsedler/${sluttseddelId}/signer-fisker`);
+            await fetchSluttsedler();
+        } catch (err) {
+            console.error('Failed to sign sluttseddel', err);
+            alert('En feil oppstod under signering.');
+        } finally {
+            setSigningId(null);
+        }
+    };
+
+    const isSkipper = roles.includes('rederi-skipper');
 
     const renderContent = () => {
         if (isLoading) {
@@ -54,9 +77,9 @@ const DashboardPage: React.FC = () => {
                     <tr>
                         <th>Dato</th>
                         <th>Fartøy</th>
-                        <th>Leveringssted</th>
-                        <th>Fiskeslag</th>
+                        <th>Status</th>
                         <th className={styles.alignRight}>Kvantum (kg)</th>
+                        <th>Handlinger</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,9 +87,19 @@ const DashboardPage: React.FC = () => {
                         <tr key={seddel.id}>
                             <td>{seddel.landingsdato}</td>
                             <td>{seddel.fartoyNavn}</td>
-                            <td>{seddel.leveringssted}</td>
-                            <td>{seddel.fiskeslag}</td>
+                            <td><StatusBadge status={seddel.status} /></td>
                             <td className={styles.alignRight}>{seddel.kvantum.toLocaleString('nb-NO')}</td>
+                            <td>
+                                {seddel.status === 'KLADD' && isSkipper && (
+                                    <Button
+                                        variant="secondary"
+                                        onClick={() => handleSign(seddel.id)}
+                                        disabled={signingId === seddel.id}
+                                    >
+                                        {signingId === seddel.id ? 'Signerer...' : 'Signer'}
+                                    </Button>
+                                )}
+                            </td>
                         </tr>
                     ))}
                 </tbody>
@@ -78,7 +111,7 @@ const DashboardPage: React.FC = () => {
         <div className={styles.container}>
             <header className={styles.header}>
                 <h1 className={styles.title}>Mine Sluttsedler</h1>
-                {!permissionsLoading && canCreateSluttseddel && (
+                {!rolesLoading && isSkipper && (
                     <Button to="/dashboard/ny-sluttseddel">
                         Registrer ny sluttseddel
                     </Button>

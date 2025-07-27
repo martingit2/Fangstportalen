@@ -12,24 +12,15 @@ if (!domain || !clientId || !audience) {
   throw new Error("Auth0 environment variables are not set. Please check your .env file.");
 }
 
-const onRedirectCallback = (appState: any) => {
-  window.history.replaceState(
-    {},
-    document.title,
-    appState?.returnTo || window.location.pathname
-  );
-};
-
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Auth0Provider
       domain={domain}
       clientId={clientId}
       authorizationParams={{
-        redirect_uri: window.location.origin + '/dashboard',
+        redirect_uri: `${window.location.origin}/dashboard`, // VI GÅR TILBAKE TIL DENNE
         audience: audience,
       }}
-      onRedirectCallback={onRedirectCallback}
     >
       <App />
     </Auth0Provider>

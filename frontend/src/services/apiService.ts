@@ -15,7 +15,7 @@ export const setupInterceptors = (getAccessTokenSilently: (options?: GetTokenSil
                 const token = await getAccessTokenSilently({
                     authorizationParams: {
                         audience: import.meta.env.VITE_AUTH0_AUDIENCE,
-                    },
+                    }
                 });
                 config.headers.Authorization = `Bearer ${token}`;
             } catch (error) {

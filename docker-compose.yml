@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fangstportalen-postgres
+    environment:
+      POSTGRES_USER: fangstportalen
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: fangstportalen
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fangstportalen-net
+
+  backend:
+    container_name: fangstportalen-backend
+    build:
+      context: ./service-handel
+    depends_on:
+      - postgres
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/fangstportalen
+      - SPRING_DATASOURCE_USERNAME=fangstportalen
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI}
+    ports:
+      - "8080:8080"
+    networks:
+      - fangstportalen-net
+
+  frontend:
+    container_name: fangstportalen-frontend
+    build:
+      context: ./frontend
+      args:
+        - VITE_AUTH0_DOMAIN=${VITE_AUTH0_DOMAIN}
+        - VITE_AUTH0_CLIENT_ID=${VITE_AUTH0_CLIENT_ID}
+        - VITE_AUTH0_AUDIENCE=${VITE_AUTH0_AUDIENCE}
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - fangstportalen-net
+
+networks:
+  fangstportalen-net:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -7,3 +7,5 @@
 
 # Maven/Java build output
 /target/
+
+.env
