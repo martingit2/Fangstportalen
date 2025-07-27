@@ -17,9 +17,9 @@ public class FangstmeldingService {
     private final FangstmeldingRepository fangstmeldingRepository;
 
     @Transactional
-    public Fangstmelding createFangstmelding(CreateFangstmeldingRequestDto dto, String skipperBrukerId) {
+    public Fangstmelding createFangstmelding(CreateFangstmeldingRequestDto dto, Long selgerOrganisasjonId) {
         Fangstmelding fangstmelding = Fangstmelding.builder()
-                .skipperBrukerId(skipperBrukerId)
+                .selgerOrganisasjonId(selgerOrganisasjonId)
                 .fartoyNavn(dto.fartoyNavn())
                 .leveringssted(dto.leveringssted())
                 .tilgjengeligFraDato(dto.tilgjengeligFraDato())
@@ -59,7 +59,7 @@ public class FangstmeldingService {
 
         return new FangstmeldingResponseDto(
                 fangstmelding.getId(),
-                fangstmelding.getSkipperBrukerId(),
+                null,
                 fangstmelding.getFartoyNavn(),
                 fangstmelding.getStatus().name(),
                 fangstmelding.getLeveringssted(),

@@ -21,6 +21,7 @@ public class SecurityConfig {
         http
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/v1/internal/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -32,6 +33,7 @@ public class SecurityConfig {
 
     private JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        // Denne er nå en fallback. Rollene kommer fra den nye claimen.
         grantedAuthoritiesConverter.setAuthoritiesClaimName("https://fangstportalen.no/roles");
         grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
 

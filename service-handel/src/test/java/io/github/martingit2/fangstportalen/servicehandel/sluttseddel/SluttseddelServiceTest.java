@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -28,14 +29,16 @@ class SluttseddelServiceTest {
 
     @Test
     void createSluttseddel_mapsAndSavesCorrectly() {
-        String userId = "auth0|test-user";
+        Long selgerOrganisasjonId = 1L;
+        Long kjoperOrganisasjonId = 2L;
         CreateSluttseddelRequestDto request = new CreateSluttseddelRequestDto(
                 LocalDate.now(), "MS Testbåt", "Testvik", "Torsk", 1500.5
         );
 
-        Sluttseddel savedEntity = Sluttseddel.builder()
-                .id(1L)
-                .userId(userId)
+        Sluttseddel sluttseddelToSave = Sluttseddel.builder()
+                .selgerOrganisasjonId(selgerOrganisasjonId)
+                .kjoperOrganisasjonId(kjoperOrganisasjonId)
+                .status(SluttseddelStatus.KLADD)
                 .landingsdato(request.landingsdato())
                 .fartoyNavn(request.fartoyNavn())
                 .leveringssted(request.leveringssted())
@@ -43,29 +46,33 @@ class SluttseddelServiceTest {
                 .kvantum(request.kvantum())
                 .build();
 
+        // Simulerer at save-metoden returnerer entiteten med en ID
+        Sluttseddel savedEntity = sluttseddelToSave;
+        savedEntity.setId(1L);
+
         when(sluttseddelRepository.save(any(Sluttseddel.class))).thenReturn(savedEntity);
 
-        SluttseddelResponseDto response = sluttseddelService.createSluttseddel(request, userId);
+        SluttseddelResponseDto response = sluttseddelService.createSluttseddel(request, selgerOrganisasjonId, kjoperOrganisasjonId);
 
         assertNotNull(response);
         assertEquals(1L, response.id());
         assertEquals("MS Testbåt", response.fartoyNavn());
-        assertEquals(userId, response.userId());
         verify(sluttseddelRepository).save(any(Sluttseddel.class));
     }
 
     @Test
-    void getMineSluttsedler_returnsCorrectlyMappedDtosForUser() {
-        String userId = "auth0|test-user";
-        Sluttseddel seddel1 = Sluttseddel.builder().id(1L).userId(userId).fartoyNavn("Båt 1").landingsdato(LocalDate.now()).build();
-        Sluttseddel seddel2 = Sluttseddel.builder().id(2L).userId(userId).fartoyNavn("Båt 2").landingsdato(LocalDate.now()).build();
+    void getMineSluttsedler_returnsCorrectlyMappedDtosForOrganization() {
+        Long selgerOrganisasjonId = 1L;
+        Sluttseddel seddel1 = Sluttseddel.builder().id(1L).selgerOrganisasjonId(selgerOrganisasjonId).fartoyNavn("Båt 1").landingsdato(LocalDate.now()).fiskeslag("Torsk").kvantum(100.0).status(SluttseddelStatus.KLADD).build();
+        Sluttseddel seddel2 = Sluttseddel.builder().id(2L).selgerOrganisasjonId(selgerOrganisasjonId).fartoyNavn("Båt 2").landingsdato(LocalDate.now()).fiskeslag("Sei").kvantum(200.0).status(SluttseddelStatus.KLADD).build();
 
-        when(sluttseddelRepository.findByUserIdOrderByLandingsdatoDesc(userId)).thenReturn(List.of(seddel1, seddel2));
+        when(sluttseddelRepository.findBySelgerOrganisasjonIdOrderByLandingsdatoDesc(selgerOrganisasjonId)).thenReturn(List.of(seddel1, seddel2));
 
-        List<SluttseddelResponseDto> responses = sluttseddelService.getMineSluttsedler(userId);
+        List<SluttseddelResponseDto> responses = sluttseddelService.getMineSluttsedler(selgerOrganisasjonId);
 
         assertNotNull(responses);
         assertEquals(2, responses.size());
         assertEquals("Båt 1", responses.get(0).fartoyNavn());
+        verify(sluttseddelRepository).findBySelgerOrganisasjonIdOrderByLandingsdatoDesc(selgerOrganisasjonId);
     }
 }

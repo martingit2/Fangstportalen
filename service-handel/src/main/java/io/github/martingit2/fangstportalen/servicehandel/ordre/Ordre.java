@@ -29,8 +29,8 @@ public class Ordre {
     @Column(name = "fangstmelding_id")
     private Long fangstmeldingId;
 
-    @Column(name = "kjoper_bruker_id", nullable = false)
-    private String kjoperBrukerId;
+    @Column(name = "kjoper_organisasjon_id", nullable = false)
+    private Long kjoperOrganisasjonId;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

@@ -8,7 +8,7 @@ import java.util.List;
 @Repository
 public interface SluttseddelRepository extends JpaRepository<Sluttseddel, Long> {
 
-    List<Sluttseddel> findByUserIdOrderByLandingsdatoDesc(String userId);
+    List<Sluttseddel> findBySelgerOrganisasjonIdOrderByLandingsdatoDesc(Long selgerOrganisasjonId);
 
     List<Sluttseddel> findByStatusOrderByLandingsdatoDesc(SluttseddelStatus status);
 }

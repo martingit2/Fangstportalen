@@ -1,5 +1,6 @@
 package io.github.martingit2.fangstportalen.servicehandel.ordre;
 
+import io.github.martingit2.fangstportalen.servicehandel.config.UserPrincipal;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.CreateOrdreRequestDto;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.OrdreResponseDto;
 import jakarta.validation.Valid;
@@ -27,15 +28,16 @@ public class OrdreController {
     private static final Logger logger = LoggerFactory.getLogger(OrdreController.class);
 
     @PostMapping("/fra-fangstmelding")
-    @PreAuthorize("hasRole('fiskebruk-innkjoper')")
+    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
     public ResponseEntity<OrdreResponseDto> createOrdreFromFangstmelding(
             @RequestBody Map<String, Long> payload,
             @AuthenticationPrincipal Jwt jwt) {
 
+        UserPrincipal principal = new UserPrincipal(jwt);
         Long fangstmeldingId = payload.get("fangstmeldingId");
-        String kjoperBrukerId = jwt.getSubject();
+        Long kjoperOrganisasjonId = principal.getOrganisasjonId();
 
-        OrdreResponseDto createdOrdre = ordreService.createOrdreFromFangstmelding(fangstmeldingId, kjoperBrukerId);
+        OrdreResponseDto createdOrdre = ordreService.createOrdreFromFangstmelding(fangstmeldingId, kjoperOrganisasjonId);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath().path("/api/v1/ordrer/{id}")
@@ -45,17 +47,18 @@ public class OrdreController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('fiskebruk-innkjoper')")
+    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
     public ResponseEntity<?> createOrdre(
             @Valid @RequestBody CreateOrdreRequestDto dto,
             @AuthenticationPrincipal Jwt jwt) {
 
-        logger.info("Mottatt forespørsel om å opprette ordre for bruker: {}", jwt.getSubject());
+        UserPrincipal principal = new UserPrincipal(jwt);
+        logger.info("Mottatt forespørsel om å opprette ordre for organisasjon: {}", principal.getOrganisasjonId());
         logger.debug("Innkommende DTO: {}", dto);
 
         try {
-            String kjoperBrukerId = jwt.getSubject();
-            OrdreResponseDto createdOrdreDto = ordreService.createOrdre(dto, kjoperBrukerId);
+            Long kjoperOrganisasjonId = principal.getOrganisasjonId();
+            OrdreResponseDto createdOrdreDto = ordreService.createOrdre(dto, kjoperOrganisasjonId);
 
             URI location = ServletUriComponentsBuilder
                     .fromCurrentRequest()
@@ -73,10 +76,11 @@ public class OrdreController {
     }
 
     @GetMapping("/mine")
-    @PreAuthorize("hasRole('fiskebruk-innkjoper')")
+    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
     public ResponseEntity<List<OrdreResponseDto>> getMineOrdrer(@AuthenticationPrincipal Jwt jwt) {
-        String kjoperBrukerId = jwt.getSubject();
-        List<OrdreResponseDto> ordrer = ordreService.findMineOrdrer(kjoperBrukerId);
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long kjoperOrganisasjonId = principal.getOrganisasjonId();
+        List<OrdreResponseDto> ordrer = ordreService.findMineOrdrer(kjoperOrganisasjonId);
         return ResponseEntity.ok(ordrer);
     }
 }

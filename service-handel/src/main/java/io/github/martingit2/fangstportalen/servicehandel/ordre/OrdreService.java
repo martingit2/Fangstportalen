@@ -25,7 +25,7 @@ public class OrdreService {
     private static final Logger logger = LoggerFactory.getLogger(OrdreService.class);
 
     @Transactional
-    public OrdreResponseDto createOrdreFromFangstmelding(Long fangstmeldingId, String kjoperBrukerId) {
+    public OrdreResponseDto createOrdreFromFangstmelding(Long fangstmeldingId, Long kjoperOrganisasjonId) {
         Fangstmelding fangstmelding = fangstmeldingRepository.findById(fangstmeldingId)
                 .orElseThrow(() -> new EntityNotFoundException("Fangstmelding med ID " + fangstmeldingId + " finnes ikke."));
 
@@ -37,7 +37,7 @@ public class OrdreService {
         fangstmeldingRepository.save(fangstmelding);
 
         Ordre ordre = Ordre.builder()
-                .kjoperBrukerId(kjoperBrukerId)
+                .kjoperOrganisasjonId(kjoperOrganisasjonId)
                 .fangstmeldingId(fangstmelding.getId())
                 .status(OrdreStatus.AKTIV)
                 .forventetLeveringsdato(fangstmelding.getTilgjengeligFraDato())
@@ -49,6 +49,7 @@ public class OrdreService {
                     .forventetKvantum(fangstlinje.getEstimertKvantum())
                     .kvalitet(fangstlinje.getKvalitet())
                     .storrelse(fangstlinje.getStorrelse())
+                    .avtaltPrisPerKg(0.0) // LØSNINGEN: Setter en standardverdi for pris
                     .build();
             ordre.addOrdrelinje(ordrelinje);
         });
@@ -58,13 +59,12 @@ public class OrdreService {
         return convertToResponseDto(savedOrdre);
     }
 
-    // Eksisterende createOrdre forblir uendret for nå
     @Transactional
-    public OrdreResponseDto createOrdre(CreateOrdreRequestDto dto, String kjoperBrukerId) {
-        logger.info("OrdreService: Bygger ordre-entitet for bruker {}", kjoperBrukerId);
+    public OrdreResponseDto createOrdre(CreateOrdreRequestDto dto, Long kjoperOrganisasjonId) {
+        logger.info("OrdreService: Bygger ordre-entitet for organisasjon {}", kjoperOrganisasjonId);
 
         Ordre ordre = Ordre.builder()
-                .kjoperBrukerId(kjoperBrukerId)
+                .kjoperOrganisasjonId(kjoperOrganisasjonId)
                 .status(OrdreStatus.AKTIV)
                 .forventetLeveringsdato(dto.forventetLeveringsdato())
                 .build();
@@ -86,9 +86,9 @@ public class OrdreService {
         return convertToResponseDto(savedOrdre);
     }
 
-    public List<OrdreResponseDto> findMineOrdrer(String kjoperBrukerId) {
-        logger.info("Henter ordrer for bruker: {}", kjoperBrukerId);
-        List<Ordre> ordrer = ordreRepository.findByKjoperBrukerIdOrderByOpprettetTidspunktDesc(kjoperBrukerId);
+    public List<OrdreResponseDto> findMineOrdrer(Long kjoperOrganisasjonId) {
+        logger.info("Henter ordrer for organisasjon: {}", kjoperOrganisasjonId);
+        List<Ordre> ordrer = ordreRepository.findByKjoperOrganisasjonIdOrderByOpprettetTidspunktDesc(kjoperOrganisasjonId);
         return ordrer.stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());

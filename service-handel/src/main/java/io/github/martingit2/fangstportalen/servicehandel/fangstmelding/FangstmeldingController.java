@@ -1,5 +1,6 @@
 package io.github.martingit2.fangstportalen.servicehandel.fangstmelding;
 
+import io.github.martingit2.fangstportalen.servicehandel.config.UserPrincipal;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.dto.CreateFangstmeldingRequestDto;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.dto.FangstmeldingResponseDto;
 import jakarta.validation.Valid;
@@ -22,13 +23,15 @@ public class FangstmeldingController {
     private final FangstmeldingService fangstmeldingService;
 
     @PostMapping
-    @PreAuthorize("hasRole('rederi-skipper')")
+    @PreAuthorize("hasRole('REDERI_SKIPPER')")
     public ResponseEntity<Fangstmelding> createFangstmelding(
             @Valid @RequestBody CreateFangstmeldingRequestDto dto,
             @AuthenticationPrincipal Jwt jwt) {
 
-        String skipperBrukerId = jwt.getSubject();
-        Fangstmelding createdFangstmelding = fangstmeldingService.createFangstmelding(dto, skipperBrukerId);
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long selgerOrganisasjonId = principal.getOrganisasjonId();
+
+        Fangstmelding createdFangstmelding = fangstmeldingService.createFangstmelding(dto, selgerOrganisasjonId);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -40,7 +43,7 @@ public class FangstmeldingController {
     }
 
     @GetMapping("/aktive")
-    @PreAuthorize("hasRole('fiskebruk-innkjoper')")
+    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
     public ResponseEntity<List<FangstmeldingResponseDto>> getAktiveFangstmeldinger() {
         List<FangstmeldingResponseDto> aktiveMeldinger = fangstmeldingService.findAktiveFangstmeldinger();
         return ResponseEntity.ok(aktiveMeldinger);

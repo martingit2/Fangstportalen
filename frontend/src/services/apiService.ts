@@ -2,6 +2,7 @@ import axios from 'axios';
 import type { GetTokenSilentlyOptions } from '@auth0/auth0-react';
 import type { OrdreResponseDto } from '../types/ordre';
 import type { FangstmeldingResponseDto } from '../types/fangstmelding';
+import type { FangstmeldingFormData } from '../schemas/fangstmeldingSchema';
 import type { AxiosResponse } from 'axios';
 
 const apiClient = axios.create({
@@ -42,6 +43,17 @@ export const getAktiveFangstmeldinger = (): Promise<AxiosResponse<FangstmeldingR
 
 export const createOrdreFromFangstmelding = (fangstmeldingId: number): Promise<AxiosResponse<OrdreResponseDto>> => {
     return apiClient.post('/ordrer/fra-fangstmelding', { fangstmeldingId });
+};
+
+export const createFangstmelding = (data: FangstmeldingFormData): Promise<AxiosResponse> => {
+    const payload = {
+        ...data,
+        fangstlinjer: data.fangstlinjer.map(linje => ({
+            ...linje,
+            estimertKvantum: parseFloat(linje.estimertKvantum),
+        })),
+    };
+    return apiClient.post('/fangstmeldinger', payload);
 };
 
 export default apiClient;

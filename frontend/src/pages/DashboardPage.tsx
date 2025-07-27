@@ -1,103 +1,30 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import apiClient, { getMineOrdrer, getAktiveFangstmeldinger, createOrdreFromFangstmelding } from '../services/apiService';
+import { getMineOrdrer, getAktiveFangstmeldinger, createOrdreFromFangstmelding } from '../services/apiService';
 import styles from './DashboardPage.module.css';
 import Button from '../components/ui/Button';
-import StatusBadge from '../components/ui/StatusBadge';
 import { useRoles } from '../hooks/usePermissions';
 import type { OrdreResponseDto } from '../types/ordre';
 import type { FangstmeldingResponseDto } from '../types/fangstmelding';
 
-type SluttseddelStatus = 'KLADD' | 'SIGNERT_AV_FISKER' | 'BEKREFTET_AV_MOTTAK' | 'AVVIST';
-
-interface Sluttseddel {
-    id: number;
-    landingsdato: string;
-    fartoyNavn: string;
-    leveringssted: string;
-    fiskeslag: string;
-    kvantum: number;
-    status: SluttseddelStatus;
-}
-
 const SkipperDashboard: React.FC = () => {
-    const [sluttsedler, setSluttsedler] = useState<Sluttseddel[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [signingId, setSigningId] = useState<number | null>(null);
+    const [isLoading] = useState(false);
+    const [error] = useState<string | null>(null);
     const { roles, isLoading: rolesLoading } = useRoles();
 
-    const fetchSluttsedler = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            setError(null);
-            const response = await apiClient.get<Sluttseddel[]>('/sluttsedler/mine');
-            setSluttsedler(response.data);
-        } catch (err) {
-            setError('Kunne ikke hente sluttsedler. Prøv igjen senere.');
-            console.error(err);
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchSluttsedler();
-    }, [fetchSluttsedler]);
-
-    const handleSign = async (sluttseddelId: number) => {
-        setSigningId(sluttseddelId);
-        try {
-            await apiClient.post(`/sluttsedler/${sluttseddelId}/signer-fisker`);
-            await fetchSluttsedler();
-        } catch (err) {
-            alert('En feil oppstod under signering.');
-            console.error(err);
-        } finally {
-            setSigningId(null);
-        }
-    };
+    const isSkipper = roles.includes('REDERI_SKIPPER');
     
-    const isSkipper = roles.includes('rederi-skipper');
-
     const renderContent = () => {
-        if (isLoading) return <div className={styles.loading}>Laster dine sluttsedler...</div>;
+        if (isLoading) return <div className={styles.loading}>Laster...</div>;
         if (error) return <div className={styles.error}>{error}</div>;
-        if (sluttsedler.length === 0) return <div className={styles.empty}>Du har ingen registrerte sluttsedler.</div>;
-        
-        return (
-            <table className={styles.table}>
-                <thead>
-                    <tr>
-                        <th>Dato</th><th>Fartøy</th><th>Status</th><th className={styles.alignRight}>Kvantum (kg)</th><th>Handlinger</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sluttsedler.map((seddel) => (
-                        <tr key={seddel.id}>
-                            <td>{seddel.landingsdato}</td>
-                            <td>{seddel.fartoyNavn}</td>
-                            <td><StatusBadge status={seddel.status} /></td>
-                            <td className={styles.alignRight}>{seddel.kvantum.toLocaleString('nb-NO')}</td>
-                            <td>
-                                {seddel.status === 'KLADD' && isSkipper && (
-                                    <Button variant="secondary" onClick={() => handleSign(seddel.id)} disabled={signingId === seddel.id}>
-                                        {signingId === seddel.id ? 'Signerer...' : 'Signer'}
-                                    </Button>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        );
+        return <div className={styles.empty}>Du har ingen aktive fangstmeldinger.</div>;
     };
 
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <h1 className={styles.title}>Mine Sluttsedler</h1>
+                <h1 className={styles.title}>Mine Fangstmeldinger</h1>
                 {!rolesLoading && isSkipper && (
-                    <Button to="/ny-sluttseddel">Registrer ny sluttseddel</Button>
+                    <Button to="/ny-fangstmelding">Annonser ny fangst</Button>
                 )}
             </header>
             <div className={styles.content}>{renderContent()}</div>
@@ -230,11 +157,11 @@ const DashboardPage: React.FC = () => {
         return <div>Laster brukerinformasjon...</div>;
     }
 
-    if (roles.includes('fiskebruk-innkjoper')) {
+    if (roles.includes('FISKEBRUK_INNKJOPER') || roles.includes('FISKEBRUK_ADMIN')) {
         return <InnkjoperDashboard />;
     }
 
-    if (roles.includes('rederi-skipper')) {
+    if (roles.includes('REDERI_SKIPPER') || roles.includes('REDERI_ADMIN')) {
         return <SkipperDashboard />;
     }
 

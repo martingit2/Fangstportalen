@@ -5,9 +5,9 @@ import DashboardPage from './pages/DashboardPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { setupInterceptors } from './services/apiService';
 import { useEffect } from 'react';
-import NySluttseddelPage from './pages/NySluttseddelPage';
 import AppLayout from './components/AppLayout';
 import NyOrdrePage from './pages/NyOrdrePage';
+import NyFangstmeldingPage from './pages/NyFangstmeldingPage';
 
 function App() {
   const { loginWithRedirect, getAccessTokenSilently } = useAuth0();
@@ -28,8 +28,8 @@ function App() {
             <Route path="/statistikk" element={<div>Statistikk Side (TODO)</div>} />
             <Route path="/kart" element={<div>Kart Side (TODO)</div>} />
             <Route path="/innstillinger" element={<div>Innstillinger Side (TODO)</div>} />
-            <Route path="/ny-sluttseddel" element={<NySluttseddelPage />} />
             <Route path="/ny-ordre" element={<NyOrdrePage />} />
+            <Route path="/ny-fangstmelding" element={<NyFangstmeldingPage />} />
           </Route>
         </Route>
       </Routes>

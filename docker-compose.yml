@@ -19,12 +19,14 @@ services:
       context: ./service-handel
     depends_on:
       - postgres
+    env_file:
+      - .env
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/fangstportalen
       - SPRING_DATASOURCE_USERNAME=fangstportalen
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI}
+      - SPRING_PROFILES_ACTIVE=dev
     ports:
       - "8080:8080"
     networks:

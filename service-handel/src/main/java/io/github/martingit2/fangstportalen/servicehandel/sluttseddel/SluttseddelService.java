@@ -19,9 +19,10 @@ public class SluttseddelService {
     private final SluttseddelRepository sluttseddelRepository;
 
     @Transactional
-    public SluttseddelResponseDto createSluttseddel(CreateSluttseddelRequestDto requestDto, String userId) {
+    public SluttseddelResponseDto createSluttseddel(CreateSluttseddelRequestDto requestDto, Long selgerOrganisasjonId, Long kjoperOrganisasjonId) {
         Sluttseddel sluttseddel = Sluttseddel.builder()
-                .userId(userId)
+                .selgerOrganisasjonId(selgerOrganisasjonId)
+                .kjoperOrganisasjonId(kjoperOrganisasjonId)
                 .status(SluttseddelStatus.KLADD)
                 .landingsdato(requestDto.landingsdato())
                 .fartoyNavn(requestDto.fartoyNavn())
@@ -35,17 +36,18 @@ public class SluttseddelService {
     }
 
     @Transactional
-    public SluttseddelResponseDto signerSomFisker(Long sluttseddelId, String userId) {
+    public SluttseddelResponseDto signerSomFisker(Long sluttseddelId, Long selgerOrganisasjonId, String skipperBrukerId) {
         Sluttseddel sluttseddel = findSluttseddelById(sluttseddelId);
 
-        if (!sluttseddel.getUserId().equals(userId)) {
-            throw new AccessDeniedException("Du har ikke tilgang til å signere denne sluttseddelen.");
+        if (!sluttseddel.getSelgerOrganisasjonId().equals(selgerOrganisasjonId)) {
+            throw new AccessDeniedException("Din organisasjon har ikke tilgang til å signere denne sluttseddelen.");
         }
         if (sluttseddel.getStatus() != SluttseddelStatus.KLADD) {
             throw new IllegalStateException("Sluttseddelen kan kun signeres når den har status KLADD.");
         }
 
         sluttseddel.setStatus(SluttseddelStatus.SIGNERT_AV_FISKER);
+        sluttseddel.setSkipperSignaturBrukerId(skipperBrukerId);
         sluttseddel.setFiskerSignaturTidspunkt(LocalDateTime.now());
 
         Sluttseddel savedSluttseddel = sluttseddelRepository.save(sluttseddel);
@@ -53,23 +55,26 @@ public class SluttseddelService {
     }
 
     @Transactional
-    public SluttseddelResponseDto bekreftMottak(Long sluttseddelId, String mottakUserId) {
+    public SluttseddelResponseDto bekreftMottak(Long sluttseddelId, Long kjoperOrganisasjonId, String mottakBrukerId) {
         Sluttseddel sluttseddel = findSluttseddelById(sluttseddelId);
 
+        if (!sluttseddel.getKjoperOrganisasjonId().equals(kjoperOrganisasjonId)) {
+            throw new AccessDeniedException("Din organisasjon kan ikke bekrefte mottak for denne sluttseddelen.");
+        }
         if (sluttseddel.getStatus() != SluttseddelStatus.SIGNERT_AV_FISKER) {
             throw new IllegalStateException("Sluttseddelen kan kun bekreftes når den er signert av fisker.");
         }
 
         sluttseddel.setStatus(SluttseddelStatus.BEKREFTET_AV_MOTTAK);
-        sluttseddel.setMottakSignaturUserId(mottakUserId);
+        sluttseddel.setMottakSignaturUserId(mottakBrukerId);
         sluttseddel.setMottakSignaturTidspunkt(LocalDateTime.now());
 
         Sluttseddel savedSluttseddel = sluttseddelRepository.save(sluttseddel);
         return convertToDto(savedSluttseddel);
     }
 
-    public List<SluttseddelResponseDto> getMineSluttsedler(String userId) {
-        return sluttseddelRepository.findByUserIdOrderByLandingsdatoDesc(userId).stream()
+    public List<SluttseddelResponseDto> getMineSluttsedler(Long selgerOrganisasjonId) {
+        return sluttseddelRepository.findBySelgerOrganisasjonIdOrderByLandingsdatoDesc(selgerOrganisasjonId).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -88,7 +93,7 @@ public class SluttseddelService {
     private SluttseddelResponseDto convertToDto(Sluttseddel sluttseddel) {
         return new SluttseddelResponseDto(
                 sluttseddel.getId(),
-                sluttseddel.getUserId(),
+                sluttseddel.getSkipperSignaturBrukerId(),
                 sluttseddel.getStatus(),
                 sluttseddel.getLandingsdato(),
                 sluttseddel.getFartoyNavn(),
@@ -96,9 +101,9 @@ public class SluttseddelService {
                 sluttseddel.getFiskeslag(),
                 sluttseddel.getKvantum(),
                 sluttseddel.getOpprettetTidspunkt(),
-                sluttseddel.getFiskerSignaturTidspunkt(), // Kan være null, det er OK
-                sluttseddel.getMottakSignaturUserId(),   // Kan være null, det er OK
-                sluttseddel.getMottakSignaturTidspunkt() // Kan være null, det er OK
+                sluttseddel.getFiskerSignaturTidspunkt(),
+                sluttseddel.getMottakSignaturUserId(),
+                sluttseddel.getMottakSignaturTidspunkt()
         );
     }
 }

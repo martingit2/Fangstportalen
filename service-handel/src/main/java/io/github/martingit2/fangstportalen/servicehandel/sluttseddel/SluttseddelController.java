@@ -1,5 +1,6 @@
 package io.github.martingit2.fangstportalen.servicehandel.sluttseddel;
 
+import io.github.martingit2.fangstportalen.servicehandel.config.UserPrincipal;
 import io.github.martingit2.fangstportalen.servicehandel.sluttseddel.dto.CreateSluttseddelRequestDto;
 import io.github.martingit2.fangstportalen.servicehandel.sluttseddel.dto.SluttseddelResponseDto;
 import jakarta.validation.Valid;
@@ -16,6 +17,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/sluttsedler")
@@ -26,54 +28,70 @@ public class SluttseddelController {
     private static final Logger logger = LoggerFactory.getLogger(SluttseddelController.class);
 
     @PostMapping
-    @PreAuthorize("hasRole('rederi-skipper')")
+    @PreAuthorize("hasRole('REDERI_SKIPPER')")
     public ResponseEntity<SluttseddelResponseDto> createSluttseddel(
             @Valid @RequestBody CreateSluttseddelRequestDto requestDto,
             @AuthenticationPrincipal Jwt jwt) {
 
-        try {
-            logger.info("Forsøker å opprette sluttseddel for bruker: {}", jwt.getSubject());
-            String userId = jwt.getSubject();
-            SluttseddelResponseDto createdSluttseddel = sluttseddelService.createSluttseddel(requestDto, userId);
-            URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(createdSluttseddel.id()).toUri();
-            logger.info("Sluttseddel opprettet med ID: {}", createdSluttseddel.id());
-            return ResponseEntity.created(location).body(createdSluttseddel);
-        } catch (Exception e) {
-            logger.error("!!! KRITISK FEIL UNDER OPPRETTELSE AV SLUTTSEDDEL !!!", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long selgerOrganisasjonId = principal.getOrganisasjonId();
+
+        // TODO: Må hente kjoperOrganisasjonId fra f.eks. en Ordre i fremtiden
+        // For nå, setter vi en dummy-verdi eller kaster en feil
+        Long dummyKjoperOrganisasjonId = 2L;
+
+        logger.info("Forsøker å opprette sluttseddel for organisasjon: {}", selgerOrganisasjonId);
+
+        SluttseddelResponseDto createdSluttseddel = sluttseddelService.createSluttseddel(requestDto, selgerOrganisasjonId, dummyKjoperOrganisasjonId);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(createdSluttseddel.id()).toUri();
+        logger.info("Sluttseddel opprettet med ID: {}", createdSluttseddel.id());
+
+        return ResponseEntity.created(location).body(createdSluttseddel);
     }
 
     @PostMapping("/{id}/signer-fisker")
-    @PreAuthorize("hasRole('rederi-skipper')")
+    @PreAuthorize("hasRole('REDERI_SKIPPER')")
     public ResponseEntity<SluttseddelResponseDto> signerSomFisker(
             @PathVariable Long id,
             @AuthenticationPrincipal Jwt jwt) {
-        String userId = jwt.getSubject();
-        SluttseddelResponseDto signertSluttseddel = sluttseddelService.signerSomFisker(id, userId);
+
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long selgerOrganisasjonId = principal.getOrganisasjonId();
+        String skipperBrukerId = jwt.getSubject();
+
+        SluttseddelResponseDto signertSluttseddel = sluttseddelService.signerSomFisker(id, selgerOrganisasjonId, skipperBrukerId);
         return ResponseEntity.ok(signertSluttseddel);
     }
 
     @PostMapping("/{id}/bekreft-mottak")
-    @PreAuthorize("hasAuthority('confirm:sluttseddel:mottak')")
+    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
     public ResponseEntity<SluttseddelResponseDto> bekreftMottak(
             @PathVariable Long id,
             @AuthenticationPrincipal Jwt jwt) {
-        String mottakUserId = jwt.getSubject();
-        SluttseddelResponseDto bekreftetSluttseddel = sluttseddelService.bekreftMottak(id, mottakUserId);
+
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long kjoperOrganisasjonId = principal.getOrganisasjonId();
+        String mottakBrukerId = jwt.getSubject();
+
+        SluttseddelResponseDto bekreftetSluttseddel = sluttseddelService.bekreftMottak(id, kjoperOrganisasjonId, mottakBrukerId);
         return ResponseEntity.ok(bekreftetSluttseddel);
     }
 
     @GetMapping("/mine")
+    @PreAuthorize("hasRole('REDERI_SKIPPER') or hasRole('REDERI_ADMIN')")
     public ResponseEntity<List<SluttseddelResponseDto>> getMineSluttsedler(@AuthenticationPrincipal Jwt jwt) {
-        String userId = jwt.getSubject();
-        List<SluttseddelResponseDto> sluttsedler = sluttseddelService.getMineSluttsedler(userId);
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long selgerOrganisasjonId = principal.getOrganisasjonId();
+
+        List<SluttseddelResponseDto> sluttsedler = sluttseddelService.getMineSluttsedler(selgerOrganisasjonId);
         return ResponseEntity.ok(sluttsedler);
     }
 
     @GetMapping("/mottatt")
-    @PreAuthorize("hasAuthority('read:sluttsedler:mottak')")
+    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER') or hasRole('FISKEBRUK_ADMIN')")
     public ResponseEntity<List<SluttseddelResponseDto>> getMottatteSluttsedler() {
+        // TODO: Denne må filtreres på innlogget brukers organisasjon
         List<SluttseddelResponseDto> sluttsedler = sluttseddelService.getMottatteSluttsedler();
         return ResponseEntity.ok(sluttsedler);
     }

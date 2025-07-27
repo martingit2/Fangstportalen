@@ -24,8 +24,8 @@ public class Fangstmelding {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "skipper_bruker_id", nullable = false, updatable = false)
-    private String skipperBrukerId;
+    @Column(name = "selger_organisasjon_id", nullable = false, updatable = false)
+    private Long selgerOrganisasjonId;
 
     @Column(nullable = false)
     private String fartoyNavn;

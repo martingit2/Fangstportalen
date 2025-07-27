@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "sluttsedler", indexes = {
-        @Index(name = "idx_sluttseddel_userid", columnList = "userId")
+        @Index(name = "idx_sluttseddel_selger_org_id", columnList = "selgerOrganisasjonId"),
+        @Index(name = "idx_sluttseddel_kjoper_org_id", columnList = "kjoperOrganisasjonId")
 })
 @Data
 @NoArgsConstructor
@@ -24,8 +25,11 @@ public class Sluttseddel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false, updatable = false)
-    private String userId;
+    @Column(name = "selger_organisasjon_id", nullable = false, updatable = false)
+    private Long selgerOrganisasjonId;
+
+    @Column(name = "kjoper_organisasjon_id", nullable = false, updatable = false)
+    private Long kjoperOrganisasjonId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -49,6 +53,9 @@ public class Sluttseddel {
     @CreationTimestamp
     @Column(name = "opprettet_tidspunkt", nullable = false, updatable = false)
     private LocalDateTime opprettetTidspunkt;
+
+    @Column(name = "skipper_signatur_bruker_id")
+    private String skipperSignaturBrukerId;
 
     @Column(name = "fisker_signatur_tidspunkt")
     private LocalDateTime fiskerSignaturTidspunkt;
