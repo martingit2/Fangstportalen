@@ -1,13 +1,33 @@
-// src/App.tsx
-
 import { useAuth0 } from '@auth0/auth0-react';
-import LandingPage from './pages/LandingPage';  
-
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
+import DashboardPage from './pages/DashboardPage';
+import ProtectedRoute from './components/ProtectedRoute';
+import { setupInterceptors } from './services/apiService';
+import { useEffect } from 'react';
+import NySluttseddelPage from './pages/NySluttseddelPage';
+import AuthenticatedLayout from './components/AuthenticatedLayout';
 
 function App() {
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
-  if (!isAuthenticated) {
-    return <LandingPage onLogin={() => loginWithRedirect()} />;
-  
-  }}
+  const { loginWithRedirect, getAccessTokenSilently } = useAuth0();
+
+  useEffect(() => {
+    setupInterceptors(getAccessTokenSilently);
+  }, [getAccessTokenSilently]);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage onLogin={() => loginWithRedirect()} />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AuthenticatedLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dashboard/ny-sluttseddel" element={<NySluttseddelPage />} />
+          </Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
 export default App;

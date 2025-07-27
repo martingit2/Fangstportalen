@@ -1,0 +1,17 @@
+.layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f9fafb;
+}
+
+.mainContent {
+    flex-grow: 1;
+    padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .mainContent {
+        padding: 2rem;
+    }
+}
