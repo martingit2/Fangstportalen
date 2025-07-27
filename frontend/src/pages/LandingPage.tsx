@@ -1,8 +1,12 @@
 import React from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import styles from './LandingPage.module.css';
 import heroImage from '../assets/images/fisk1.jpg';
-import Footer from '../components/Footer';
+import FadeIn from '../components/FadeIn';
+import FeaturesSection from '../components/FeaturesSection';
+import DisclaimerSection from '../components/DisclaimerSection';
 
 interface LandingPageProps {
   onLogin: () => void;
@@ -12,28 +16,42 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
   return (
     <>
       <Navbar onLogin={onLogin} />
-      
-      <main className={styles.hero}>
-        <div className={styles.container}>
-          <div className={styles.heroContent}>
-            <h2 className={styles.heroTitle}>Digitaliser din fangst.</h2>
-            <p className={styles.heroSubtitle}>
-              En enklere og mer effektiv hverdag for den moderne fisker.
-              Få full kontroll fra styrhuset.
-            </p>
-            <ul className={styles.featureList}>
-              <li>✓ Sanntids markedsoversikt</li>
-              <li>✓ Digital sluttseddel på kaien</li>
-              <li>✓ Full analyse av din fangsthistorikk</li>
-            </ul>
-            <button className={styles.ctaButton} onClick={onLogin}>
-              Kom i gang gratis
-            </button>
-          </div>
-          <div className={styles.heroImageContainer}>
-            <img src={heroImage} alt="Fiskebåt på havet" className={styles.heroImage} />
+
+      <main>
+        <div className={styles.hero}>
+          <div className={styles.container}>
+            <FadeIn>
+              <div className={styles.heroContent}>
+                <h2 className={styles.heroTitle}>Digitaliser din fangst.</h2>
+                <p className={styles.heroSubtitle}>
+                  En enklere og mer effektiv hverdag for den moderne fisker.
+                  Få full kontroll fra styrhuset.
+                </p>
+                <ul className={styles.heroFeatureList}>
+                  <li>Sanntids markedsoversikt</li>
+                  <li>Digital sluttseddel på kaien</li>
+                  <li>Full analyse av din fangsthistorikk</li>
+                </ul>
+                <button className={styles.ctaButton} onClick={onLogin}>
+                  Kom i gang gratis
+                </button>
+              </div>
+            </FadeIn>
+            <FadeIn>
+              <div className={styles.heroImageContainer}>
+                <img src={heroImage} alt="Fiskebåt på havet" className={styles.heroImage} />
+              </div>
+            </FadeIn>
           </div>
         </div>
+
+        <FadeIn>
+          <FeaturesSection />
+        </FadeIn>
+
+        <FadeIn>
+          <DisclaimerSection />
+        </FadeIn>
       </main>
 
       <Footer />

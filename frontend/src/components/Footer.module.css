@@ -1,7 +1,8 @@
+/* --- Mobile-First Stiler (Standard) --- */
 .footer {
-  background-color: #f9fafb;
+  background-color: var(--footer-background);
   color: var(--text-color);
-  padding: 4rem 0 2rem 0;
+  padding: 3rem 0; /* Mer kompakt padding på mobil */
   font-size: 0.9rem;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
 }
@@ -10,25 +11,21 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
 }
 
 .mainFooter {
   display: flex;
-  justify-content: space-between;
-  gap: 4rem;
-  padding-bottom: 3rem;
-  border-bottom: 1px solid #eef2f6;
-}
-
-.brandSection {
-  flex-basis: 30%;
+  flex-direction: column; /* Stabler vertikalt på mobil */
+  gap: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+  text-align: center; /* Sentrerer brand-seksjonen */
 }
 
 .logo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  justify-content: center; /* Sentrerer logo-innhold */
+  margin-bottom: 1rem;
 }
 
 .logoImage {
@@ -42,16 +39,16 @@
 }
 
 .brandSection p {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   line-height: 1.6;
   opacity: 0.7;
 }
 
 .linksSection {
-  flex-basis: 65%;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-direction: column; /* Stabler link-kolonnene */
   gap: 2rem;
+  text-align: center;
 }
 
 .linkColumn h4 {
@@ -63,38 +60,43 @@
   letter-spacing: 0.5px;
   display: flex;
   align-items: center;
+  justify-content: center; /* Sentrerer overskrift */
   gap: 0.5rem;
 }
 
 .footerLink {
   display: block;
   margin-bottom: 0.75rem;
-  color: var(--primary-color); 
+  color: var(--text-color);
+  opacity: 0.7;
   text-decoration: none;
   font-weight: 500;
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out, color 0.2s ease-in-out, opacity 0.2s ease-in-out;
 }
 
 .footerLink:hover {
-  text-decoration: none; 
-  transform: translateX(3px); 
+  color: var(--primary-color);
+  opacity: 1;
 }
 
 .subFooter {
   padding-top: 2rem;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column; /* Stabler sub-footer */
   align-items: center;
+  gap: 1.5rem;
 }
 
 .copyright {
   font-size: 0.85rem;
   opacity: 0.5;
+  order: 3; /* Copyright kommer nederst */
 }
 
 .legalLinks {
   display: flex;
   gap: 1.5rem;
+  order: 2;
 }
 
 .legalLinks .footerLink {
@@ -105,14 +107,63 @@
 .socialLinks {
   display: flex;
   gap: 1.5rem;
+  order: 1; /* Sosiale ikoner kommer øverst i sub-footer */
 }
 
 .socialLinks a {
-  color: var(--primary-color);
+  color: var(--text-color);
+  opacity: 0.5;
   font-size: 1.25rem;
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out, color 0.2s ease-in-out, opacity 0.2s ease-in-out;
 }
 
 .socialLinks a:hover {
+  opacity: 1;
+  color: var(--primary-color);
   transform: translateY(-2px);
+}
+
+/* --- Desktop Stiler --- */
+@media (min-width: 900px) {
+  .footer {
+    padding: 4rem 0 2rem 0;
+  }
+  .container {
+    padding: 0 2rem;
+  }
+  .mainFooter {
+    flex-direction: row; /* Tilbake til horisontal layout */
+    text-align: left;
+    gap: 4rem;
+    padding-bottom: 3rem;
+  }
+  .logo {
+    justify-content: flex-start;
+  }
+  .linksSection {
+    flex-basis: 65%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    text-align: left;
+  }
+  .linkColumn h4 {
+    justify-content: flex-start;
+  }
+  .footerLink:hover {
+    transform: translateX(3px);
+  }
+  .subFooter {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .copyright {
+    order: 1;
+  }
+  .legalLinks {
+    order: 2;
+  }
+  .socialLinks {
+    order: 3;
+  }
 }
