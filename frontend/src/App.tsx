@@ -27,8 +27,8 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/sluttsedler" element={<div>Sluttsedler Side (TODO)</div>} />
-            <Route path="/ordrer" element={<div>Ordrer Side (TODO)</div>} />
+            <Route path="/ny-sluttseddel" element={<NySluttseddelPage />} />
+            <Route path="/ordrer" element={<OrdrerPage />} />
             <Route path="/statistikk" element={<div>Statistikk Side (TODO)</div>} />
             <Route path="/kart" element={<div>Kart Side (TODO)</div>} />
             <Route path="/innstillinger" element={<div>Innstillinger Side (TODO)</div>} />
@@ -36,8 +36,6 @@ function App() {
             <Route path="/ny-fangstmelding" element={<NyFangstmeldingPage />} />
             <Route path="/ordre/:id/rediger" element={<RedigerOrdrePage />} />
             <Route path="/fangstmelding/:id/rediger" element={<RedigerFangstmeldingPage />} />
-            <Route path="/ny-sluttseddel" element={<NySluttseddelPage />} />
-            <Route path="/ordrer" element={<OrdrerPage />} />
           </Route>
         </Route>
       </Routes>

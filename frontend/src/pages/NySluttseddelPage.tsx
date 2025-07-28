@@ -65,7 +65,10 @@ const NySluttseddelPage: React.FC = () => {
             <div className={styles.container}>
                 <h1 className={styles.title}>Opprett sluttseddel - Velg ordre</h1>
                 {avtalteOrdrer.length === 0 ? (
-                    <p>Du har ingen avtalte ordrer som venter på sluttseddel.</p>
+                    <div className={styles.emptyState}>
+                        <p>Du har ingen avtalte ordrer som venter på sluttseddel.</p>
+                        <Button variant="secondary" onClick={() => navigate('/dashboard')}>Tilbake til Markedsplass</Button>
+                    </div>
                 ) : (
                     <div className={styles.ordreList}>
                         {avtalteOrdrer.map(ordre => (
@@ -93,14 +96,14 @@ const NySluttseddelPage: React.FC = () => {
                     <h2 className={styles.subTitle}>Veid kvantum</h2>
                     {fields.map((field, index) => (
                         <div key={field.id} className={styles.kvantumLinje}>
-                            <span>{selectedOrdre.ordrelinjer[index].fiskeslag}</span>
+                            <label className={styles.fiskeslagLabel}>{selectedOrdre.ordrelinjer[index].fiskeslag}</label>
                             <input 
                                 type="text"
                                 inputMode="decimal"
                                 {...register(`linjer.${index}.faktiskKvantum`)}
                                 className={inputStyles.input}
                             />
-                             <span>kg</span>
+                             <span className={styles.enhetLabel}>kg</span>
                         </div>
                     ))}
                     

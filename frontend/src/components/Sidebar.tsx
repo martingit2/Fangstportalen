@@ -13,21 +13,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMenu }) => {
     return (
         <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
             <div className={styles.logoContainer}>
-                <h1 className={styles.logoText}>Fangstportalen</h1>
                 <img src={logoSrc} alt="Fangstportalen Logo" className={styles.logoImage} />
+                <h1 className={styles.logoText}>Fangstportalen</h1>
             </div>
             <nav className={styles.nav}>
                 <NavLink to="/dashboard" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink} onClick={onCloseMenu} end>
                     <FaTachometerAlt />
                     <span>Markedsplass</span>
                 </NavLink>
-                <NavLink to="/sluttsedler" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink} onClick={onCloseMenu}>
+                <NavLink to="/ny-sluttseddel" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink} onClick={onCloseMenu}>
                     <FaFileSignature />
-                    <span>Sluttsedler</span>
+                    <span>Opprett Sluttseddel</span>
                 </NavLink>
                 <NavLink to="/ordrer" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink} onClick={onCloseMenu}>
                     <FaShoppingCart />
-                    <span>Ordrer</span>
+                    <span>Mine Ordrer</span>
                 </NavLink>
                 <NavLink to="/statistikk" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink} onClick={onCloseMenu}>
                     <FaChartLine />

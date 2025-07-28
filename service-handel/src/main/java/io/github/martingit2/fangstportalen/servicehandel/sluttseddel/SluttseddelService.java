@@ -82,7 +82,7 @@ public class SluttseddelService {
                 sluttseddel.getOrdre().getId(),
                 sluttseddel.getStatus(),
                 sluttseddel.getLandingsdato(),
-                sluttseddel.getOrdre().getOrdrelinjer().stream().findFirst().map(ol -> "Fartøy info mangler").orElse(""), // Midlertidig
+                "Fartøyinfo fra Ordre", 
                 sluttseddel.getOrdre().getLeveringssted(),
                 linjeDtos,
                 sluttseddel.getOpprettetTidspunkt()

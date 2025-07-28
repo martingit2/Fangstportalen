@@ -60,9 +60,31 @@
 
 .kvantumLinje {
     display: grid;
-    grid-template-columns: 1fr 150px 50px;
+    grid-template-columns: 1fr 150px auto;
     gap: 1rem;
     align-items: center;
     margin-bottom: 1rem;
+}
+
+.fiskeslagLabel {
     font-weight: 500;
+}
+
+.enhetLabel {
+    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 3rem;
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.emptyState p {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.1rem;
+    color: var(--text-color-secondary);
 }
