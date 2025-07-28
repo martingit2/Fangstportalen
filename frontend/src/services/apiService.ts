@@ -101,7 +101,12 @@ export const getMineTeamMedlemmer = (): Promise<AxiosResponse<TeamMedlemResponse
 export const getMineSluttsedler = (): Promise<AxiosResponse<SluttseddelResponseDto[]>> => apiClient.get('/sluttsedler/mine');
 export const bekreftSluttseddel = (id: number): Promise<AxiosResponse<SluttseddelResponseDto>> => apiClient.patch(`/sluttsedler/${id}/bekreft`);
 export const giBud = (fangstmeldingId: number, data: BudFormData): Promise<AxiosResponse<BudResponseDto>> => {
-    const payload = { budPrisPerKg: parseFloat(data.budPrisPerKg) };
+    const payload = {
+        budLinjer: data.budLinjer.map(linje => ({
+            ...linje,
+            budPrisPerKg: parseFloat(linje.budPrisPerKg),
+        }))
+    };
     return apiClient.post(`/fangstmeldinger/${fangstmeldingId}/bud`, payload);
 };
 export const getBudForFangstmelding = (fangstmeldingId: number): Promise<AxiosResponse<BudResponseDto[]>> => apiClient.get(`/fangstmeldinger/${fangstmeldingId}/bud`);

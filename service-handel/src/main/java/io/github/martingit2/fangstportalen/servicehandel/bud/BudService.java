@@ -1,7 +1,9 @@
 package io.github.martingit2.fangstportalen.servicehandel.bud;
 
+import io.github.martingit2.fangstportalen.servicehandel.bud.dto.BudLinjeResponseDto;
 import io.github.martingit2.fangstportalen.servicehandel.bud.dto.BudResponseDto;
 import io.github.martingit2.fangstportalen.servicehandel.bud.dto.CreateBudRequestDto;
+import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.Fangstlinje;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.Fangstmelding;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.FangstmeldingRepository;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.FangstmeldingStatus;
@@ -42,9 +44,16 @@ public class BudService {
         Bud bud = Bud.builder()
                 .fangstmelding(fangstmelding)
                 .kjoperOrganisasjonId(kjoperOrganisasjonId)
-                .budPrisPerKg(dto.budPrisPerKg())
                 .status(BudStatus.AKTIV)
                 .build();
+
+        dto.budLinjer().forEach(linjeDto -> {
+            BudLinje budLinje = BudLinje.builder()
+                    .fangstlinjeId(linjeDto.fangstlinjeId())
+                    .budPrisPerKg(linjeDto.budPrisPerKg())
+                    .build();
+            bud.addBudLinje(budLinje);
+        });
 
         Bud savedBud = budRepository.save(bud);
         return convertToDto(savedBud);
@@ -60,10 +69,10 @@ public class BudService {
         }
 
         List<Bud> bud = budRepository.findByFangstmeldingId(fangstmeldingId);
-        return convertToDtoList(bud);
+        return convertToDtoList(bud, fangstmelding);
     }
 
-    private List<BudResponseDto> convertToDtoList(List<Bud> bud) {
+    private List<BudResponseDto> convertToDtoList(List<Bud> bud, Fangstmelding fangstmelding) {
         if (bud.isEmpty()) {
             return List.of();
         }
@@ -71,22 +80,36 @@ public class BudService {
         Map<Long, Organisasjon> organisasjonMap = organisasjonRepository.findAllById(orgIds).stream()
                 .collect(Collectors.toMap(Organisasjon::getId, Function.identity()));
 
+        Map<Long, String> fangstlinjeFiskeslagMap = fangstmelding.getFangstlinjer().stream()
+                .collect(Collectors.toMap(Fangstlinje::getId, Fangstlinje::getFiskeslag));
+
         return bud.stream()
-                .map(b -> convertToDto(b, organisasjonMap.get(b.getKjoperOrganisasjonId())))
+                .map(b -> convertToDto(b, organisasjonMap.get(b.getKjoperOrganisasjonId()), fangstlinjeFiskeslagMap))
                 .collect(Collectors.toList());
     }
 
     private BudResponseDto convertToDto(Bud bud) {
         Organisasjon kjoper = organisasjonRepository.findById(bud.getKjoperOrganisasjonId()).orElse(null);
-        return convertToDto(bud, kjoper);
+        Map<Long, String> fangstlinjeFiskeslagMap = bud.getFangstmelding().getFangstlinjer().stream()
+                .collect(Collectors.toMap(Fangstlinje::getId, Fangstlinje::getFiskeslag));
+        return convertToDto(bud, kjoper, fangstlinjeFiskeslagMap);
     }
 
-    private BudResponseDto convertToDto(Bud bud, Organisasjon kjoper) {
+    private BudResponseDto convertToDto(Bud bud, Organisasjon kjoper, Map<Long, String> fiskeslagMap) {
         String kjoperNavn = (kjoper != null) ? kjoper.getNavn() : "Ukjent Kjøper";
+
+        List<BudLinjeResponseDto> linjeDtos = bud.getBudLinjer().stream()
+                .map(linje -> new BudLinjeResponseDto(
+                        linje.getId(),
+                        linje.getFangstlinjeId(),
+                        fiskeslagMap.getOrDefault(linje.getFangstlinjeId(), "Ukjent fiskeslag"),
+                        linje.getBudPrisPerKg()
+                )).collect(Collectors.toList());
+
         return new BudResponseDto(
                 bud.getId(),
                 kjoperNavn,
-                bud.getBudPrisPerKg(),
+                linjeDtos,
                 bud.getStatus().name(),
                 bud.getOpprettetTidspunkt()
         );

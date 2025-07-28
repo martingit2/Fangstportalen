@@ -1,8 +1,9 @@
 package io.github.martingit2.fangstportalen.servicehandel.bud.dto;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import java.util.List;
 
 public record CreateBudRequestDto(
-        @NotNull @Positive Double budPrisPerKg
+        @NotEmpty @Valid List<CreateBudLinjeDto> budLinjer
 ) {}

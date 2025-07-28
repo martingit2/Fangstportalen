@@ -181,7 +181,7 @@ const InnkjoperDashboard: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
     const [isBudModalOpen, setIsBudModalOpen] = useState(false);
-    const [selectedFangstmeldingId, setSelectedFangstmeldingId] = useState<number | null>(null);
+    const [selectedFangstmelding, setSelectedFangstmelding] = useState<FangstmeldingResponseDto | null>(null);
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
@@ -205,13 +205,13 @@ const InnkjoperDashboard: React.FC = () => {
         fetchData();
     }, [fetchData]);
 
-    const handleOpenBudModal = (fangstmeldingId: number) => {
-        setSelectedFangstmeldingId(fangstmeldingId);
+    const handleOpenBudModal = (fangstmelding: FangstmeldingResponseDto) => {
+        setSelectedFangstmelding(fangstmelding);
         setIsBudModalOpen(true);
     };
 
     const handleCloseBudModal = () => {
-        setSelectedFangstmeldingId(null);
+        setSelectedFangstmelding(null);
         setIsBudModalOpen(false);
     };
 
@@ -298,7 +298,7 @@ const InnkjoperDashboard: React.FC = () => {
                                {melding.fangstlinjer.map(l => `${l.fiskeslag} (~${l.estimertKvantum} kg) @ ${l.utropsprisPerKg} kr/kg`).join(', ')}
                             </p>
                         </div>
-                        <Button onClick={() => handleOpenBudModal(melding.id)}>Gi bud</Button>
+                        <Button onClick={() => handleOpenBudModal(melding)}>Gi bud</Button>
                     </div>
                 ))}
             </div>
@@ -322,12 +322,12 @@ const InnkjoperDashboard: React.FC = () => {
                     </div>
                 </div>
             </div>
-             {selectedFangstmeldingId && (
+             {selectedFangstmelding && (
                 <GiBudModal
                     isOpen={isBudModalOpen}
                     onClose={handleCloseBudModal}
                     onSuccess={handleBudSuccess}
-                    fangstmeldingId={selectedFangstmeldingId}
+                    fangstmelding={selectedFangstmelding}
                 />
             )}
         </>

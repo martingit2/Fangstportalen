@@ -6,8 +6,13 @@ const numberString = z.string()
         message: 'Må være et gyldig positivt tall.',
     });
 
-export const budSchema = z.object({
+export const budLinjeSchema = z.object({
+    fangstlinjeId: z.number(),
     budPrisPerKg: numberString,
+});
+
+export const budSchema = z.object({
+    budLinjer: z.array(budLinjeSchema).min(1, "Du må gi bud på minst én linje."),
 });
 
 export type BudFormData = z.infer<typeof budSchema>;

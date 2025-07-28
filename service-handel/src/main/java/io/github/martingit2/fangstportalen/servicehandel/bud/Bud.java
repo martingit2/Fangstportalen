@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "bud")
@@ -29,8 +31,9 @@ public class Bud {
     @Column(name = "kjoper_organisasjon_id", nullable = false)
     private Long kjoperOrganisasjonId;
 
-    @Column(name = "bud_pris_per_kg", nullable = false)
-    private Double budPrisPerKg;
+    @OneToMany(mappedBy = "bud", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<BudLinje> budLinjer = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -39,4 +42,9 @@ public class Bud {
     @CreationTimestamp
     @Column(name = "opprettet_tidspunkt", nullable = false, updatable = false)
     private LocalDateTime opprettetTidspunkt;
+
+    public void addBudLinje(BudLinje linje) {
+        budLinjer.add(linje);
+        linje.setBud(this);
+    }
 }
