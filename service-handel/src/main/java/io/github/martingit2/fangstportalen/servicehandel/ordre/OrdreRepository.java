@@ -11,4 +11,6 @@ public interface OrdreRepository extends JpaRepository<Ordre, Long> {
     List<Ordre> findByKjoperOrganisasjonIdOrderByOpprettetTidspunktDesc(Long kjoperOrganisasjonId);
 
     List<Ordre> findByStatusAndFangstmeldingIdIsNullAndKjoperOrganisasjonIdNot(OrdreStatus status, Long kjoperOrganisasjonId);
+
+    List<Ordre> findBySelgerOrganisasjonIdAndStatus(Long selgerOrganisasjonId, OrdreStatus status);
 }

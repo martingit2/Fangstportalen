@@ -1,5 +1,5 @@
 .container {
-    max-width: 600px;
+    max-width: 800px;
     margin: 0 auto;
 }
 
@@ -21,4 +21,48 @@
     margin-top: 2rem;
     display: flex;
     gap: 1rem;
+}
+
+.subTitle {
+    font-size: 1.25rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.ordreList {
+    display: grid;
+    gap: 1rem;
+}
+
+.ordreCard {
+    background: #fff;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ordreCard:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+
+.ordreCard h3 {
+    margin: 0 0 0.5rem 0;
+}
+
+.ordreCard p {
+    margin: 0;
+    color: var(--text-color-secondary);
+}
+
+.kvantumLinje {
+    display: grid;
+    grid-template-columns: 1fr 150px 50px;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-weight: 500;
 }

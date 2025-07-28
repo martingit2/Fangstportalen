@@ -8,6 +8,10 @@ import { useEffect } from 'react';
 import AppLayout from './components/AppLayout';
 import NyOrdrePage from './pages/NyOrdrePage';
 import NyFangstmeldingPage from './pages/NyFangstmeldingPage';
+import RedigerOrdrePage from './pages/RedigerOrdrePage';
+import RedigerFangstmeldingPage from './pages/RedigerFangstmeldingPage';
+import NySluttseddelPage from './pages/NySluttseddelPage';
+import OrdrerPage from './pages/OrdrerPage';
 
 function App() {
   const { loginWithRedirect, getAccessTokenSilently } = useAuth0();
@@ -30,6 +34,10 @@ function App() {
             <Route path="/innstillinger" element={<div>Innstillinger Side (TODO)</div>} />
             <Route path="/ny-ordre" element={<NyOrdrePage />} />
             <Route path="/ny-fangstmelding" element={<NyFangstmeldingPage />} />
+            <Route path="/ordre/:id/rediger" element={<RedigerOrdrePage />} />
+            <Route path="/fangstmelding/:id/rediger" element={<RedigerFangstmeldingPage />} />
+            <Route path="/ny-sluttseddel" element={<NySluttseddelPage />} />
+            <Route path="/ordrer" element={<OrdrerPage />} />
           </Route>
         </Route>
       </Routes>

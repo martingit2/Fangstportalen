@@ -25,7 +25,7 @@ const TopBar: React.FC<TopBarProps> = ({ onToggleMenu }) => {
             <div className={styles.userMenu}>
                 <span className={styles.userName}>{user?.email}</span>
                 <Button 
-                    variant="ghost"
+                    variant="secondary"
                     onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
                     Logg ut
                 </Button>

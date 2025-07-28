@@ -17,6 +17,7 @@
     color: #4b5563;
     cursor: pointer;
     padding: 0.5rem;
+    margin-right: 0.5rem; /* Gir litt luft til søkefeltet */
 }
 
 .searchContainer {
@@ -69,16 +70,19 @@
 }
 
 .userName {
-    display: none;
+    display: none; 
     color: #374151;
     font-weight: 500;
+    white-space: nowrap; 
 }
 
-@media (min-width: 640px) {
+
+@media (min-width: 768px) {
     .userName {
         display: inline;
     }
 }
+
 
 @media (max-width: 992px) {
     .mobileMenuButton {

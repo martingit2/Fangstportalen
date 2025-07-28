@@ -1,0 +1,75 @@
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.title {
+    margin: 0;
+    font-size: 1.875rem;
+    font-weight: 700;
+}
+
+.faneContainer {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: -1px;
+}
+
+.fane, .faneAktiv {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    color: var(--text-color-secondary);
+}
+
+.faneAktiv {
+    background-color: var(--content-background-color);
+    border-color: var(--border-color);
+    color: var(--primary-color);
+}
+
+.content {
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 0 8px 8px 8px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.table th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-color-secondary);
+}
+
+.empty {
+    text-align: center;
+    color: var(--text-color-secondary);
+    padding: 3rem;
+}

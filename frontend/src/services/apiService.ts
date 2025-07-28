@@ -3,7 +3,17 @@ import type { GetTokenSilentlyOptions } from '@auth0/auth0-react';
 import type { OrdreResponseDto } from '../types/ordre';
 import type { FangstmeldingResponseDto } from '../types/fangstmelding';
 import type { FangstmeldingFormData } from '../schemas/fangstmeldingSchema';
+import type { OrdreFormData } from '../schemas/ordreSchema';
 import type { AxiosResponse } from 'axios';
+
+interface CreateSluttseddelPayload {
+    ordreId: number;
+    landingsdato: string;
+    linjer: {
+        ordrelinjeId: number;
+        faktiskKvantum: number;
+    }[];
+}
 
 const apiClient = axios.create({
     baseURL: 'http://localhost:8080/api/v1',
@@ -66,6 +76,53 @@ export const getTilgjengeligeOrdrer = (): Promise<AxiosResponse<OrdreResponseDto
 
 export const aksepterOrdre = (ordreId: number): Promise<AxiosResponse<OrdreResponseDto>> => {
     return apiClient.patch(`/ordrer/${ordreId}/aksepter`);
+};
+
+export const deleteOrdre = (ordreId: number): Promise<AxiosResponse<void>> => {
+    return apiClient.delete(`/ordrer/${ordreId}`);
+};
+
+export const deleteFangstmelding = (fangstmeldingId: number): Promise<AxiosResponse<void>> => {
+    return apiClient.delete(`/fangstmeldinger/${fangstmeldingId}`);
+};
+
+export const getOrdreById = (ordreId: number): Promise<AxiosResponse<OrdreResponseDto>> => {
+    return apiClient.get(`/ordrer/${ordreId}`);
+};
+
+export const updateOrdre = (ordreId: number, data: OrdreFormData): Promise<AxiosResponse<OrdreResponseDto>> => {
+    const payload = {
+        ...data,
+        ordrelinjer: data.ordrelinjer.map(linje => ({
+            ...linje,
+            avtaltPrisPerKg: parseFloat(linje.avtaltPrisPerKg),
+            forventetKvantum: parseFloat(linje.forventetKvantum),
+        }))
+    };
+    return apiClient.put(`/ordrer/${ordreId}`, payload);
+};
+
+export const getFangstmeldingById = (id: number): Promise<AxiosResponse<FangstmeldingResponseDto>> => {
+    return apiClient.get(`/fangstmeldinger/${id}`);
+};
+
+export const updateFangstmelding = (id: number, data: FangstmeldingFormData): Promise<AxiosResponse<FangstmeldingResponseDto>> => {
+    const payload = {
+        ...data,
+        fangstlinjer: data.fangstlinjer.map(linje => ({
+            ...linje,
+            estimertKvantum: parseFloat(linje.estimertKvantum),
+        })),
+    };
+    return apiClient.put(`/fangstmeldinger/${id}`, payload);
+};
+
+export const getMineAvtalteOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => {
+    return apiClient.get('/ordrer/mine/avtalte');
+};
+
+export const createSluttseddel = (data: CreateSluttseddelPayload): Promise<AxiosResponse> => {
+    return apiClient.post('/sluttsedler', data);
 };
 
 export default apiClient;

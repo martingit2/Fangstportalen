@@ -93,12 +93,60 @@ public class OrdreController {
         return ResponseEntity.ok(oppdatertOrdre);
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
+    public ResponseEntity<Void> deleteOrdre(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long kjoperOrganisasjonId = principal.getOrganisasjonId();
+
+        ordreService.deleteOrdre(id, kjoperOrganisasjonId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
+    public ResponseEntity<OrdreResponseDto> updateOrdre(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateOrdreRequestDto dto,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long kjoperOrganisasjonId = principal.getOrganisasjonId();
+        OrdreResponseDto updatedOrdre = ordreService.updateOrdre(id, dto, kjoperOrganisasjonId);
+        return ResponseEntity.ok(updatedOrdre);
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
+    public ResponseEntity<OrdreResponseDto> getOrdreById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long kjoperOrganisasjonId = principal.getOrganisasjonId();
+        OrdreResponseDto ordre = ordreService.findOrdreById(id, kjoperOrganisasjonId);
+        return ResponseEntity.ok(ordre);
+    }
+
     @GetMapping("/mine")
     @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
     public ResponseEntity<List<OrdreResponseDto>> getMineOrdrer(@AuthenticationPrincipal Jwt jwt) {
         UserPrincipal principal = new UserPrincipal(jwt);
         Long kjoperOrganisasjonId = principal.getOrganisasjonId();
         List<OrdreResponseDto> ordrer = ordreService.findMineOrdrer(kjoperOrganisasjonId);
+        return ResponseEntity.ok(ordrer);
+    }
+
+    @GetMapping("/mine/avtalte")
+    @PreAuthorize("hasRole('REDERI_SKIPPER')")
+    public ResponseEntity<List<OrdreResponseDto>> getMineAvtalteOrdrer(@AuthenticationPrincipal Jwt jwt) {
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long selgerOrganisasjonId = principal.getOrganisasjonId();
+        List<OrdreResponseDto> ordrer = ordreService.findMineAvtalteOrdrer(selgerOrganisasjonId);
         return ResponseEntity.ok(ordrer);
     }
 

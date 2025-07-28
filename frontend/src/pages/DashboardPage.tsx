@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { 
-    getMineOrdrer, 
-    getAktiveFangstmeldinger, 
+import {
+    getMineOrdrer,
+    getAktiveFangstmeldinger,
     createOrdreFromFangstmelding,
     getMineFangstmeldinger,
     getTilgjengeligeOrdrer,
-    aksepterOrdre
+    aksepterOrdre,
+    deleteOrdre,
+    deleteFangstmelding
 } from '../services/apiService';
 import styles from './DashboardPage.module.css';
 import Button from '../components/ui/Button';
@@ -20,6 +22,7 @@ const SkipperDashboard: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const { roles, isLoading: rolesLoading } = useRoles();
     const [isAcceptingId, setIsAcceptingId] = useState<number | null>(null);
+    const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
 
     const fetchData = useCallback(async () => {
         try {
@@ -57,6 +60,23 @@ const SkipperDashboard: React.FC = () => {
         }
     };
 
+    const handleDeleteFangstmelding = async (fangstmeldingId: number) => {
+        if (!window.confirm("Er du sikker på at du vil trekke denne fangstmeldingen fra markedet?")) {
+            return;
+        }
+        setIsDeletingId(fangstmeldingId);
+        try {
+            await deleteFangstmelding(fangstmeldingId);
+            await fetchData();
+        } catch (err) {
+            console.error("Feil ved sletting av fangstmelding:", err);
+            alert("Kunne ikke slette fangstmeldingen. Den kan allerede ha blitt akseptert.");
+            await fetchData();
+        } finally {
+            setIsDeletingId(null);
+        }
+    };
+
     const isSkipper = roles.includes('REDERI_SKIPPER');
 
     const renderMineFangstmeldinger = () => {
@@ -73,7 +93,18 @@ const SkipperDashboard: React.FC = () => {
                                 {melding.fangstlinjer.map(l => `${l.fiskeslag} (~${l.estimertKvantum} kg)`).join(', ')}
                             </p>
                         </div>
-                        <Button variant="secondary" disabled>Publisert</Button>
+                        <div className={styles.cardActions}>
+                             <Button variant="secondary" to={`/fangstmelding/${melding.id}/rediger`}>
+                                 Rediger
+                             </Button>
+                             <Button
+                                variant="danger"
+                                onClick={() => handleDeleteFangstmelding(melding.id)}
+                                disabled={isDeletingId === melding.id}
+                            >
+                                {isDeletingId === melding.id ? 'Sletter...' : 'Trekk tilbake'}
+                            </Button>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -92,7 +123,7 @@ const SkipperDashboard: React.FC = () => {
                         <th>Leveringssted</th>
                         <th>Dato & Tid</th>
                         <th>Etterspørsel</th>
-                        <th className={styles.alignRight}>Handlinger</th>
+                        <th className={`${styles.alignRight} ${styles.actionsHeader}`}>Handlinger</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -109,12 +140,14 @@ const SkipperDashboard: React.FC = () => {
                                 {ordre.ordrelinjer.map(l => `${l.forventetKvantum} kg ${l.fiskeslag}`).join(', ')}
                             </td>
                             <td className={styles.alignRight}>
-                                <Button 
-                                    onClick={() => handleAksepterOrdre(ordre.id)}
-                                    disabled={isAcceptingId === ordre.id}
-                                >
-                                    {isAcceptingId === ordre.id ? 'Aksepterer...' : 'Aksepter'}
-                                </Button>
+                                <div className={styles.actionsCell}>
+                                    <Button
+                                        onClick={() => handleAksepterOrdre(ordre.id)}
+                                        disabled={isAcceptingId === ordre.id}
+                                    >
+                                        {isAcceptingId === ordre.id ? 'Aksepterer...' : 'Aksepter'}
+                                    </Button>
+                                </div>
                             </td>
                         </tr>
                     ))}
@@ -150,12 +183,12 @@ const SkipperDashboard: React.FC = () => {
 };
 
 const InnkjoperDashboard: React.FC = () => {
-    // ... (Denne komponenten forblir uendret for nå)
     const [ordrer, setOrdrer] = useState<OrdreResponseDto[]>([]);
     const [fangstmeldinger, setFangstmeldinger] = useState<FangstmeldingResponseDto[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isAcceptingId, setIsAcceptingId] = useState<number | null>(null);
+    const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
@@ -192,6 +225,23 @@ const InnkjoperDashboard: React.FC = () => {
         }
     };
 
+    const handleDeleteOrdre = async (ordreId: number) => {
+        if (!window.confirm("Er du sikker på at du vil slette denne ordren? Dette kan ikke angres.")) {
+            return;
+        }
+        setIsDeletingId(ordreId);
+        try {
+            await deleteOrdre(ordreId);
+            await fetchData();
+        } catch (err) {
+            console.error("Feil ved sletting av ordre:", err);
+            alert("Kunne ikke slette ordren. Den kan ha blitt akseptert av en skipper.");
+            await fetchData();
+        } finally {
+            setIsDeletingId(null);
+        }
+    };
+
     const renderOrdreContent = () => {
         if (isLoading) return <div className={styles.loading}>Laster dine ordrer...</div>;
         if (ordrer.length === 0) return <div className={styles.empty}>Du har ingen aktive ordrer.</div>;
@@ -201,18 +251,37 @@ const InnkjoperDashboard: React.FC = () => {
                 <thead>
                     <tr>
                         <th>Ordre ID</th>
-                        <th>Opprettet</th>
                         <th>Status</th>
-                        <th className={styles.alignRight}>Antall linjer</th>
+                        <th>Detaljer</th>
+                        <th className={`${styles.alignRight} ${styles.actionsHeader}`}>Handlinger</th>
                     </tr>
                 </thead>
                 <tbody>
                     {ordrer.map((ordre) => (
                         <tr key={ordre.id}>
                             <td>#{ordre.id}</td>
-                            <td>{new Date(ordre.opprettetTidspunkt).toLocaleDateString('nb-NO')}</td>
                             <td>{ordre.status}</td>
-                            <td className={styles.alignRight}>{ordre.ordrelinjer.length}</td>
+                            <td>
+                                {ordre.leveringssted} - {new Date(ordre.forventetLeveringsdato).toLocaleDateString('nb-NO')}
+                            </td>
+                            <td className={styles.alignRight}>
+                                <div className={styles.actionsCell}>
+                                    {ordre.status === 'AKTIV' && (
+                                        <>
+                                            <Button variant="secondary" to={`/ordre/${ordre.id}/rediger`}>
+                                                Rediger
+                                            </Button>
+                                            <Button
+                                                variant="danger"
+                                                onClick={() => handleDeleteOrdre(ordre.id)}
+                                                disabled={isDeletingId === ordre.id}
+                                            >
+                                                {isDeletingId === ordre.id ? 'Sletter...' : 'Slett'}
+                                            </Button>
+                                        </>
+                                    )}
+                                </div>
+                            </td>
                         </tr>
                     ))}
                 </tbody>

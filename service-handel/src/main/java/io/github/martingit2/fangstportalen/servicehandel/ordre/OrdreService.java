@@ -12,6 +12,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,9 +98,29 @@ public class OrdreService {
         return convertToResponseDto(savedOrdre);
     }
 
+    @Transactional(readOnly = true)
+    public OrdreResponseDto findOrdreById(Long ordreId, Long kjoperOrganisasjonId) {
+        Ordre ordre = ordreRepository.findById(ordreId)
+                .orElseThrow(() -> new EntityNotFoundException("Finner ikke ordre med ID: " + ordreId));
+
+        if (!ordre.getKjoperOrganisasjonId().equals(kjoperOrganisasjonId)) {
+            logger.warn("Sikkerhetsbrudd! Organisasjon {} forsøkte å hente ordre {} som tilhører {}.",
+                    kjoperOrganisasjonId, ordreId, ordre.getKjoperOrganisasjonId());
+            throw new AccessDeniedException("Du har ikke tilgang til å se denne ordren.");
+        }
+
+        return convertToResponseDto(ordre);
+    }
+
     public List<OrdreResponseDto> findMineOrdrer(Long kjoperOrganisasjonId) {
         logger.info("Henter ordrer for organisasjon: {}", kjoperOrganisasjonId);
         List<Ordre> ordrer = ordreRepository.findByKjoperOrganisasjonIdOrderByOpprettetTidspunktDesc(kjoperOrganisasjonId);
+        return convertToResponseDtoList(ordrer);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrdreResponseDto> findMineAvtalteOrdrer(Long selgerOrganisasjonId) {
+        List<Ordre> ordrer = ordreRepository.findBySelgerOrganisasjonIdAndStatus(selgerOrganisasjonId, OrdreStatus.AVTALT);
         return convertToResponseDtoList(ordrer);
     }
 
@@ -124,6 +145,71 @@ public class OrdreService {
 
         logger.info("Organisasjon {} aksepterte ordre {}", selgerOrganisasjonId, ordreId);
         return convertToResponseDto(savedOrdre);
+    }
+
+    @Transactional
+    public void deleteOrdre(Long ordreId, Long kjoperOrganisasjonId) {
+        logger.info("Forespørsel om å slette ordre {} for organisasjon {}", ordreId, kjoperOrganisasjonId);
+
+        Ordre ordre = ordreRepository.findById(ordreId)
+                .orElseThrow(() -> new EntityNotFoundException("Finner ikke ordre med ID: " + ordreId));
+
+        if (!ordre.getKjoperOrganisasjonId().equals(kjoperOrganisasjonId)) {
+            logger.warn("Sikkerhetsbrudd! Organisasjon {} forsøkte å slette ordre {} som tilhører organisasjon {}.",
+                    kjoperOrganisasjonId, ordreId, ordre.getKjoperOrganisasjonId());
+            throw new AccessDeniedException("Du har ikke tilgang til å slette denne ordren.");
+        }
+
+        if (ordre.getStatus() != OrdreStatus.AKTIV) {
+            logger.warn("Ugyldig operasjon. Forsøkte å slette ordre {} med status {}, men kun AKTIV kan slettes.",
+                    ordreId, ordre.getStatus());
+            throw new IllegalStateException("Kun aktive ordrer som ikke er akseptert kan slettes.");
+        }
+
+        ordreRepository.delete(ordre);
+        logger.info("Ordre {} ble slettet av organisasjon {}", ordreId, kjoperOrganisasjonId);
+    }
+
+    @Transactional
+    public OrdreResponseDto updateOrdre(Long ordreId, CreateOrdreRequestDto dto, Long kjoperOrganisasjonId) {
+        logger.info("Forespørsel om å oppdatere ordre {} for organisasjon {}", ordreId, kjoperOrganisasjonId);
+
+        Ordre ordre = ordreRepository.findById(ordreId)
+                .orElseThrow(() -> new EntityNotFoundException("Finner ikke ordre med ID: " + ordreId));
+
+        if (!ordre.getKjoperOrganisasjonId().equals(kjoperOrganisasjonId)) {
+            logger.warn("Sikkerhetsbrudd! Organisasjon {} forsøkte å oppdatere ordre {} som tilhører {}.",
+                    kjoperOrganisasjonId, ordreId, ordre.getKjoperOrganisasjonId());
+            throw new AccessDeniedException("Du har ikke tilgang til å redigere denne ordren.");
+        }
+
+        if (ordre.getStatus() != OrdreStatus.AKTIV) {
+            logger.warn("Ugyldig operasjon. Forsøkte å redigere ordre {} med status {}, men kun AKTIV kan redigeres.",
+                    ordreId, ordre.getStatus());
+            throw new IllegalStateException("Kun aktive ordrer som ikke er akseptert kan redigeres.");
+        }
+
+        ordre.setLeveringssted(dto.leveringssted());
+        ordre.setForventetLeveringsdato(dto.forventetLeveringsdato());
+        ordre.setForventetLeveringstidFra(LocalTime.parse(dto.forventetLeveringstidFra()));
+        ordre.setForventetLeveringstidTil(LocalTime.parse(dto.forventetLeveringstidTil()));
+
+        ordre.getOrdrelinjer().clear();
+        dto.ordrelinjer().forEach(linjeDto -> {
+            Ordrelinje linje = Ordrelinje.builder()
+                    .fiskeslag(linjeDto.fiskeslag())
+                    .kvalitet(linjeDto.kvalitet())
+                    .storrelse(linjeDto.storrelse())
+                    .avtaltPrisPerKg(linjeDto.avtaltPrisPerKg())
+                    .forventetKvantum(linjeDto.forventetKvantum())
+                    .build();
+            ordre.addOrdrelinje(linje);
+        });
+
+        Ordre updatedOrdre = ordreRepository.save(ordre);
+        logger.info("Ordre {} ble oppdatert av organisasjon {}", ordreId, kjoperOrganisasjonId);
+
+        return convertToResponseDto(updatedOrdre);
     }
 
     private List<OrdreResponseDto> convertToResponseDtoList(List<Ordre> ordrer) {

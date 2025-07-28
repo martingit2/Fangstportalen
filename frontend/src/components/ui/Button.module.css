@@ -46,6 +46,17 @@
     border-color: white;
 }
 
+.danger {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border-color: transparent;
+}
+
+.danger:hover:not(:disabled) {
+    background-color: #fecaca;
+    color: #991b1b;
+}
+
 .button:disabled {
     opacity: 0.5;
     cursor: not-allowed;

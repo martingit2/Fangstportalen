@@ -42,6 +42,43 @@ public class FangstmeldingController {
         return ResponseEntity.created(location).body(createdFangstmelding);
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('REDERI_SKIPPER')")
+    public ResponseEntity<Void> deleteFangstmelding(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long selgerOrganisasjonId = principal.getOrganisasjonId();
+        fangstmeldingService.deleteFangstmelding(id, selgerOrganisasjonId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('REDERI_SKIPPER')")
+    public ResponseEntity<FangstmeldingResponseDto> updateFangstmelding(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateFangstmeldingRequestDto dto,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long selgerOrganisasjonId = principal.getOrganisasjonId();
+        FangstmeldingResponseDto updatedFangstmelding = fangstmeldingService.updateFangstmelding(id, dto, selgerOrganisasjonId);
+        return ResponseEntity.ok(updatedFangstmelding);
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('REDERI_SKIPPER')")
+    public ResponseEntity<FangstmeldingResponseDto> getFangstmeldingById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt) {
+        return fangstmeldingService.findMineAktiveFangstmeldinger(new UserPrincipal(jwt).getOrganisasjonId()).stream()
+                .filter(f -> f.id().equals(id))
+                .findFirst()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/aktive")
     @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
     public ResponseEntity<List<FangstmeldingResponseDto>> getAktiveFangstmeldinger() {

@@ -10,6 +10,8 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "sluttsedler", indexes = {
@@ -27,8 +29,12 @@ public class Sluttseddel {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "ordre_id", referencedColumnName = "id")
+    @JoinColumn(name = "ordre_id", referencedColumnName = "id", unique = true, nullable = false)
     private Ordre ordre;
+
+    @OneToMany(mappedBy = "sluttseddel", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<SluttseddelLinje> sluttseddelLinjer = new ArrayList<>();
 
     @Column(name = "selger_organisasjon_id", nullable = false, updatable = false)
     private Long selgerOrganisasjonId;
@@ -43,31 +49,12 @@ public class Sluttseddel {
     @Column(nullable = false)
     private LocalDate landingsdato;
 
-    @Column(name = "fartoy_navn", nullable = false)
-    private String fartoyNavn;
-
-    @Column(name = "leveringssted", nullable = false)
-    private String leveringssted;
-
-    @Column(name = "fiskeslag", nullable = false)
-    private String fiskeslag;
-
-    @Column(nullable = false)
-    private Double kvantum;
-
     @CreationTimestamp
     @Column(name = "opprettet_tidspunkt", nullable = false, updatable = false)
     private LocalDateTime opprettetTidspunkt;
 
-    @Column(name = "skipper_signatur_bruker_id")
-    private String skipperSignaturBrukerId;
-
-    @Column(name = "fisker_signatur_tidspunkt")
-    private LocalDateTime fiskerSignaturTidspunkt;
-
-    @Column(name = "mottak_signatur_user_id")
-    private String mottakSignaturUserId;
-
-    @Column(name = "mottak_signatur_tidspunkt")
-    private LocalDateTime mottakSignaturTidspunkt;
+    public void addSluttseddelLinje(SluttseddelLinje linje) {
+        sluttseddelLinjer.add(linje);
+        linje.setSluttseddel(this);
+    }
 }

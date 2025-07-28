@@ -1,15 +1,19 @@
 package io.github.martingit2.fangstportalen.servicehandel.sluttseddel;
 
+import io.github.martingit2.fangstportalen.servicehandel.ordre.Ordre;
+import io.github.martingit2.fangstportalen.servicehandel.ordre.OrdreRepository;
+import io.github.martingit2.fangstportalen.servicehandel.ordre.OrdreStatus;
 import io.github.martingit2.fangstportalen.servicehandel.sluttseddel.dto.CreateSluttseddelRequestDto;
 import io.github.martingit2.fangstportalen.servicehandel.sluttseddel.dto.SluttseddelResponseDto;
+import io.github.martingit2.fangstportalen.servicehandel.sluttseddel.dto.SluttseddelLinjeDto;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,93 +21,71 @@ import java.util.stream.Collectors;
 public class SluttseddelService {
 
     private final SluttseddelRepository sluttseddelRepository;
+    private final OrdreRepository ordreRepository;
 
     @Transactional
-    public SluttseddelResponseDto createSluttseddel(CreateSluttseddelRequestDto requestDto, Long selgerOrganisasjonId, Long kjoperOrganisasjonId) {
+    public SluttseddelResponseDto createSluttseddelFromOrdre(CreateSluttseddelRequestDto requestDto, Long selgerOrganisasjonId) {
+        Ordre ordre = ordreRepository.findById(requestDto.ordreId())
+                .orElseThrow(() -> new EntityNotFoundException("Ordre ikke funnet med ID: " + requestDto.ordreId()));
+
+        if (!ordre.getSelgerOrganisasjonId().equals(selgerOrganisasjonId)) {
+            throw new AccessDeniedException("Du eier ikke denne ordren og kan ikke opprette sluttseddel for den.");
+        }
+        if (ordre.getStatus() != OrdreStatus.AVTALT) {
+            throw new IllegalStateException("Kan kun opprette sluttseddel for en ordre med status AVTALT.");
+        }
+        if (ordre.getSluttseddel() != null) {
+            throw new IllegalStateException("Det eksisterer allerede en sluttseddel for denne ordren.");
+        }
+
         Sluttseddel sluttseddel = Sluttseddel.builder()
-                .selgerOrganisasjonId(selgerOrganisasjonId)
-                .kjoperOrganisasjonId(kjoperOrganisasjonId)
+                .ordre(ordre)
+                .selgerOrganisasjonId(ordre.getSelgerOrganisasjonId())
+                .kjoperOrganisasjonId(ordre.getKjoperOrganisasjonId())
                 .status(SluttseddelStatus.KLADD)
                 .landingsdato(requestDto.landingsdato())
-                .fartoyNavn(requestDto.fartoyNavn())
-                .leveringssted(requestDto.leveringssted())
-                .fiskeslag(requestDto.fiskeslag())
-                .kvantum(requestDto.kvantum())
                 .build();
 
-        Sluttseddel savedSluttseddel = sluttseddelRepository.save(sluttseddel);
-        return convertToDto(savedSluttseddel);
-    }
+        Map<Long, String> ordrelinjeMap = ordre.getOrdrelinjer().stream()
+                .collect(Collectors.toMap(ol -> ol.getId(), ol -> ol.getFiskeslag()));
 
-    @Transactional
-    public SluttseddelResponseDto signerSomFisker(Long sluttseddelId, Long selgerOrganisasjonId, String skipperBrukerId) {
-        Sluttseddel sluttseddel = findSluttseddelById(sluttseddelId);
+        requestDto.linjer().forEach(linjeDto -> {
+            if (!ordrelinjeMap.containsKey(linjeDto.ordrelinjeId())) {
+                throw new IllegalArgumentException("Ugyldig ordrelinje ID: " + linjeDto.ordrelinjeId());
+            }
+            SluttseddelLinje linje = SluttseddelLinje.builder()
+                    .ordrelinjeId(linjeDto.ordrelinjeId())
+                    .fiskeslag(ordrelinjeMap.get(linjeDto.ordrelinjeId()))
+                    .faktiskKvantum(linjeDto.faktiskKvantum())
+                    .build();
+            sluttseddel.addSluttseddelLinje(linje);
+        });
 
-        if (!sluttseddel.getSelgerOrganisasjonId().equals(selgerOrganisasjonId)) {
-            throw new AccessDeniedException("Din organisasjon har ikke tilgang til å signere denne sluttseddelen.");
-        }
-        if (sluttseddel.getStatus() != SluttseddelStatus.KLADD) {
-            throw new IllegalStateException("Sluttseddelen kan kun signeres når den har status KLADD.");
-        }
-
-        sluttseddel.setStatus(SluttseddelStatus.SIGNERT_AV_FISKER);
-        sluttseddel.setSkipperSignaturBrukerId(skipperBrukerId);
-        sluttseddel.setFiskerSignaturTidspunkt(LocalDateTime.now());
-
-        Sluttseddel savedSluttseddel = sluttseddelRepository.save(sluttseddel);
-        return convertToDto(savedSluttseddel);
-    }
-
-    @Transactional
-    public SluttseddelResponseDto bekreftMottak(Long sluttseddelId, Long kjoperOrganisasjonId, String mottakBrukerId) {
-        Sluttseddel sluttseddel = findSluttseddelById(sluttseddelId);
-
-        if (!sluttseddel.getKjoperOrganisasjonId().equals(kjoperOrganisasjonId)) {
-            throw new AccessDeniedException("Din organisasjon kan ikke bekrefte mottak for denne sluttseddelen.");
-        }
-        if (sluttseddel.getStatus() != SluttseddelStatus.SIGNERT_AV_FISKER) {
-            throw new IllegalStateException("Sluttseddelen kan kun bekreftes når den er signert av fisker.");
-        }
-
-        sluttseddel.setStatus(SluttseddelStatus.BEKREFTET_AV_MOTTAK);
-        sluttseddel.setMottakSignaturUserId(mottakBrukerId);
-        sluttseddel.setMottakSignaturTidspunkt(LocalDateTime.now());
+        ordre.setStatus(OrdreStatus.FULLFØRT);
+        ordreRepository.save(ordre);
 
         Sluttseddel savedSluttseddel = sluttseddelRepository.save(sluttseddel);
         return convertToDto(savedSluttseddel);
-    }
-
-    public List<SluttseddelResponseDto> getMineSluttsedler(Long selgerOrganisasjonId) {
-        return sluttseddelRepository.findBySelgerOrganisasjonIdOrderByLandingsdatoDesc(selgerOrganisasjonId).stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<SluttseddelResponseDto> getMottatteSluttsedler() {
-        return sluttseddelRepository.findByStatusOrderByLandingsdatoDesc(SluttseddelStatus.SIGNERT_AV_FISKER).stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-    }
-
-    private Sluttseddel findSluttseddelById(Long id) {
-        return sluttseddelRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Finner ikke sluttseddel med ID: " + id));
     }
 
     private SluttseddelResponseDto convertToDto(Sluttseddel sluttseddel) {
+        List<SluttseddelLinjeDto> linjeDtos = sluttseddel.getSluttseddelLinjer().stream()
+                .map(linje -> new SluttseddelLinjeDto(
+                        linje.getId(),
+                        linje.getOrdrelinjeId(),
+                        linje.getFiskeslag(),
+                        linje.getFaktiskKvantum()
+                )).collect(Collectors.toList());
+
         return new SluttseddelResponseDto(
                 sluttseddel.getId(),
-                sluttseddel.getSkipperSignaturBrukerId(),
+                sluttseddel.getOrdre().getId(),
                 sluttseddel.getStatus(),
                 sluttseddel.getLandingsdato(),
-                sluttseddel.getFartoyNavn(),
-                sluttseddel.getLeveringssted(),
-                sluttseddel.getFiskeslag(),
-                sluttseddel.getKvantum(),
-                sluttseddel.getOpprettetTidspunkt(),
-                sluttseddel.getFiskerSignaturTidspunkt(),
-                sluttseddel.getMottakSignaturUserId(),
-                sluttseddel.getMottakSignaturTidspunkt()
+                sluttseddel.getOrdre().getOrdrelinjer().stream().findFirst().map(ol -> "Fartøy info mangler").orElse(""), // Midlertidig
+                sluttseddel.getOrdre().getLeveringssted(),
+                linjeDtos,
+                sluttseddel.getOpprettetTidspunkt()
         );
     }
 }
