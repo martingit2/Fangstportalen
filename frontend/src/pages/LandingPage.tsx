@@ -13,7 +13,7 @@ const LandingPage: React.FC = () => {
 
   return (
     <>
-      <Navbar onLogin={() => loginWithRedirect()} />
+      <Navbar />
 
       <main>
         <div className={styles.hero}>

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.bind.annotation.PatchMapping;
 
-
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -133,7 +132,7 @@ public class OrdreController {
     }
 
     @GetMapping("/mine")
-    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
+    @PreAuthorize("hasAnyRole('FISKEBRUK_INNKJOPER', 'FISKEBRUK_ADMIN')")
     public ResponseEntity<List<OrdreResponseDto>> getMineOrdrer(@AuthenticationPrincipal Jwt jwt) {
         UserPrincipal principal = new UserPrincipal(jwt);
         Long kjoperOrganisasjonId = principal.getOrganisasjonId();

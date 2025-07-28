@@ -14,6 +14,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/fangstmeldinger")
@@ -24,22 +25,28 @@ public class FangstmeldingController {
 
     @PostMapping
     @PreAuthorize("hasRole('REDERI_SKIPPER')")
-    public ResponseEntity<Fangstmelding> createFangstmelding(
+    public ResponseEntity<FangstmeldingResponseDto> createFangstmelding(
             @Valid @RequestBody CreateFangstmeldingRequestDto dto,
             @AuthenticationPrincipal Jwt jwt) {
 
-        UserPrincipal principal = new UserPrincipal(jwt);
-        Long selgerOrganisasjonId = principal.getOrganisasjonId();
+        Map<String, Object> claims = jwt.getClaimAsMap("https://fangstportalen.no/claims");
+        Long selgerOrganisasjonId = ((Number) claims.get("org_id")).longValue();
 
-        Fangstmelding createdFangstmelding = fangstmeldingService.createFangstmelding(dto, selgerOrganisasjonId);
+        Object fartoyIdObj = claims.get("fartoy_id");
+        if (fartoyIdObj == null) {
+            throw new IllegalStateException("Fartøy ID mangler i token for skipper.");
+        }
+        Long fartoyId = ((Number) fartoyIdObj).longValue();
+
+        FangstmeldingResponseDto createdFangstmeldingDto = fangstmeldingService.createFangstmeldingAndConvertToDto(dto, selgerOrganisasjonId, fartoyId);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(createdFangstmelding.getId())
+                .buildAndExpand(createdFangstmeldingDto.id())
                 .toUri();
 
-        return ResponseEntity.created(location).body(createdFangstmelding);
+        return ResponseEntity.created(location).body(createdFangstmeldingDto);
     }
 
     @DeleteMapping("/{id}")
@@ -80,14 +87,14 @@ public class FangstmeldingController {
     }
 
     @GetMapping("/aktive")
-    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
+    @PreAuthorize("hasAnyRole('FISKEBRUK_INNKJOPER', 'FISKEBRUK_ADMIN')")
     public ResponseEntity<List<FangstmeldingResponseDto>> getAktiveFangstmeldinger() {
         List<FangstmeldingResponseDto> aktiveMeldinger = fangstmeldingService.findAktiveFangstmeldinger();
         return ResponseEntity.ok(aktiveMeldinger);
     }
 
     @GetMapping("/mine")
-    @PreAuthorize("hasRole('REDERI_SKIPPER') or hasRole('REDERI_ADMIN')")
+    @PreAuthorize("hasAnyRole('REDERI_SKIPPER', 'REDERI_ADMIN')")
     public ResponseEntity<List<FangstmeldingResponseDto>> getMineAktiveFangstmeldinger(@AuthenticationPrincipal Jwt jwt) {
         UserPrincipal principal = new UserPrincipal(jwt);
         Long selgerOrganisasjonId = principal.getOrganisasjonId();

@@ -1,5 +1,7 @@
 package io.github.martingit2.fangstportalen.servicehandel.fangstmelding;
 
+import io.github.martingit2.fangstportalen.servicehandel.fartoy.Fartoy;
+import io.github.martingit2.fangstportalen.servicehandel.fartoy.FartoyRepository;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.dto.CreateFangstmeldingRequestDto;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.dto.FangstlinjeResponseDto;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.dto.FangstmeldingResponseDto;
@@ -19,13 +21,27 @@ import java.util.stream.Collectors;
 public class FangstmeldingService {
 
     private final FangstmeldingRepository fangstmeldingRepository;
+    private final FartoyRepository fartoyRepository;
     private static final Logger logger = LoggerFactory.getLogger(FangstmeldingService.class);
 
     @Transactional
-    public Fangstmelding createFangstmelding(CreateFangstmeldingRequestDto dto, Long selgerOrganisasjonId) {
+    public FangstmeldingResponseDto createFangstmeldingAndConvertToDto(CreateFangstmeldingRequestDto dto, Long selgerOrganisasjonId, Long fartoyId) {
+        Fangstmelding fangstmelding = createFangstmelding(dto, selgerOrganisasjonId, fartoyId);
+        return convertToResponseDto(fangstmelding);
+    }
+
+    @Transactional
+    public Fangstmelding createFangstmelding(CreateFangstmeldingRequestDto dto, Long selgerOrganisasjonId, Long fartoyId) {
+        Fartoy fartoy = fartoyRepository.findById(fartoyId)
+                .orElseThrow(() -> new EntityNotFoundException("Fartøy ikke funnet med ID: " + fartoyId));
+
+        if (!fartoy.getEierOrganisasjon().getId().equals(selgerOrganisasjonId)) {
+            throw new AccessDeniedException("Ditt rederi eier ikke dette fartøyet.");
+        }
+
         Fangstmelding fangstmelding = Fangstmelding.builder()
                 .selgerOrganisasjonId(selgerOrganisasjonId)
-                .fartoyNavn(dto.fartoyNavn())
+                .fartoy(fartoy)
                 .leveringssted(dto.leveringssted())
                 .tilgjengeligFraDato(dto.tilgjengeligFraDato())
                 .status(FangstmeldingStatus.AAPEN_FOR_BUD)
@@ -42,6 +58,39 @@ public class FangstmeldingService {
         });
 
         return fangstmeldingRepository.save(fangstmelding);
+    }
+
+    @Transactional
+    public FangstmeldingResponseDto updateFangstmelding(Long fangstmeldingId, CreateFangstmeldingRequestDto dto, Long selgerOrganisasjonId) {
+        Fangstmelding fangstmelding = fangstmeldingRepository.findById(fangstmeldingId)
+                .orElseThrow(() -> new EntityNotFoundException("Finner ikke fangstmelding med ID: " + fangstmeldingId));
+
+        if (!fangstmelding.getSelgerOrganisasjonId().equals(selgerOrganisasjonId)) {
+            throw new AccessDeniedException("Du har ikke tilgang til å redigere denne fangstmeldingen.");
+        }
+
+        if (fangstmelding.getStatus() != FangstmeldingStatus.AAPEN_FOR_BUD) {
+            throw new IllegalStateException("Kun fangstmeldinger som er åpne for bud kan redigeres.");
+        }
+
+        fangstmelding.setLeveringssted(dto.leveringssted());
+        fangstmelding.setTilgjengeligFraDato(dto.tilgjengeligFraDato());
+
+        fangstmelding.getFangstlinjer().clear();
+        dto.fangstlinjer().forEach(linjeDto -> {
+            Fangstlinje linje = Fangstlinje.builder()
+                    .fiskeslag(linjeDto.fiskeslag())
+                    .estimertKvantum(linjeDto.estimertKvantum())
+                    .kvalitet(linjeDto.kvalitet())
+                    .storrelse(linjeDto.storrelse())
+                    .build();
+            fangstmelding.addFangstlinje(linje);
+        });
+
+        Fangstmelding updatedFangstmelding = fangstmeldingRepository.save(fangstmelding);
+        logger.info("Fangstmelding {} ble oppdatert av organisasjon {}", fangstmeldingId, selgerOrganisasjonId);
+
+        return convertToResponseDto(updatedFangstmelding);
     }
 
     @Transactional(readOnly = true)
@@ -83,42 +132,6 @@ public class FangstmeldingService {
         logger.info("Fangstmelding {} ble slettet av organisasjon {}", fangstmeldingId, selgerOrganisasjonId);
     }
 
-    @Transactional
-    public FangstmeldingResponseDto updateFangstmelding(Long fangstmeldingId, CreateFangstmeldingRequestDto dto, Long selgerOrganisasjonId) {
-        logger.info("Forespørsel om å oppdatere fangstmelding {} for organisasjon {}", fangstmeldingId, selgerOrganisasjonId);
-
-        Fangstmelding fangstmelding = fangstmeldingRepository.findById(fangstmeldingId)
-                .orElseThrow(() -> new EntityNotFoundException("Finner ikke fangstmelding med ID: " + fangstmeldingId));
-
-        if (!fangstmelding.getSelgerOrganisasjonId().equals(selgerOrganisasjonId)) {
-            throw new AccessDeniedException("Du har ikke tilgang til å redigere denne fangstmeldingen.");
-        }
-
-        if (fangstmelding.getStatus() != FangstmeldingStatus.AAPEN_FOR_BUD) {
-            throw new IllegalStateException("Kun fangstmeldinger som er åpne for bud kan redigeres.");
-        }
-
-        fangstmelding.setFartoyNavn(dto.fartoyNavn());
-        fangstmelding.setLeveringssted(dto.leveringssted());
-        fangstmelding.setTilgjengeligFraDato(dto.tilgjengeligFraDato());
-
-        fangstmelding.getFangstlinjer().clear();
-        dto.fangstlinjer().forEach(linjeDto -> {
-            Fangstlinje linje = Fangstlinje.builder()
-                    .fiskeslag(linjeDto.fiskeslag())
-                    .estimertKvantum(linjeDto.estimertKvantum())
-                    .kvalitet(linjeDto.kvalitet())
-                    .storrelse(linjeDto.storrelse())
-                    .build();
-            fangstmelding.addFangstlinje(linje);
-        });
-
-        Fangstmelding updatedFangstmelding = fangstmeldingRepository.save(fangstmelding);
-        logger.info("Fangstmelding {} ble oppdatert av organisasjon {}", fangstmeldingId, selgerOrganisasjonId);
-
-        return convertToResponseDto(updatedFangstmelding);
-    }
-
     private FangstmeldingResponseDto convertToResponseDto(Fangstmelding fangstmelding) {
         List<FangstlinjeResponseDto> fangstlinjeDtos = fangstmelding.getFangstlinjer().stream()
                 .map(linje -> new FangstlinjeResponseDto(
@@ -132,7 +145,7 @@ public class FangstmeldingService {
         return new FangstmeldingResponseDto(
                 fangstmelding.getId(),
                 String.valueOf(fangstmelding.getSelgerOrganisasjonId()),
-                fangstmelding.getFartoyNavn(),
+                fangstmelding.getFartoy().getNavn(),
                 fangstmelding.getStatus().name(),
                 fangstmelding.getLeveringssted(),
                 fangstmelding.getTilgjengeligFraDato(),

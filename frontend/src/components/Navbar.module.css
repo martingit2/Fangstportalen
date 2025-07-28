@@ -145,6 +145,12 @@
     border-left: 1px solid rgba(255, 255, 255, 0.2);
   }
 
+  .userName {
+    color: white;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
   .loginButton {
     background-color: transparent;
     color: white;

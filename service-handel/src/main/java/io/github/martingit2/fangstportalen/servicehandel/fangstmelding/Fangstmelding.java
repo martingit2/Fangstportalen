@@ -1,5 +1,6 @@
 package io.github.martingit2.fangstportalen.servicehandel.fangstmelding;
 
+import io.github.martingit2.fangstportalen.servicehandel.fartoy.Fartoy;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,8 +28,9 @@ public class Fangstmelding {
     @Column(name = "selger_organisasjon_id", nullable = false, updatable = false)
     private Long selgerOrganisasjonId;
 
-    @Column(nullable = false)
-    private String fartoyNavn;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fartoy_id", nullable = false)
+    private Fartoy fartoy;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

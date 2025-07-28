@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record CreateFangstmeldingRequestDto(
-        @NotBlank String fartoyNavn,
         @NotBlank String leveringssted,
         @NotNull @FutureOrPresent LocalDate tilgjengeligFraDato,
         @NotEmpty @Valid List<CreateFangstlinjeDto> fangstlinjer

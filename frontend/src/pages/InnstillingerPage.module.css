@@ -1,0 +1,34 @@
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.title {
+    margin-top: 0;
+    margin-bottom: 2rem;
+    font-size: 1.875rem;
+}
+
+.section {
+    margin-bottom: 2.5rem;
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.sectionTitle {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.card {
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 2rem;
+    color: var(--text-color-secondary);
+}

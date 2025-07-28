@@ -13,8 +13,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMenu }) => {
     return (
         <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
             <div className={styles.logoContainer}>
-                <img src={logoSrc} alt="Fangstportalen Logo" className={styles.logoImage} />
                 <h1 className={styles.logoText}>Fangstportalen</h1>
+                <img src={logoSrc} alt="Fangstportalen Logo" className={styles.logoImage} />
             </div>
             <nav className={styles.nav}>
                 <NavLink to="/dashboard" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink} onClick={onCloseMenu} end>

@@ -6,5 +6,6 @@ public record UserClaimsResponseDto(
         Long orgId,
         String orgName,
         String orgType,
-        List<String> roles
+        List<String> roles,
+        Long fartoyId
 ) {}
