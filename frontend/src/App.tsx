@@ -16,6 +16,7 @@ import StatistikkPage from './pages/StatistikkPage';
 import OnboardingPage from './pages/OnboardingPage';
 import InnstillingerPage from './pages/InnstillingerPage';
 import NyttFartoyPage from './pages/NyttFartoyPage';
+import SluttseddelArkivPage from './pages/SluttseddelArkivPage';
 
 function AppContent() {
   const { getAccessTokenSilently } = useAuth0();
@@ -33,6 +34,7 @@ function AppContent() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/ny-sluttseddel" element={<NySluttseddelPage />} />
             <Route path="/ordrer" element={<OrdrerPage />} />
+            <Route path="/sluttseddelarkiv" element={<SluttseddelArkivPage />} />
             <Route path="/statistikk" element={<StatistikkPage />} />
             <Route path="/kart" element={<div>Kart Side (TODO)</div>} />
             <Route path="/innstillinger" element={<InnstillingerPage />} />

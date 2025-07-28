@@ -30,4 +30,7 @@ public class SluttseddelLinje {
 
     @Column(nullable = false)
     private Double faktiskKvantum;
+
+    @Column(name = "avtalt_pris_per_kg", nullable = false)
+    private Double avtaltPrisPerKg;
 }

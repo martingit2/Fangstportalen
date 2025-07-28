@@ -4,5 +4,7 @@ public record SluttseddelLinjeDto(
         Long id,
         Long ordrelinjeId,
         String fiskeslag,
-        Double faktiskKvantum
+        Double faktiskKvantum,
+        Double avtaltPrisPerKg,
+        Double totalVerdi
 ) {}

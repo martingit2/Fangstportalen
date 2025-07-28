@@ -38,6 +38,7 @@ const RedigerFangstmeldingPage: React.FC = () => {
                     fangstlinjer: melding.fangstlinjer.map(l => ({
                         fiskeslag: l.fiskeslag,
                         estimertKvantum: String(l.estimertKvantum),
+                        utropsprisPerKg: String(l.utropsprisPerKg),
                         kvalitet: l.kvalitet || '',
                         storrelse: l.storrelse || '',
                     }))
@@ -89,12 +90,13 @@ const RedigerFangstmeldingPage: React.FC = () => {
                         <div key={field.id} className={styles.ordrelinje}>
                             <input {...register(`fangstlinjer.${index}.fiskeslag`)} placeholder="Fiskeslag" className={inputStyles.input} />
                             <input {...register(`fangstlinjer.${index}.estimertKvantum`)} type="text" inputMode="decimal" placeholder="Kvantum (kg)" className={inputStyles.input} />
+                            <input {...register(`fangstlinjer.${index}.utropsprisPerKg`)} type="text" inputMode="decimal" placeholder="Utropspris/kg" className={inputStyles.input} />
                             <Button type="button" variant="secondary" onClick={() => remove(index)}>Fjern</Button>
                         </div>
                     ))}
                      {errors.fangstlinjer?.root && <p className={inputStyles.error}>{errors.fangstlinjer.root.message}</p>}
 
-                    <Button type="button" variant="secondary" onClick={() => append({ fiskeslag: '', estimertKvantum: '', kvalitet: '', storrelse: '' })}>
+                    <Button type="button" variant="secondary" onClick={() => append({ fiskeslag: '', estimertKvantum: '', utropsprisPerKg: '' })}>
                         + Legg til linje
                     </Button>
                     <div className={styles.actions}>

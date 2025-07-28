@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Positive;
 public record CreateFangstlinjeDto(
         @NotBlank String fiskeslag,
         @NotNull @Positive Double estimertKvantum,
+        @NotNull @Positive Double utropsprisPerKg,
         String kvalitet,
         String storrelse
 ) {}

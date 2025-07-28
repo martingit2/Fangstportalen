@@ -2,7 +2,8 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import styles from './Sidebar.module.css';
 import logoSrc from '../assets/images/logo3.png';
-import { FaTachometerAlt, FaFileSignature, FaShoppingCart, FaChartLine, FaMapMarkedAlt, FaCog } from 'react-icons/fa';
+import { FaTachometerAlt, FaFileSignature, FaShoppingCart, FaChartLine, FaMapMarkedAlt, FaCog, FaArchive } from 'react-icons/fa';
+import { useClaims } from '../hooks/useClaims';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -10,6 +11,9 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMenu }) => {
+    const { claims } = useClaims();
+    const erSkipper = claims?.roles.some(r => r.startsWith('REDERI_'));
+
     return (
         <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
             <div className={styles.logoContainer}>
@@ -21,13 +25,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMenu }) => {
                     <FaTachometerAlt />
                     <span>Markedsplass</span>
                 </NavLink>
-                <NavLink to="/ny-sluttseddel" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink} onClick={onCloseMenu}>
-                    <FaFileSignature />
-                    <span>Ny Sluttseddel</span>
-                </NavLink>
+                {erSkipper && (
+                    <NavLink to="/ny-sluttseddel" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink} onClick={onCloseMenu}>
+                        <FaFileSignature />
+                        <span>Ny Sluttseddel</span>
+                    </NavLink>
+                )}
                 <NavLink to="/ordrer" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink} onClick={onCloseMenu}>
                     <FaShoppingCart />
                     <span>Mine Ordrer</span>
+                </NavLink>
+                <NavLink to="/sluttseddelarkiv" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink} onClick={onCloseMenu}>
+                    <FaArchive />
+                    <span>Sluttseddelarkiv</span>
                 </NavLink>
                 <NavLink to="/statistikk" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink} onClick={onCloseMenu}>
                     <FaChartLine />

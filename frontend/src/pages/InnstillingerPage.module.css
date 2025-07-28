@@ -31,4 +31,38 @@
     border-radius: 8px;
     padding: 2rem;
     color: var(--text-color-secondary);
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-color);
+}
+
+.table th, .table td {
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.errorText {
+    color: #b91c1c;
+}
+
+.brukerIdCell {
+    font-family: monospace;
+    font-size: 0.8rem;
 }

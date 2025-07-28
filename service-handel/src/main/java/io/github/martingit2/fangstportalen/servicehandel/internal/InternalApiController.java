@@ -26,13 +26,8 @@ public class InternalApiController {
 
         log.debug("Mottok forespørsel for bruker-claims for ID: {}", brukerId);
 
-        if (apiKey == null) {
-            log.warn("Kallet manglet X-API-Key headeren. Avviser.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        if (!apiKey.equals(appApiKey)) {
-            log.warn("Kallet hadde en ugyldig X-API-Key. Avviser.");
+        if (apiKey == null || !apiKey.equals(appApiKey)) {
+            log.warn("Kallet hadde en ugyldig eller manglende X-API-Key. Avviser.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -47,5 +42,18 @@ public class InternalApiController {
                     log.warn("Fant ingen claims for bruker {}. Returnerer 404 Not Found.", brukerId);
                     return ResponseEntity.notFound().build();
                 });
+    }
+
+    @PostMapping("/onboard-invited-user")
+    public ResponseEntity<Void> onboardInvitedUser(
+            @RequestBody InvitedUserDto dto,
+            @RequestHeader("X-API-Key") String apiKey) {
+
+        if (!apiKey.equals(appApiKey)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        internalDataService.onboardInvitedUser(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

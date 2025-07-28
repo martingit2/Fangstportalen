@@ -8,6 +8,10 @@ import type { AxiosResponse } from 'axios';
 import type { StatistikkResponseDto } from '../types/statistikk';
 import type { FartoyFormData } from '../schemas/fartoySchema';
 import type { FartoyResponseDto } from '../types/fartoy';
+import type { TeamMedlemResponseDto } from '../types/team';
+import type { SluttseddelResponseDto } from '../types/sluttseddel';
+import type { BudResponseDto } from '../types/bud';
+import type { BudFormData } from '../schemas/budSchema';
 
 interface CreateSluttseddelPayload {
     ordreId: number;
@@ -46,53 +50,25 @@ export const setupInterceptors = (getAccessTokenSilently: (options?: GetTokenSil
     );
 };
 
-export const getMineOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => {
-    return apiClient.get('/ordrer/mine');
-};
-
-export const getAktiveFangstmeldinger = (): Promise<AxiosResponse<FangstmeldingResponseDto[]>> => {
-    return apiClient.get('/fangstmeldinger/aktive');
-};
-
-export const createOrdreFromFangstmelding = (fangstmeldingId: number): Promise<AxiosResponse<OrdreResponseDto>> => {
-    return apiClient.post('/ordrer/fra-fangstmelding', { fangstmeldingId });
-};
-
+export const getMineOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => apiClient.get('/ordrer/mine');
+export const getAktiveFangstmeldinger = (): Promise<AxiosResponse<FangstmeldingResponseDto[]>> => apiClient.get('/fangstmeldinger/aktive');
 export const createFangstmelding = (data: FangstmeldingFormData): Promise<AxiosResponse> => {
     const payload = {
         ...data,
         fangstlinjer: data.fangstlinjer.map(linje => ({
             ...linje,
             estimertKvantum: parseFloat(linje.estimertKvantum),
+            utropsprisPerKg: parseFloat(linje.utropsprisPerKg),
         })),
     };
     return apiClient.post('/fangstmeldinger', payload);
 };
-
-export const getMineFangstmeldinger = (): Promise<AxiosResponse<FangstmeldingResponseDto[]>> => {
-    return apiClient.get('/fangstmeldinger/mine');
-};
-
-export const getTilgjengeligeOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => {
-    return apiClient.get('/ordrer/tilgjengelige');
-};
-
-export const aksepterOrdre = (ordreId: number): Promise<AxiosResponse<OrdreResponseDto>> => {
-    return apiClient.patch(`/ordrer/${ordreId}/aksepter`);
-};
-
-export const deleteOrdre = (ordreId: number): Promise<AxiosResponse<void>> => {
-    return apiClient.delete(`/ordrer/${ordreId}`);
-};
-
-export const deleteFangstmelding = (fangstmeldingId: number): Promise<AxiosResponse<void>> => {
-    return apiClient.delete(`/fangstmeldinger/${fangstmeldingId}`);
-};
-
-export const getOrdreById = (ordreId: number): Promise<AxiosResponse<OrdreResponseDto>> => {
-    return apiClient.get(`/ordrer/${ordreId}`);
-};
-
+export const getMineFangstmeldinger = (): Promise<AxiosResponse<FangstmeldingResponseDto[]>> => apiClient.get('/fangstmeldinger/mine');
+export const getTilgjengeligeOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => apiClient.get('/ordrer/tilgjengelige');
+export const aksepterOrdre = (ordreId: number): Promise<AxiosResponse<OrdreResponseDto>> => apiClient.patch(`/ordrer/${ordreId}/aksepter`);
+export const deleteOrdre = (ordreId: number): Promise<AxiosResponse<void>> => apiClient.delete(`/ordrer/${ordreId}`);
+export const deleteFangstmelding = (fangstmeldingId: number): Promise<AxiosResponse<void>> => apiClient.delete(`/fangstmeldinger/${fangstmeldingId}`);
+export const getOrdreById = (ordreId: number): Promise<AxiosResponse<OrdreResponseDto>> => apiClient.get(`/ordrer/${ordreId}`);
 export const updateOrdre = (ordreId: number, data: OrdreFormData): Promise<AxiosResponse<OrdreResponseDto>> => {
     const payload = {
         ...data,
@@ -104,36 +80,31 @@ export const updateOrdre = (ordreId: number, data: OrdreFormData): Promise<Axios
     };
     return apiClient.put(`/ordrer/${ordreId}`, payload);
 };
-
-export const getFangstmeldingById = (id: number): Promise<AxiosResponse<FangstmeldingResponseDto>> => {
-    return apiClient.get(`/fangstmeldinger/${id}`);
-};
-
+export const getFangstmeldingById = (id: number): Promise<AxiosResponse<FangstmeldingResponseDto>> => apiClient.get(`/fangstmeldinger/${id}`);
 export const updateFangstmelding = (id: number, data: FangstmeldingFormData): Promise<AxiosResponse<FangstmeldingResponseDto>> => {
     const payload = {
         ...data,
         fangstlinjer: data.fangstlinjer.map(linje => ({
             ...linje,
             estimertKvantum: parseFloat(linje.estimertKvantum),
+            utropsprisPerKg: parseFloat(linje.utropsprisPerKg),
         })),
     };
     return apiClient.put(`/fangstmeldinger/${id}`, payload);
 };
-
-export const getMineAvtalteOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => {
-    return apiClient.get('/ordrer/mine/avtalte');
+export const getMineAvtalteOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => apiClient.get('/ordrer/mine/avtalte');
+export const createSluttseddel = (data: CreateSluttseddelPayload): Promise<AxiosResponse> => apiClient.post('/sluttsedler', data);
+export const getStatistikkOversikt = (): Promise<AxiosResponse<StatistikkResponseDto>> => apiClient.get('/statistikk/oversikt');
+export const createFartoy = (data: FartoyFormData): Promise<AxiosResponse<FartoyResponseDto>> => apiClient.post('/fartoy', data);
+export const getMineFartoy = (): Promise<AxiosResponse<FartoyResponseDto[]>> => apiClient.get('/fartoy');
+export const getMineTeamMedlemmer = (): Promise<AxiosResponse<TeamMedlemResponseDto[]>> => apiClient.get('/team/medlemmer');
+export const getMineSluttsedler = (): Promise<AxiosResponse<SluttseddelResponseDto[]>> => apiClient.get('/sluttsedler/mine');
+export const bekreftSluttseddel = (id: number): Promise<AxiosResponse<SluttseddelResponseDto>> => apiClient.patch(`/sluttsedler/${id}/bekreft`);
+export const giBud = (fangstmeldingId: number, data: BudFormData): Promise<AxiosResponse<BudResponseDto>> => {
+    const payload = { budPrisPerKg: parseFloat(data.budPrisPerKg) };
+    return apiClient.post(`/fangstmeldinger/${fangstmeldingId}/bud`, payload);
 };
-
-export const createSluttseddel = (data: CreateSluttseddelPayload): Promise<AxiosResponse> => {
-    return apiClient.post('/sluttsedler', data);
-};
-
-export const getStatistikkOversikt = (): Promise<AxiosResponse<StatistikkResponseDto>> => {
-    return apiClient.get('/statistikk/oversikt');
-};
-
-export const createFartoy = (data: FartoyFormData): Promise<AxiosResponse<FartoyResponseDto>> => {
-    return apiClient.post('/fartoy', data);
-};
+export const getBudForFangstmelding = (fangstmeldingId: number): Promise<AxiosResponse<BudResponseDto[]>> => apiClient.get(`/fangstmeldinger/${fangstmeldingId}/bud`);
+export const aksepterBud = (budId: number): Promise<AxiosResponse<OrdreResponseDto>> => apiClient.patch(`/bud/${budId}/aksepter`);
 
 export default apiClient;

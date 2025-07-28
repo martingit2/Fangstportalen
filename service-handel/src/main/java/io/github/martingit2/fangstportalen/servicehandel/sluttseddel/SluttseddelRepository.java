@@ -10,5 +10,7 @@ public interface SluttseddelRepository extends JpaRepository<Sluttseddel, Long> 
 
     List<Sluttseddel> findBySelgerOrganisasjonIdOrderByLandingsdatoDesc(Long selgerOrganisasjonId);
 
+    List<Sluttseddel> findByKjoperOrganisasjonIdOrderByLandingsdatoDesc(Long kjoperOrganisasjonId);
+
     List<Sluttseddel> findByStatusOrderByLandingsdatoDesc(SluttseddelStatus status);
 }

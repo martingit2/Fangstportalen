@@ -6,6 +6,7 @@ import type { OrdreResponseDto } from '../types/ordre';
 import styles from './NySluttseddelPage.module.css';
 import inputStyles from '../components/ui/Input.module.css';
 import Button from '../components/ui/Button';
+import { useClaims } from '../hooks/useClaims';
 
 interface SluttseddelFormData {
     ordreId: number;
@@ -18,19 +19,25 @@ interface SluttseddelFormData {
 
 const NySluttseddelPage: React.FC = () => {
     const navigate = useNavigate();
+    const { claims, isLoading: claimsLoading } = useClaims();
     const [avtalteOrdrer, setAvtalteOrdrer] = useState<OrdreResponseDto[]>([]);
     const [selectedOrdre, setSelectedOrdre] = useState<OrdreResponseDto | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const erSkipper = claims?.roles.some(r => r.startsWith('REDERI_'));
 
     const { register, control, handleSubmit, formState: { isSubmitting }, setValue } = useForm<SluttseddelFormData>();
     const { fields } = useFieldArray({ control, name: "linjer" });
 
     useEffect(() => {
-        getMineAvtalteOrdrer()
-            .then(res => setAvtalteOrdrer(res.data))
-            .catch(err => console.error(err))
-            .finally(() => setIsLoading(false));
-    }, []);
+        if (erSkipper) {
+            getMineAvtalteOrdrer()
+                .then(res => setAvtalteOrdrer(res.data))
+                .catch(err => console.error(err))
+                .finally(() => setIsLoading(false));
+        } else {
+            setIsLoading(false);
+        }
+    }, [erSkipper]);
 
     const handleSelectOrdre = (ordre: OrdreResponseDto) => {
         setSelectedOrdre(ordre);
@@ -58,7 +65,18 @@ const NySluttseddelPage: React.FC = () => {
         }
     };
     
-    if (isLoading) return <div>Laster avtalte ordrer...</div>;
+    if (isLoading || claimsLoading) return <div>Laster...</div>;
+
+    if (!erSkipper) {
+        return (
+             <div className={styles.container}>
+                <h1 className={styles.title}>Ny Sluttseddel</h1>
+                <div className={styles.emptyState}>
+                    <p>Denne funksjonen er kun tilgjengelig for skippere.</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!selectedOrdre) {
         return (

@@ -13,5 +13,6 @@ public record SluttseddelResponseDto(
         String fartoyNavn,
         String leveringssted,
         List<SluttseddelLinjeDto> linjer,
+        Double totalVerdi,
         LocalDateTime opprettetTidspunkt
 ) {}

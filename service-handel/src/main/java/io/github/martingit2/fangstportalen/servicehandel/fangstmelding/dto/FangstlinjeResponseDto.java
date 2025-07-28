@@ -4,6 +4,7 @@ public record FangstlinjeResponseDto(
         Long id,
         String fiskeslag,
         Double estimertKvantum,
+        Double utropsprisPerKg,
         String kvalitet,
         String storrelse
 ) {}

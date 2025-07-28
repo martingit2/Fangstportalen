@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
     getMineOrdrer,
     getAktiveFangstmeldinger,
-    createOrdreFromFangstmelding,
     getMineFangstmeldinger,
     getTilgjengeligeOrdrer,
     aksepterOrdre,
@@ -11,16 +10,16 @@ import {
 } from '../services/apiService';
 import styles from './DashboardPage.module.css';
 import Button from '../components/ui/Button';
-import { useRoles } from '../hooks/usePermissions';
+import { useClaims } from '../hooks/useClaims';
 import type { OrdreResponseDto } from '../types/ordre';
 import type { FangstmeldingResponseDto } from '../types/fangstmelding';
+import GiBudModal from '../components/GiBudModal';
 
 const SkipperDashboard: React.FC = () => {
     const [mineFangstmeldinger, setMineFangstmeldinger] = useState<FangstmeldingResponseDto[]>([]);
     const [tilgjengeligeOrdrer, setTilgjengeligeOrdrer] = useState<OrdreResponseDto[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { roles, isLoading: rolesLoading } = useRoles();
     const [isAcceptingId, setIsAcceptingId] = useState<number | null>(null);
     const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
 
@@ -34,7 +33,7 @@ const SkipperDashboard: React.FC = () => {
             setTilgjengeligeOrdrer(ordrerRes.data);
             setError(null);
         } catch (err) {
-            console.error("Feil ved henting av skipper-dashboard data:", err);
+            console.error(err);
             setError("Kunne ikke laste inn data.");
         } finally {
             setIsLoading(false);
@@ -52,7 +51,7 @@ const SkipperDashboard: React.FC = () => {
             await aksepterOrdre(ordreId);
             await fetchData();
         } catch (err) {
-            console.error("Feil ved aksept av ordre:", err);
+            console.error(err);
             alert("Kunne ikke akseptere ordren. Den kan ha blitt tatt av en annen skipper. Siden oppdateres.");
             await fetchData();
         } finally {
@@ -69,16 +68,14 @@ const SkipperDashboard: React.FC = () => {
             await deleteFangstmelding(fangstmeldingId);
             await fetchData();
         } catch (err) {
-            console.error("Feil ved sletting av fangstmelding:", err);
-            alert("Kunne ikke slette fangstmeldingen. Den kan allerede ha blitt akseptert.");
+            console.error(err);
+            alert("Kunne ikke slette fangstmeldingen.");
             await fetchData();
         } finally {
             setIsDeletingId(null);
         }
     };
-
-    const isSkipper = roles.includes('REDERI_SKIPPER');
-
+    
     const renderMineFangstmeldinger = () => {
         if (isLoading) return <div className={styles.loading}>Laster...</div>;
         if (mineFangstmeldinger.length === 0) return <div className={styles.empty}>Du har ingen aktive fangstmeldinger.</div>;
@@ -90,13 +87,12 @@ const SkipperDashboard: React.FC = () => {
                          <div className={styles.fangstInfo}>
                             <h3>{melding.fartoyNavn} - {melding.leveringssted}</h3>
                             <p className={styles.fangstlinjer}>
-                                {melding.fangstlinjer.map(l => `${l.fiskeslag} (~${l.estimertKvantum} kg)`).join(', ')}
+                                {melding.fangstlinjer.map(l => `${l.fiskeslag} (~${l.estimertKvantum} kg) @ ${l.utropsprisPerKg} kr/kg`).join(', ')}
                             </p>
                         </div>
                         <div className={styles.cardActions}>
-                             <Button variant="secondary" to={`/fangstmelding/${melding.id}/rediger`}>
-                                 Rediger
-                             </Button>
+                             <Button variant="secondary" onClick={() => alert('Vis bud (TODO)')}>Se bud</Button>
+                             <Button variant="secondary" to={`/fangstmelding/${melding.id}/rediger`}>Rediger</Button>
                              <Button
                                 variant="danger"
                                 onClick={() => handleDeleteFangstmelding(melding.id)}
@@ -160,20 +156,16 @@ const SkipperDashboard: React.FC = () => {
         <div className={styles.container}>
             <header className={styles.header}>
                 <h1 className={styles.title}>Markedsplass</h1>
-                {!rolesLoading && isSkipper && (
-                    <Button to="/ny-fangstmelding">Annonser ny fangst</Button>
-                )}
+                <Button to="/ny-fangstmelding">Annonser ny fangst</Button>
             </header>
-
             <div className={styles.marketplaceSection}>
                 <h2 className={styles.marketplaceTitle}>Mine Aktive Fangstmeldinger</h2>
                 <div className={styles.content}>
                     {error ? <div className={styles.error}>{error}</div> : renderMineFangstmeldinger()}
                 </div>
             </div>
-
             <div className={styles.marketplaceSection}>
-                <h2 className={styles.marketplaceTitle}>Etterspørsel i Markedet</h2>
+                <h2 className={styles.marketplaceTitle}>Etterspørsel i Markedet (Åpne Ordrer)</h2>
                 <div className={styles.content}>
                     {error ? <div className={styles.error}>{error}</div> : renderTilgjengeligeOrdrer()}
                 </div>
@@ -187,8 +179,9 @@ const InnkjoperDashboard: React.FC = () => {
     const [fangstmeldinger, setFangstmeldinger] = useState<FangstmeldingResponseDto[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isAcceptingId, setIsAcceptingId] = useState<number | null>(null);
     const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
+    const [isBudModalOpen, setIsBudModalOpen] = useState(false);
+    const [selectedFangstmeldingId, setSelectedFangstmeldingId] = useState<number | null>(null);
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
@@ -201,7 +194,7 @@ const InnkjoperDashboard: React.FC = () => {
             setFangstmeldinger(fangstmeldingerResponse.data);
             setError(null);
         } catch (err) {
-            console.error("Feil ved henting av dashboard-data:", err);
+            console.error(err);
             setError("Kunne ikke laste inn data.");
         } finally {
             setIsLoading(false);
@@ -212,17 +205,19 @@ const InnkjoperDashboard: React.FC = () => {
         fetchData();
     }, [fetchData]);
 
-    const handleAcceptFangstmelding = async (fangstmeldingId: number) => {
-        setIsAcceptingId(fangstmeldingId);
-        try {
-            await createOrdreFromFangstmelding(fangstmeldingId);
-            await fetchData();
-        } catch (err) {
-            console.error("Feil ved opprettelse av ordre fra fangstmelding:", err);
-            alert("Kunne ikke opprette ordre. Fangsten kan allerede være solgt.");
-        } finally {
-            setIsAcceptingId(null);
-        }
+    const handleOpenBudModal = (fangstmeldingId: number) => {
+        setSelectedFangstmeldingId(fangstmeldingId);
+        setIsBudModalOpen(true);
+    };
+
+    const handleCloseBudModal = () => {
+        setSelectedFangstmeldingId(null);
+        setIsBudModalOpen(false);
+    };
+
+    const handleBudSuccess = () => {
+        alert('Budet ditt er sendt!');
+        fetchData();
     };
 
     const handleDeleteOrdre = async (ordreId: number) => {
@@ -234,7 +229,7 @@ const InnkjoperDashboard: React.FC = () => {
             await deleteOrdre(ordreId);
             await fetchData();
         } catch (err) {
-            console.error("Feil ved sletting av ordre:", err);
+            console.error(err);
             alert("Kunne ikke slette ordren. Den kan ha blitt akseptert av en skipper.");
             await fetchData();
         } finally {
@@ -298,18 +293,12 @@ const InnkjoperDashboard: React.FC = () => {
                 {fangstmeldinger.map(melding => (
                     <div key={melding.id} className={styles.fangstmeldingCard}>
                         <div className={styles.fangstInfo}>
-                            <h3>{melding.fartoyNavn}</h3>
-                            <p>Ankommer {melding.leveringssted} den {new Date(melding.tilgjengeligFraDato).toLocaleDateString('nb-NO')}</p>
+                            <h3>{melding.fartoyNavn} - {melding.leveringssted}</h3>
                             <p className={styles.fangstlinjer}>
-                                {melding.fangstlinjer.map(l => `${l.fiskeslag} (~${l.estimertKvantum} kg)`).join(', ')}
+                               {melding.fangstlinjer.map(l => `${l.fiskeslag} (~${l.estimertKvantum} kg) @ ${l.utropsprisPerKg} kr/kg`).join(', ')}
                             </p>
                         </div>
-                        <Button
-                            onClick={() => handleAcceptFangstmelding(melding.id)}
-                            disabled={isAcceptingId === melding.id}
-                        >
-                            {isAcceptingId === melding.id ? 'Oppretter...' : 'Opprett Ordre'}
-                        </Button>
+                        <Button onClick={() => handleOpenBudModal(melding.id)}>Gi bud</Button>
                     </div>
                 ))}
             </div>
@@ -317,38 +306,53 @@ const InnkjoperDashboard: React.FC = () => {
     };
 
     return (
-        <div className={styles.container}>
-            <header className={styles.header}>
-                <h1 className={styles.title}>Mine Ordrer</h1>
-                <Button to="/ny-ordre">Opprett Åpen Ordre</Button>
-            </header>
-            <div className={styles.content}>
-                {error ? <div className={styles.error}>{error}</div> : renderOrdreContent()}
-            </div>
-
-            <div className={styles.marketplaceSection}>
-                <h2 className={styles.marketplaceTitle}>Tilgjengelig i Markedet</h2>
+        <>
+            <div className={styles.container}>
+                <header className={styles.header}>
+                    <h1 className={styles.title}>Mine Ordrer</h1>
+                    <Button to="/ny-ordre">Opprett Åpen Ordre</Button>
+                </header>
                 <div className={styles.content}>
-                    {error ? <div className={styles.error}>{error}</div> : renderMarketplaceContent()}
+                    {error ? <div className={styles.error}>{error}</div> : renderOrdreContent()}
+                </div>
+                <div className={styles.marketplaceSection}>
+                    <h2 className={styles.marketplaceTitle}>Tilgjengelig i Markedet (Fangstmeldinger)</h2>
+                    <div className={styles.content}>
+                        {error ? <div className={styles.error}>{error}</div> : renderMarketplaceContent()}
+                    </div>
                 </div>
             </div>
-        </div>
+             {selectedFangstmeldingId && (
+                <GiBudModal
+                    isOpen={isBudModalOpen}
+                    onClose={handleCloseBudModal}
+                    onSuccess={handleBudSuccess}
+                    fangstmeldingId={selectedFangstmeldingId}
+                />
+            )}
+        </>
     );
 };
 
-
 const DashboardPage: React.FC = () => {
-    const { roles, isLoading } = useRoles();
+    const { claims, isLoading } = useClaims();
     
     if (isLoading) {
         return <div>Laster brukerinformasjon...</div>;
     }
 
-    if (roles.includes('FISKEBRUK_INNKJOPER') || roles.includes('FISKEBRUK_ADMIN')) {
+    if (!claims?.roles) {
+         return <div>Ukjent rolle. Kontakt administrator.</div>;
+    }
+    
+    const erInnkjoper = claims.roles.some(r => r.startsWith('FISKEBRUK_'));
+    const erSkipper = claims.roles.some(r => r.startsWith('REDERI_'));
+
+    if (erInnkjoper) {
         return <InnkjoperDashboard />;
     }
 
-    if (roles.includes('REDERI_SKIPPER') || roles.includes('REDERI_ADMIN')) {
+    if (erSkipper) {
         return <SkipperDashboard />;
     }
 

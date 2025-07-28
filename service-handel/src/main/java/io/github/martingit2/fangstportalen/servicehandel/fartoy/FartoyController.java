@@ -10,10 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/fartoy")
@@ -34,5 +33,14 @@ public class FartoyController {
         FartoyResponseDto createdFartoy = fartoyService.createFartoy(requestDto, eierOrganisasjonId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdFartoy);
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('REDERI_ADMIN')")
+    public ResponseEntity<List<FartoyResponseDto>> getMineFartoy(@AuthenticationPrincipal Jwt jwt) {
+        UserPrincipal principal = new UserPrincipal(jwt);
+        Long eierOrganisasjonId = principal.getOrganisasjonId();
+        List<FartoyResponseDto> fartoyList = fartoyService.getFartoyForOrganisasjon(eierOrganisasjonId);
+        return ResponseEntity.ok(fartoyList);
     }
 }

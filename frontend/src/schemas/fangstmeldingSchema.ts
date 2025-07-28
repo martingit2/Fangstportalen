@@ -9,6 +9,7 @@ const numberString = z.string()
 export const fangstlinjeSchema = z.object({
     fiskeslag: z.string().min(1, { message: 'Fiskeslag er påkrevd.' }),
     estimertKvantum: numberString,
+    utropsprisPerKg: numberString, 
     kvalitet: z.string().optional(),
     storrelse: z.string().optional(),
 });

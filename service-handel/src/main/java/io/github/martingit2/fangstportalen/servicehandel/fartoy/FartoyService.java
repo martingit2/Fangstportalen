@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class FartoyService {
@@ -31,6 +34,14 @@ public class FartoyService {
         Fartoy savedFartoy = fartoyRepository.save(fartoy);
 
         return convertToDto(savedFartoy);
+    }
+
+    @Transactional(readOnly = true)
+    public List<FartoyResponseDto> getFartoyForOrganisasjon(Long eierOrganisasjonId) {
+        return fartoyRepository.findByEierOrganisasjonId(eierOrganisasjonId)
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
     private FartoyResponseDto convertToDto(Fartoy fartoy) {

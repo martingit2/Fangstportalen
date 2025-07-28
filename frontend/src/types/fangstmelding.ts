@@ -2,6 +2,7 @@ export interface FangstlinjeResponseDto {
     id: number;
     fiskeslag: string;
     estimertKvantum: number;
+    utropsprisPerKg: number; 
     kvalitet: string | null;
     storrelse: string | null;
 }

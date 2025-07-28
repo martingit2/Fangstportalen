@@ -30,6 +30,9 @@ public class Fangstlinje {
     @Column(nullable = false)
     private Double estimertKvantum;
 
+    @Column(name = "utropspris_per_kg", nullable = false)
+    private Double utropsprisPerKg;
+
     private String kvalitet;
 
     private String storrelse;

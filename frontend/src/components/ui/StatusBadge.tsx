@@ -9,7 +9,7 @@ interface StatusBadgeProps {
 
 const statusMap: Record<Status, { text: string; className: string }> = {
     KLADD: { text: 'Kladd', className: styles.kladd },
-    SIGNERT_AV_FISKER: { text: 'Signert av Fisker', className: styles.signert_av_fisker },
+    SIGNERT_AV_FISKER: { text: 'Venter på godkjenning', className: styles.signert_av_fisker },
     BEKREFTET_AV_MOTTAK: { text: 'Bekreftet', className: styles.bekreftet_av_mottak },
     AVVIST: { text: 'Avvist', className: styles.avvist },
 };

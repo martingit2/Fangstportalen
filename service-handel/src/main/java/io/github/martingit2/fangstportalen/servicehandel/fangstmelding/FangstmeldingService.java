@@ -51,6 +51,7 @@ public class FangstmeldingService {
             Fangstlinje linje = Fangstlinje.builder()
                     .fiskeslag(linjeDto.fiskeslag())
                     .estimertKvantum(linjeDto.estimertKvantum())
+                    .utropsprisPerKg(linjeDto.utropsprisPerKg())
                     .kvalitet(linjeDto.kvalitet())
                     .storrelse(linjeDto.storrelse())
                     .build();
@@ -81,6 +82,7 @@ public class FangstmeldingService {
             Fangstlinje linje = Fangstlinje.builder()
                     .fiskeslag(linjeDto.fiskeslag())
                     .estimertKvantum(linjeDto.estimertKvantum())
+                    .utropsprisPerKg(linjeDto.utropsprisPerKg())
                     .kvalitet(linjeDto.kvalitet())
                     .storrelse(linjeDto.storrelse())
                     .build();
@@ -138,6 +140,7 @@ public class FangstmeldingService {
                         linje.getId(),
                         linje.getFiskeslag(),
                         linje.getEstimertKvantum(),
+                        linje.getUtropsprisPerKg(),
                         linje.getKvalitet(),
                         linje.getStorrelse()))
                 .collect(Collectors.toList());
