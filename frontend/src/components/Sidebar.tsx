@@ -23,7 +23,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMenu }) => {
                 </NavLink>
                 <NavLink to="/ny-sluttseddel" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink} onClick={onCloseMenu}>
                     <FaFileSignature />
-                    <span>Opprett Sluttseddel</span>
+                    <span>Ny Sluttseddel</span>
                 </NavLink>
                 <NavLink to="/ordrer" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink} onClick={onCloseMenu}>
                     <FaShoppingCart />

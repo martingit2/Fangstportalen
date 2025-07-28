@@ -12,15 +12,18 @@ if (!domain || !clientId || !audience) {
   throw new Error("Auth0 environment variables are not set. Please check your .env file.");
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(
   <React.StrictMode>
     <Auth0Provider
       domain={domain}
       clientId={clientId}
       authorizationParams={{
-        redirect_uri: `${window.location.origin}/dashboard`, // VI GÅR TILBAKE TIL DENNE
+        redirect_uri: `${window.location.origin}/dashboard`,
         audience: audience,
       }}
+      cacheLocation="localstorage"
+      useRefreshTokens={true}
     >
       <App />
     </Auth0Provider>

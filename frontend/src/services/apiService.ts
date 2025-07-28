@@ -5,6 +5,7 @@ import type { FangstmeldingResponseDto } from '../types/fangstmelding';
 import type { FangstmeldingFormData } from '../schemas/fangstmeldingSchema';
 import type { OrdreFormData } from '../schemas/ordreSchema';
 import type { AxiosResponse } from 'axios';
+import type { StatistikkResponseDto } from '../types/statistikk';
 
 interface CreateSluttseddelPayload {
     ordreId: number;
@@ -123,6 +124,10 @@ export const getMineAvtalteOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]
 
 export const createSluttseddel = (data: CreateSluttseddelPayload): Promise<AxiosResponse> => {
     return apiClient.post('/sluttsedler', data);
+};
+
+export const getStatistikkOversikt = (): Promise<AxiosResponse<StatistikkResponseDto>> => {
+    return apiClient.get('/statistikk/oversikt');
 };
 
 export default apiClient;

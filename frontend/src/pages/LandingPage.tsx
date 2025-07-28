@@ -6,15 +6,14 @@ import heroImage from '../assets/images/fisk1.jpg';
 import FadeIn from '../components/FadeIn';
 import FeaturesSection from '../components/FeaturesSection';
 import DisclaimerSection from '../components/DisclaimerSection';
+import { useAuth0 } from '@auth0/auth0-react';
 
-interface LandingPageProps {
-  onLogin: () => void;
-}
+const LandingPage: React.FC = () => {
+  const { loginWithRedirect } = useAuth0();
 
-const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
   return (
     <>
-      <Navbar onLogin={onLogin} />
+      <Navbar onLogin={() => loginWithRedirect()} />
 
       <main>
         <div className={styles.hero}>
@@ -31,7 +30,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                   <li>Digital sluttseddel på kaien</li>
                   <li>Full analyse av din fangsthistorikk</li>
                 </ul>
-                <button className={styles.ctaButton} onClick={onLogin}>
+                <button className={styles.ctaButton} onClick={() => loginWithRedirect()}>
                   Kom i gang gratis
                 </button>
               </div>

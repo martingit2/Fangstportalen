@@ -14,7 +14,6 @@ export const fangstlinjeSchema = z.object({
 });
 
 export const fangstmeldingSchema = z.object({
-    fartoyNavn: z.string().min(1, { message: 'Fartøynavn er påkrevd.' }),
     leveringssted: z.string().min(1, { message: 'Leveringssted er påkrevd.' }),
     tilgjengeligFraDato: z.string().min(1, { message: 'Dato er påkrevd.' }),
     fangstlinjer: z.array(fangstlinjeSchema).min(1, { message: 'En fangstmelding må ha minst én fangstlinje.' }),

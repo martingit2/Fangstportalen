@@ -12,10 +12,11 @@ import RedigerOrdrePage from './pages/RedigerOrdrePage';
 import RedigerFangstmeldingPage from './pages/RedigerFangstmeldingPage';
 import NySluttseddelPage from './pages/NySluttseddelPage';
 import OrdrerPage from './pages/OrdrerPage';
+import StatistikkPage from './pages/StatistikkPage';
+import OnboardingPage from './pages/OnboardingPage';
 
-function App() {
-  const { loginWithRedirect, getAccessTokenSilently } = useAuth0();
-
+function AppContent() {
+  const { getAccessTokenSilently } = useAuth0();
   useEffect(() => {
     setupInterceptors(getAccessTokenSilently);
   }, [getAccessTokenSilently]);
@@ -23,13 +24,14 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LandingPage onLogin={() => loginWithRedirect()} />} />
+        <Route path="/" element={<LandingPage />} />
         <Route element={<ProtectedRoute />}>
+          <Route path="/onboarding" element={<OnboardingPage />} />
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/ny-sluttseddel" element={<NySluttseddelPage />} />
             <Route path="/ordrer" element={<OrdrerPage />} />
-            <Route path="/statistikk" element={<div>Statistikk Side (TODO)</div>} />
+            <Route path="/statistikk" element={<StatistikkPage />} />
             <Route path="/kart" element={<div>Kart Side (TODO)</div>} />
             <Route path="/innstillinger" element={<div>Innstillinger Side (TODO)</div>} />
             <Route path="/ny-ordre" element={<NyOrdrePage />} />
@@ -41,6 +43,13 @@ function App() {
       </Routes>
     </BrowserRouter>
   );
+}
+
+function App() {
+  const { isLoading, error } = useAuth0();
+  if (isLoading) return <div>Laster autentisering...</div>;
+  if (error) return <div>Autentiseringsfeil: {error.message}</div>;
+  return <AppContent />;
 }
 
 export default App;

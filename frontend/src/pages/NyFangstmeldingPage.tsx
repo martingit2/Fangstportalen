@@ -19,10 +19,9 @@ const NyFangstmeldingPage: React.FC = () => {
     } = useForm<FangstmeldingFormData>({
         resolver: zodResolver(fangstmeldingSchema),
         defaultValues: {
-            fartoyNavn: '',
             leveringssted: '',
             tilgjengeligFraDato: new Date().toISOString().split('T')[0],
-            fangstlinjer: [{ fiskeslag: '', estimertKvantum: '', kvalitet: '', storrelse: '' }],
+            fangstlinjer: [{ fiskeslag: '', estimertKvantum: '' }],
         },
     });
 
@@ -46,12 +45,6 @@ const NyFangstmeldingPage: React.FC = () => {
             <h1 className={styles.title}>Annonser ny fangst</h1>
             <div className={styles.form}>
                 <form onSubmit={handleSubmit(onSubmit)} noValidate>
-                    <div className={inputStyles.formRow}>
-                        <label htmlFor="fartoyNavn" className={inputStyles.label}>Fartøynavn</label>
-                        <input id="fartoyNavn" type="text" {...register('fartoyNavn')} className={inputStyles.input} />
-                        {errors.fartoyNavn && <p className={inputStyles.error}>{errors.fartoyNavn.message}</p>}
-                    </div>
-
                     <div className={inputStyles.formRow}>
                         <label htmlFor="leveringssted" className={inputStyles.label}>Leveringssted</label>
                         <input id="leveringssted" type="text" {...register('leveringssted')} className={inputStyles.input} />
