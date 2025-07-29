@@ -10,7 +10,7 @@ import { createOnboardingSchema, type OnboardingFormData, type OrgType } from '.
 
 const OnboardingPage: React.FC = () => {
     const [orgType, setOrgType] = useState<OrgType | null>(null);
-    const { logout, user } = useAuth0();
+    const { user, getAccessTokenSilently } = useAuth0();
     
     const schema = useMemo(() => createOnboardingSchema(orgType || 'FISKEBRUK'), [orgType]);
 
@@ -33,8 +33,13 @@ const OnboardingPage: React.FC = () => {
         };
         try {
             await apiClient.post('/onboarding/registrer', payload);
-            alert("Registrering vellykket! Logg inn på nytt for å få tilgang til ditt nye dashboard.");
-            logout({ logoutParams: { returnTo: window.location.origin } });
+            
+            await getAccessTokenSilently({
+                cacheMode: 'off'
+            });
+            
+            window.location.assign('/dashboard');
+
         } catch (error) {
             alert('En feil oppstod under registrering.');
         }
@@ -107,7 +112,7 @@ const OnboardingPage: React.FC = () => {
                     </div>
                     <div className={styles.formActions}>
                         <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Registrerer...' : 'Fullfør registrering'}</Button>
-                        <Button variant="secondary" onClick={() => setOrgType(null)}>Tilbake</Button>
+                        <Button type="button" variant="secondary" onClick={() => setOrgType(null)}>Tilbake</Button>
                     </div>
                 </form>
             </div>

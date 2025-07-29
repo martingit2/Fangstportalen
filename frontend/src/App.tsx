@@ -17,17 +17,27 @@ import OnboardingPage from './pages/OnboardingPage';
 import InnstillingerPage from './pages/InnstillingerPage';
 import NyttFartoyPage from './pages/NyttFartoyPage';
 import SluttseddelArkivPage from './pages/SluttseddelArkivPage';
+import StatusPage from './pages/StatusPage';
 
-function AppContent() {
-  const { getAccessTokenSilently } = useAuth0();
+function App() {
+  const { isLoading, getAccessTokenSilently } = useAuth0();
+
   useEffect(() => {
     setupInterceptors(getAccessTokenSilently);
   }, [getAccessTokenSilently]);
+
+  if (isLoading) {
+    return <div>Laster...</div>;
+  }
 
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/registrering/verifiser-epost" element={<StatusPage />} />
+        <Route path="/registrering/vellykket" element={<StatusPage />} />
+        <Route path="/feilmelding" element={<StatusPage />} />
+
         <Route element={<ProtectedRoute />}>
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route element={<AppLayout />}>
@@ -48,13 +58,6 @@ function AppContent() {
       </Routes>
     </BrowserRouter>
   );
-}
-
-function App() {
-  const { isLoading, error } = useAuth0();
-  if (isLoading) return <div>Laster autentisering...</div>;
-  if (error) return <div>Autentiseringsfeil: {error.message}</div>;
-  return <AppContent />;
 }
 
 export default App;

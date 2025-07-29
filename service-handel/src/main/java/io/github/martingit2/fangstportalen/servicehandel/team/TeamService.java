@@ -6,8 +6,10 @@ import io.github.martingit2.fangstportalen.servicehandel.team.dto.InviterMedlemR
 import io.github.martingit2.fangstportalen.servicehandel.team.dto.TeamMedlemResponseDto;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,8 +40,11 @@ public class TeamService {
         validateRoles(dto.roller(), organisasjon.getType());
 
         try {
-            auth0ManagementService.createInvitation(dto.email(), organisasjon.getId(), organisasjon.getType().name(), dto.roller());
+            auth0ManagementService.createInvitation(dto.email(), organisasjon.getId(), dto.roller());
         } catch (IOException e) {
+            if (e.getMessage().contains("Bruker med denne e-posten eksisterer allerede.")) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "En bruker med denne e-postadressen finnes allerede.");
+            }
             throw new RuntimeException("Klarte ikke å sende invitasjon via Auth0", e);
         }
     }

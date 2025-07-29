@@ -45,12 +45,9 @@ public class OnboardingService {
             forsteFartoy = fartoyRepository.save(fartoy);
         }
 
-        Set<BrukerRolle> startRoller;
-        if (dto.type() == OrganisasjonType.REDERI) {
-            startRoller = Set.of(BrukerRolle.REDERI_ADMIN, BrukerRolle.REDERI_SKIPPER);
-        } else {
-            startRoller = Set.of(BrukerRolle.FISKEBRUK_ADMIN, BrukerRolle.FISKEBRUK_INNKJOPER);
-        }
+        Set<BrukerRolle> startRoller = (dto.type() == OrganisasjonType.REDERI) ?
+                Set.of(BrukerRolle.REDERI_ADMIN, BrukerRolle.REDERI_SKIPPER) :
+                Set.of(BrukerRolle.FISKEBRUK_ADMIN, BrukerRolle.FISKEBRUK_INNKJOPER);
 
         OrganisasjonBruker adminLink = OrganisasjonBruker.builder()
                 .id(new OrganisasjonBrukerId(savedOrganisasjon.getId(), adminBrukerId))

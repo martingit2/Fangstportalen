@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -29,34 +28,67 @@ public class Auth0ManagementService {
     private String cachedToken;
     private Instant tokenExpiry;
 
-    public void createInvitation(String email, Long orgId, String orgType, Set<String> roles) throws IOException {
+    public void createInvitation(String email, Long orgId, Set<String> roles) throws IOException {
         String accessToken = getAccessToken();
-        String url = "https://" + domain + "/api/v2/tickets/password-change";
+        String newUserId = createUser(accessToken, email, orgId, roles);
+        createPasswordChangeTicket(accessToken, newUserId);
+    }
+
+    private String createUser(String accessToken, String email, Long orgId, Set<String> roles) throws IOException {
+        String url = "https://" + domain + "/api/v2/users";
 
         ObjectNode appMetadata = objectMapper.createObjectNode();
         appMetadata.put("org_id", orgId);
-        appMetadata.put("org_type", orgType);
         appMetadata.set("roles", objectMapper.valueToTree(roles));
 
         ObjectNode payload = objectMapper.createObjectNode();
         payload.put("email", email);
-        payload.put("connection_id", "con_YOUR_CONNECTION_ID"); // VIKTIG: Endre denne
+        payload.put("connection", "Username-Password-Authentication");
+        payload.put("password", generateRandomPassword());
+        payload.put("verify_email", false);
+        payload.put("email_verified", false);
         payload.set("app_metadata", appMetadata);
 
-        RequestBody body = RequestBody.create(payload.toString(), MediaType.get("application/json; charset=utf-8"));
-        Request request = new Request.Builder()
-                .url(url)
-                .header("Authorization", "Bearer " + accessToken)
-                .post(body)
-                .build();
+        RequestBody body = RequestBody.create(objectMapper.writeValueAsString(payload), MediaType.get("application/json; charset=utf-8"));
+        Request request = new Request.Builder().url(url).header("Authorization", "Bearer " + accessToken).post(body).build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            String responseBody = response.body() != null ? response.body().string() : "No response body";
+            if (!response.isSuccessful()) {
+                if (response.code() == 409) { // Conflict - User already exists
+                    log.warn("Bruker med e-post {} eksisterer allerede i Auth0. Kan ikke invitere på nytt.", email);
+                    throw new IOException("Bruker med denne e-posten eksisterer allerede.");
+                }
+                log.error("Klarte ikke å opprette bruker i Auth0. Status: {}, Body: {}", response.code(), responseBody);
+                throw new IOException("Auth0 API feilet under brukeropprettelse: " + responseBody);
+            }
+            log.info("Opprettet bruker i Auth0 for e-post: {}", email);
+            JsonNode jsonNode = objectMapper.readTree(responseBody);
+            return jsonNode.get("user_id").asText();
+        }
+    }
+
+    private void createPasswordChangeTicket(String accessToken, String userId) throws IOException {
+        String url = "https://" + domain + "/api/v2/tickets/password-change";
+
+        ObjectNode payload = objectMapper.createObjectNode();
+        payload.put("user_id", userId);
+
+        RequestBody body = RequestBody.create(objectMapper.writeValueAsString(payload), MediaType.get("application/json; charset=utf-8"));
+        Request request = new Request.Builder().url(url).header("Authorization", "Bearer " + accessToken).post(body).build();
 
         try (Response response = httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                log.error("Failed to create Auth0 invitation for {}: {}", email, response.body() != null ? response.body().string() : "No response body");
-                throw new IOException("Unexpected code " + response);
+                String errorBody = response.body() != null ? response.body().string() : "No response body";
+                log.error("Klarte ikke å opprette invitasjonsticket (password-change). Status: {}, Body: {}", response.code(), errorBody);
+                throw new IOException("Auth0 API feilet under opprettelse av ticket: " + errorBody);
             }
-            log.info("Successfully created Auth0 invitation for email: {}", email);
+            log.info("Opprettet invitasjonsticket (password-change) for bruker-ID: {}", userId);
         }
+    }
+
+    private String generateRandomPassword() {
+        return "P@ssword" + System.currentTimeMillis() + "!";
     }
 
     private synchronized String getAccessToken() throws IOException {
@@ -72,7 +104,11 @@ public class Auth0ManagementService {
         Request request = new Request.Builder().url(url).post(body).build();
 
         try (Response response = httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+            if (!response.isSuccessful()) {
+                String errorBody = response.body() != null ? response.body().string() : "No response body";
+                log.error("Klarte ikke å hente Auth0 Management Token. Status: {}, Body: {}", response.code(), errorBody);
+                throw new IOException("Kunne ikke hente access token fra Auth0: " + errorBody);
+            }
             String responseBody = response.body().string();
             JsonNode jsonNode = objectMapper.readTree(responseBody);
             this.cachedToken = jsonNode.get("access_token").asText();

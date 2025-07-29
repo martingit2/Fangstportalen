@@ -1,23 +1,29 @@
 .container {
     max-width: 900px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
 .title {
-    margin-top: 0;
-    margin-bottom: 2rem;
+    margin: 0;
     font-size: 1.875rem;
 }
 
 .section {
-    margin-bottom: 2.5rem;
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-color);
 }
 
 .sectionHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .sectionTitle {
@@ -25,44 +31,58 @@
     font-size: 1.25rem;
 }
 
-.card {
-    background-color: var(--content-background-color);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 2rem;
+.sectionContent {
+    padding: 1.5rem;
+}
+
+.infoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.infoBlock h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.8rem;
     color: var(--text-color-secondary);
-    overflow-x: auto;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.infoBlock p {
+    margin: 0;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.fullWidth {
+    grid-column: 1 / -1;
+}
+
+.actions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
 }
 
 .table {
     width: 100%;
     border-collapse: collapse;
-    color: var(--text-color);
 }
 
 .table th, .table td {
-    border-bottom: 1px solid var(--border-color);
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0;
     text-align: left;
     white-space: nowrap;
+    border-bottom: 1px solid var(--border-color);
 }
-
-.table th {
-    font-weight: 600;
-    color: var(--text-color-secondary);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-}
-
-.table tr:last-child td {
-    border-bottom: none;
-}
-
-.errorText {
-    color: #b91c1c;
-}
-
-.brukerIdCell {
-    font-family: monospace;
-    font-size: 0.8rem;
-}
+.table tr:last-child td { border-bottom: none; }
+.table th { font-weight: 600; color: var(--text-color-secondary); font-size: 0.75rem; text-transform: uppercase; }
+.brukerIdCell { font-family: monospace; font-size: 0.8rem; }

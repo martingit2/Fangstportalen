@@ -12,6 +12,7 @@ import type { TeamMedlemResponseDto } from '../types/team';
 import type { SluttseddelResponseDto } from '../types/sluttseddel';
 import type { BudOversiktResponseDto, BudResponseDto } from '../types/bud';
 import type { BudFormData } from '../schemas/budSchema';
+import type { InvitasjonFormData } from '../schemas/invitasjonSchema';
 
 interface CreateSluttseddelPayload {
     ordreId: number;
@@ -111,5 +112,11 @@ export const giBud = (fangstmeldingId: number, data: BudFormData): Promise<Axios
 };
 export const getBudOversiktForFangstmelding = (fangstmeldingId: number): Promise<AxiosResponse<BudOversiktResponseDto>> => apiClient.get(`/fangstmeldinger/${fangstmeldingId}/bud-oversikt`);
 export const aksepterBud = (budId: number): Promise<AxiosResponse<OrdreResponseDto>> => apiClient.patch(`/bud/${budId}/aksepter`);
+
+export const getMinProfil = () => apiClient.get('/brukere/min-profil');
+export const updateMinProfil = (data: any) => apiClient.put('/brukere/min-profil', data);
+export const getMinOrganisasjon = () => apiClient.get('/organisasjoner/min');
+export const updateMinOrganisasjon = (data: any) => apiClient.put('/organisasjoner/min', data);
+export const inviterMedlem = (data: InvitasjonFormData) => apiClient.post('/team/inviter', data);
 
 export default apiClient;

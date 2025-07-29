@@ -7,6 +7,7 @@ import FadeIn from '../components/FadeIn';
 import FeaturesSection from '../components/FeaturesSection';
 import DisclaimerSection from '../components/DisclaimerSection';
 import { useAuth0 } from '@auth0/auth0-react';
+import NotificationHandler from '../components/NotificationHandler'; 
 
 const LandingPage: React.FC = () => {
   const { loginWithRedirect } = useAuth0();
@@ -14,10 +15,10 @@ const LandingPage: React.FC = () => {
   return (
     <>
       <Navbar />
-
       <main>
         <div className={styles.hero}>
           <div className={styles.container}>
+            <NotificationHandler /> 
             <FadeIn>
               <div className={styles.heroContent}>
                 <h2 className={styles.heroTitle}>Digitaliser din fangst.</h2>
@@ -42,16 +43,9 @@ const LandingPage: React.FC = () => {
             </FadeIn>
           </div>
         </div>
-
-        <FadeIn>
-          <FeaturesSection />
-        </FadeIn>
-
-        <FadeIn>
-          <DisclaimerSection />
-        </FadeIn>
+        <FadeIn><FeaturesSection /></FadeIn>
+        <FadeIn><DisclaimerSection /></FadeIn>
       </main>
-
       <Footer />
     </>
   );
