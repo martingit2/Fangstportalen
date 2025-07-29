@@ -6,7 +6,6 @@ import io.github.martingit2.fangstportalen.servicehandel.organisasjon.dto.Onboar
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Set;
 
 @Service
@@ -27,6 +26,10 @@ public class OnboardingService {
                 .navn(dto.navn())
                 .organisasjonsnummer(dto.organisasjonsnummer())
                 .type(dto.type())
+                .telefonnummer(dto.telefonnummer())
+                .adresse(dto.adresse())
+                .postnummer(dto.postnummer())
+                .poststed(dto.poststed())
                 .build();
         Organisasjon savedOrganisasjon = organisasjonRepository.save(organisasjon);
 
@@ -52,6 +55,9 @@ public class OnboardingService {
         OrganisasjonBruker adminLink = OrganisasjonBruker.builder()
                 .id(new OrganisasjonBrukerId(savedOrganisasjon.getId(), adminBrukerId))
                 .organisasjon(savedOrganisasjon)
+                .navn(dto.adminNavn())
+                .tittel(dto.adminTittel())
+                .telefonnummer(dto.adminTelefonnummer())
                 .roller(startRoller)
                 .tildeltFartoy(forsteFartoy)
                 .build();

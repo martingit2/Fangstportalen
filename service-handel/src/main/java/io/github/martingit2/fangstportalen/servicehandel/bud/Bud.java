@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +29,9 @@ public class Bud {
 
     @Column(name = "kjoper_organisasjon_id", nullable = false)
     private Long kjoperOrganisasjonId;
+
+    @Column(name = "kjoper_bruker_id", nullable = false, updatable = false)
+    private String kjoperBrukerId;
 
     @OneToMany(mappedBy = "bud", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

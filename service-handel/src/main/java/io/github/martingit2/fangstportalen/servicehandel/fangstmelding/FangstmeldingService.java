@@ -25,13 +25,13 @@ public class FangstmeldingService {
     private static final Logger logger = LoggerFactory.getLogger(FangstmeldingService.class);
 
     @Transactional
-    public FangstmeldingResponseDto createFangstmeldingAndConvertToDto(CreateFangstmeldingRequestDto dto, Long selgerOrganisasjonId, Long fartoyId) {
-        Fangstmelding fangstmelding = createFangstmelding(dto, selgerOrganisasjonId, fartoyId);
+    public FangstmeldingResponseDto createFangstmeldingAndConvertToDto(CreateFangstmeldingRequestDto dto, Long selgerOrganisasjonId, Long fartoyId, String skipperBrukerId) {
+        Fangstmelding fangstmelding = createFangstmelding(dto, selgerOrganisasjonId, fartoyId, skipperBrukerId);
         return convertToResponseDto(fangstmelding);
     }
 
     @Transactional
-    public Fangstmelding createFangstmelding(CreateFangstmeldingRequestDto dto, Long selgerOrganisasjonId, Long fartoyId) {
+    public Fangstmelding createFangstmelding(CreateFangstmeldingRequestDto dto, Long selgerOrganisasjonId, Long fartoyId, String skipperBrukerId) {
         Fartoy fartoy = fartoyRepository.findById(fartoyId)
                 .orElseThrow(() -> new EntityNotFoundException("Fartøy ikke funnet med ID: " + fartoyId));
 
@@ -41,6 +41,7 @@ public class FangstmeldingService {
 
         Fangstmelding fangstmelding = Fangstmelding.builder()
                 .selgerOrganisasjonId(selgerOrganisasjonId)
+                .skipperBrukerId(skipperBrukerId)
                 .fartoy(fartoy)
                 .leveringssted(dto.leveringssted())
                 .tilgjengeligFraDato(dto.tilgjengeligFraDato())
@@ -147,7 +148,7 @@ public class FangstmeldingService {
 
         return new FangstmeldingResponseDto(
                 fangstmelding.getId(),
-                String.valueOf(fangstmelding.getSelgerOrganisasjonId()),
+                fangstmelding.getSkipperBrukerId(),
                 fangstmelding.getFartoy().getNavn(),
                 fangstmelding.getStatus().name(),
                 fangstmelding.getLeveringssted(),

@@ -1,8 +1,6 @@
 package io.github.martingit2.fangstportalen.servicehandel.bud;
 
-import io.github.martingit2.fangstportalen.servicehandel.bud.dto.BudLinjeResponseDto;
-import io.github.martingit2.fangstportalen.servicehandel.bud.dto.BudResponseDto;
-import io.github.martingit2.fangstportalen.servicehandel.bud.dto.CreateBudRequestDto;
+import io.github.martingit2.fangstportalen.servicehandel.bud.dto.*;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.Fangstlinje;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.Fangstmelding;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.FangstmeldingRepository;
@@ -12,6 +10,9 @@ import io.github.martingit2.fangstportalen.servicehandel.ordre.OrdreRepository;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.OrdreStatus;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.Ordrelinje;
 import io.github.martingit2.fangstportalen.servicehandel.organisasjon.Organisasjon;
+import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonBruker;
+import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonBrukerId;
+import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonBrukerRepository;
 import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +34,10 @@ public class BudService {
     private final FangstmeldingRepository fangstmeldingRepository;
     private final OrganisasjonRepository organisasjonRepository;
     private final OrdreRepository ordreRepository;
+    private final OrganisasjonBrukerRepository organisasjonBrukerRepository;
 
     @Transactional
-    public BudResponseDto createBud(Long fangstmeldingId, Long kjoperOrganisasjonId, CreateBudRequestDto dto) {
+    public BudResponseDto createBud(Long fangstmeldingId, Long kjoperOrganisasjonId, String kjoperBrukerId, CreateBudRequestDto dto) {
         Fangstmelding fangstmelding = fangstmeldingRepository.findById(fangstmeldingId)
                 .orElseThrow(() -> new EntityNotFoundException("Fangstmelding ikke funnet"));
 
@@ -49,6 +51,7 @@ public class BudService {
         Bud bud = Bud.builder()
                 .fangstmelding(fangstmelding)
                 .kjoperOrganisasjonId(kjoperOrganisasjonId)
+                .kjoperBrukerId(kjoperBrukerId)
                 .status(BudStatus.AKTIV)
                 .build();
 
@@ -85,7 +88,7 @@ public class BudService {
         fangstmelding.setStatus(FangstmeldingStatus.SOLGT);
 
         List<Bud> andreBud = budRepository.findByFangstmeldingIdAndIdNot(fangstmelding.getId(), budId);
-        andreBud.forEach(bud -> bud.setStatus(BudStatus.AVVIST));
+        andreBud.forEach(b -> b.setStatus(BudStatus.AVVIST));
         budRepository.saveAll(andreBud);
 
         Map<Long, Fangstlinje> fangstlinjeMap = fangstmelding.getFangstlinjer().stream()
@@ -117,7 +120,7 @@ public class BudService {
     }
 
     @Transactional(readOnly = true)
-    public List<BudResponseDto> getBudForFangstmelding(Long fangstmeldingId, Long selgerOrganisasjonId) {
+    public BudOversiktDto getBudOversiktForFangstmelding(Long fangstmeldingId, Long selgerOrganisasjonId) {
         Fangstmelding fangstmelding = fangstmeldingRepository.findById(fangstmeldingId)
                 .orElseThrow(() -> new EntityNotFoundException("Fangstmelding ikke funnet"));
 
@@ -125,49 +128,93 @@ public class BudService {
             throw new AccessDeniedException("Du har ikke tilgang til å se bud på denne fangstmeldingen.");
         }
 
-        List<Bud> bud = budRepository.findByFangstmeldingId(fangstmeldingId);
-        return convertToDtoList(bud, fangstmelding);
+        OrganisasjonBruker selgerBruker = organisasjonBrukerRepository.findById(new OrganisasjonBrukerId(selgerOrganisasjonId, fangstmelding.getSkipperBrukerId()))
+                .orElseThrow(() -> new EntityNotFoundException("Fant ikke selger-bruker"));
+
+        KontaktinformasjonDto selgerKontakt = createKontaktinfo(selgerBruker);
+        List<Bud> budListe = budRepository.findByFangstmeldingId(fangstmeldingId);
+        List<BudResponseDto> budDtoer = convertToDtoList(budListe, fangstmelding);
+
+        return new BudOversiktDto(
+                fangstmelding.getId(),
+                fangstmelding.getFartoy().getNavn(),
+                fangstmelding.getLeveringssted(),
+                fangstmelding.getTilgjengeligFraDato(),
+                selgerKontakt,
+                budDtoer
+        );
     }
 
-    private List<BudResponseDto> convertToDtoList(List<Bud> bud, Fangstmelding fangstmelding) {
-        if (bud.isEmpty()) return List.of();
+    private List<BudResponseDto> convertToDtoList(List<Bud> budListe, Fangstmelding fangstmelding) {
+        if (budListe.isEmpty()) return List.of();
 
-        Set<Long> orgIds = bud.stream().map(Bud::getKjoperOrganisasjonId).collect(Collectors.toSet());
-        Map<Long, Organisasjon> organisasjonMap = organisasjonRepository.findAllById(orgIds).stream()
-                .collect(Collectors.toMap(Organisasjon::getId, Function.identity()));
+        List<OrganisasjonBrukerId> budgiverIds = budListe.stream()
+                .map(b -> new OrganisasjonBrukerId(b.getKjoperOrganisasjonId(), b.getKjoperBrukerId()))
+                .toList();
 
-        Map<Long, String> fangstlinjeFiskeslagMap = fangstmelding.getFangstlinjer().stream()
-                .collect(Collectors.toMap(Fangstlinje::getId, Fangstlinje::getFiskeslag));
+        Map<OrganisasjonBrukerId, OrganisasjonBruker> budgiverMap = organisasjonBrukerRepository.findAllById(budgiverIds).stream()
+                .collect(Collectors.toMap(OrganisasjonBruker::getId, Function.identity()));
 
-        return bud.stream()
-                .map(b -> convertToDto(b, organisasjonMap.get(b.getKjoperOrganisasjonId()), fangstlinjeFiskeslagMap))
+        Map<Long, Fangstlinje> fangstlinjeMap = fangstmelding.getFangstlinjer().stream()
+                .collect(Collectors.toMap(Fangstlinje::getId, Function.identity()));
+
+        return budListe.stream()
+                .map(b -> {
+                    OrganisasjonBrukerId id = new OrganisasjonBrukerId(b.getKjoperOrganisasjonId(), b.getKjoperBrukerId());
+                    return convertToDto(b, budgiverMap.get(id), fangstlinjeMap);
+                })
                 .collect(Collectors.toList());
     }
 
     private BudResponseDto convertToDto(Bud bud) {
-        Organisasjon kjoper = organisasjonRepository.findById(bud.getKjoperOrganisasjonId()).orElse(null);
-        Map<Long, String> fangstlinjeFiskeslagMap = bud.getFangstmelding().getFangstlinjer().stream()
-                .collect(Collectors.toMap(Fangstlinje::getId, Fangstlinje::getFiskeslag));
-        return convertToDto(bud, kjoper, fangstlinjeFiskeslagMap);
+        OrganisasjonBrukerId id = new OrganisasjonBrukerId(bud.getKjoperOrganisasjonId(), bud.getKjoperBrukerId());
+        OrganisasjonBruker kjoperBruker = organisasjonBrukerRepository.findById(id).orElse(null);
+        Map<Long, Fangstlinje> fangstlinjeMap = bud.getFangstmelding().getFangstlinjer().stream()
+                .collect(Collectors.toMap(Fangstlinje::getId, Function.identity()));
+        return convertToDto(bud, kjoperBruker, fangstlinjeMap);
     }
 
-    private BudResponseDto convertToDto(Bud bud, Organisasjon kjoper, Map<Long, String> fiskeslagMap) {
-        String kjoperNavn = (kjoper != null) ? kjoper.getNavn() : "Ukjent Kjøper";
+    private BudResponseDto convertToDto(Bud bud, OrganisasjonBruker kjoperBruker, Map<Long, Fangstlinje> fangstlinjeMap) {
+        KontaktinformasjonDto budgiverKontakt = createKontaktinfo(kjoperBruker);
 
         List<BudLinjeResponseDto> linjeDtos = bud.getBudLinjer().stream()
                 .map(linje -> new BudLinjeResponseDto(
                         linje.getId(),
                         linje.getFangstlinjeId(),
-                        fiskeslagMap.getOrDefault(linje.getFangstlinjeId(), "Ukjent fiskeslag"),
+                        fangstlinjeMap.getOrDefault(linje.getFangstlinjeId(), new Fangstlinje()).getFiskeslag(),
                         linje.getBudPrisPerKg()
                 )).collect(Collectors.toList());
 
+        double totalVerdi = bud.getBudLinjer().stream()
+                .mapToDouble(linje -> {
+                    Fangstlinje tilhorendeFangstlinje = fangstlinjeMap.get(linje.getFangstlinjeId());
+                    if (tilhorendeFangstlinje != null) {
+                        return linje.getBudPrisPerKg() * tilhorendeFangstlinje.getEstimertKvantum();
+                    }
+                    return 0.0;
+                }).sum();
+
         return new BudResponseDto(
                 bud.getId(),
-                kjoperNavn,
+                budgiverKontakt,
                 linjeDtos,
                 bud.getStatus().name(),
-                bud.getOpprettetTidspunkt()
+                bud.getOpprettetTidspunkt(),
+                totalVerdi
+        );
+    }
+
+    private KontaktinformasjonDto createKontaktinfo(OrganisasjonBruker bruker) {
+        if (bruker == null) {
+            return new KontaktinformasjonDto("Ukjent", null, "Ukjent", null, null);
+        }
+        Organisasjon org = bruker.getOrganisasjon();
+        return new KontaktinformasjonDto(
+                org.getNavn(),
+                org.getTelefonnummer(),
+                bruker.getNavn(),
+                bruker.getTittel(),
+                bruker.getTelefonnummer()
         );
     }
 }

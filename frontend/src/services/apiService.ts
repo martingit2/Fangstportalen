@@ -10,7 +10,7 @@ import type { FartoyFormData } from '../schemas/fartoySchema';
 import type { FartoyResponseDto } from '../types/fartoy';
 import type { TeamMedlemResponseDto } from '../types/team';
 import type { SluttseddelResponseDto } from '../types/sluttseddel';
-import type { BudResponseDto } from '../types/bud';
+import type { BudOversiktResponseDto, BudResponseDto } from '../types/bud';
 import type { BudFormData } from '../schemas/budSchema';
 
 interface CreateSluttseddelPayload {
@@ -109,7 +109,7 @@ export const giBud = (fangstmeldingId: number, data: BudFormData): Promise<Axios
     };
     return apiClient.post(`/fangstmeldinger/${fangstmeldingId}/bud`, payload);
 };
-export const getBudForFangstmelding = (fangstmeldingId: number): Promise<AxiosResponse<BudResponseDto[]>> => apiClient.get(`/fangstmeldinger/${fangstmeldingId}/bud`);
+export const getBudOversiktForFangstmelding = (fangstmeldingId: number): Promise<AxiosResponse<BudOversiktResponseDto>> => apiClient.get(`/fangstmeldinger/${fangstmeldingId}/bud-oversikt`);
 export const aksepterBud = (budId: number): Promise<AxiosResponse<OrdreResponseDto>> => apiClient.patch(`/bud/${budId}/aksepter`);
 
 export default apiClient;

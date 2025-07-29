@@ -1,5 +1,6 @@
 package io.github.martingit2.fangstportalen.servicehandel.bud;
 
+import io.github.martingit2.fangstportalen.servicehandel.bud.dto.BudOversiktDto;
 import io.github.martingit2.fangstportalen.servicehandel.bud.dto.BudResponseDto;
 import io.github.martingit2.fangstportalen.servicehandel.bud.dto.CreateBudRequestDto;
 import io.github.martingit2.fangstportalen.servicehandel.config.UserPrincipal;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -33,7 +33,8 @@ public class BudController {
             @AuthenticationPrincipal Jwt jwt) {
 
         UserPrincipal principal = new UserPrincipal(jwt);
-        BudResponseDto opprettetBud = budService.createBud(fangstmeldingId, principal.getOrganisasjonId(), dto);
+        String kjoperBrukerId = jwt.getSubject();
+        BudResponseDto opprettetBud = budService.createBud(fangstmeldingId, principal.getOrganisasjonId(), kjoperBrukerId, dto);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath().path("/api/v1/bud/{id}")
@@ -42,15 +43,15 @@ public class BudController {
         return ResponseEntity.created(location).body(opprettetBud);
     }
 
-    @GetMapping("/fangstmeldinger/{fangstmeldingId}/bud")
+    @GetMapping("/fangstmeldinger/{fangstmeldingId}/bud-oversikt")
     @PreAuthorize("hasAnyRole('REDERI_ADMIN', 'REDERI_SKIPPER')")
-    public ResponseEntity<List<BudResponseDto>> getBudForFangstmelding(
+    public ResponseEntity<BudOversiktDto> getBudOversiktForFangstmelding(
             @PathVariable Long fangstmeldingId,
             @AuthenticationPrincipal Jwt jwt) {
 
         UserPrincipal principal = new UserPrincipal(jwt);
-        List<BudResponseDto> bud = budService.getBudForFangstmelding(fangstmeldingId, principal.getOrganisasjonId());
-        return ResponseEntity.ok(bud);
+        BudOversiktDto oversikt = budService.getBudOversiktForFangstmelding(fangstmeldingId, principal.getOrganisasjonId());
+        return ResponseEntity.ok(oversikt);
     }
 
     @PatchMapping("/bud/{budId}/aksepter")

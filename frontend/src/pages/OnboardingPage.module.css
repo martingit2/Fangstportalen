@@ -1,28 +1,81 @@
 .container {
     display: flex;
     justify-content: center;
-    align-items: center;
     min-height: 100vh;
     background-color: #f3f4f6;
+    padding: 2rem 1rem;
+    align-items: flex-start;
 }
+
+.centered {
+    align-items: center;
+}
+
 .card {
     background: #fff;
-    padding: 2rem 3rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    text-align: center;
-    max-width: 500px;
-}
-.card input {
-    display: block;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
     width: 100%;
-    margin-bottom: 1rem;
-    padding: 0.75rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    max-width: 900px;
 }
+
+.card h1 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 2rem;
+}
+
+.welcomeContent {
+    text-align: center;
+}
+
+.formLayout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+}
+
+@media (min-width: 820px) {
+    .formLayout {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.formSection {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.formSection legend {
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 0;
+    margin-bottom: 1rem;
+    width: 100%;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+.fieldGroup {
+    display: grid;
+    grid-template-columns: 1fr; 
+    gap: 1rem;
+}
+
+.pair {
+    grid-template-columns: 1fr 1fr; 
+}
+
 .choiceButtons, .formActions {
-    margin-top: 2rem;
+    margin-top: 2.5rem;
     display: flex;
     justify-content: center;
     gap: 1rem;

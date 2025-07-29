@@ -31,6 +31,7 @@ public class FangstmeldingController {
 
         Map<String, Object> claims = jwt.getClaimAsMap("https://fangstportalen.no/claims");
         Long selgerOrganisasjonId = ((Number) claims.get("org_id")).longValue();
+        String skipperBrukerId = jwt.getSubject();
 
         Object fartoyIdObj = claims.get("fartoy_id");
         if (fartoyIdObj == null) {
@@ -38,7 +39,7 @@ public class FangstmeldingController {
         }
         Long fartoyId = ((Number) fartoyIdObj).longValue();
 
-        FangstmeldingResponseDto createdFangstmeldingDto = fangstmeldingService.createFangstmeldingAndConvertToDto(dto, selgerOrganisasjonId, fartoyId);
+        FangstmeldingResponseDto createdFangstmeldingDto = fangstmeldingService.createFangstmeldingAndConvertToDto(dto, selgerOrganisasjonId, fartoyId, skipperBrukerId);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()

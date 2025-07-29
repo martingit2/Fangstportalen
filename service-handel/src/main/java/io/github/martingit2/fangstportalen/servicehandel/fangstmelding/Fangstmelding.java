@@ -28,6 +28,9 @@ public class Fangstmelding {
     @Column(name = "selger_organisasjon_id", nullable = false, updatable = false)
     private Long selgerOrganisasjonId;
 
+    @Column(name = "skipper_bruker_id", nullable = false, updatable = false)
+    private String skipperBrukerId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fartoy_id", nullable = false)
     private Fartoy fartoy;

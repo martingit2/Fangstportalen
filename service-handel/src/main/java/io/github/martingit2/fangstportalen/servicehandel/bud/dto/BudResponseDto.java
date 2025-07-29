@@ -5,8 +5,9 @@ import java.util.List;
 
 public record BudResponseDto(
         Long id,
-        String kjoperOrganisasjonNavn,
+        KontaktinformasjonDto budgiverKontakt,
         List<BudLinjeResponseDto> budLinjer,
         String status,
-        LocalDateTime opprettetTidspunkt
+        LocalDateTime opprettetTidspunkt,
+        Double totalVerdi
 ) {}

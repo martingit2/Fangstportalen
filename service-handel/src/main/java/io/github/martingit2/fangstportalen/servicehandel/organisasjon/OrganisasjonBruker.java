@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,6 +24,15 @@ public class OrganisasjonBruker {
     @MapsId("organisasjonId")
     @JoinColumn(name = "organisasjon_id")
     private Organisasjon organisasjon;
+
+    @Column(nullable = false)
+    private String navn;
+
+    @Column
+    private String tittel;
+
+    @Column
+    private String telefonnummer;
 
     @ElementCollection(targetClass = BrukerRolle.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "bruker_roller", joinColumns = {

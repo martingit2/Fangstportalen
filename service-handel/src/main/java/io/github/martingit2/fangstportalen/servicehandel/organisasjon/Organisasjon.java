@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -30,6 +29,18 @@ public class Organisasjon {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrganisasjonType type;
+
+    @Column
+    private String telefonnummer;
+
+    @Column
+    private String adresse;
+
+    @Column
+    private String postnummer;
+
+    @Column
+    private String poststed;
 
     @CreationTimestamp
     @Column(name = "opprettet_tidspunkt", nullable = false, updatable = false)
