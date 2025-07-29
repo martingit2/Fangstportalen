@@ -4,6 +4,9 @@ export interface SluttseddelLinjeDto {
     id: number;
     ordrelinjeId: number;
     fiskeslag: string;
+    produkttilstand: string | null;
+    kvalitet: string | null;
+    storrelse: string | null;
     faktiskKvantum: number;
     avtaltPrisPerKg: number;
     totalVerdi: number;
@@ -11,9 +14,13 @@ export interface SluttseddelLinjeDto {
 
 export interface SluttseddelResponseDto {
     id: number;
+    seddelnummer: string;
     ordreId: number;
     status: SluttseddelStatus;
     landingsdato: string;
+    landingsklokkeslett: string | null;
+    selgerNavn: string;
+    kjoperNavn: string;
     fartoyNavn: string;
     leveringssted: string;
     linjer: SluttseddelLinjeDto[];

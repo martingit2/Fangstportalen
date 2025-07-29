@@ -1,0 +1,36 @@
+.budListe {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.budKort {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 6px;
+    background-color: #f9fafb;
+    border: 1px solid var(--border-color);
+}
+
+.budInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.koperNavn {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.linjeListe {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.linjeListe li {
+    color: var(--text-color-secondary);
+}

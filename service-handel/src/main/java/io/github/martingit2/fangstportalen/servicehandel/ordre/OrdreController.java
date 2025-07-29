@@ -14,7 +14,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.bind.annotation.PatchMapping;
 
 import java.net.URI;
 import java.util.List;
@@ -85,8 +84,9 @@ public class OrdreController {
         logger.info("Skipper forsøker å akseptere ordre med ID: {}", id);
         UserPrincipal principal = new UserPrincipal(jwt);
         Long selgerOrganisasjonId = principal.getOrganisasjonId();
+        String selgerBrukerId = jwt.getSubject();
 
-        OrdreResponseDto oppdatertOrdre = ordreService.aksepterOrdre(id, selgerOrganisasjonId);
+        OrdreResponseDto oppdatertOrdre = ordreService.aksepterOrdre(id, selgerOrganisasjonId, selgerBrukerId);
 
         logger.info("Ordre {} ble akseptert av organisasjon {}", id, selgerOrganisasjonId);
         return ResponseEntity.ok(oppdatertOrdre);

@@ -1,0 +1,49 @@
+.detaljerContainer {
+    padding: 1rem 1.5rem 1.5rem 3.5rem;
+    background-color: #f9fafb;
+}
+
+.infoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.infoGrid h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+}
+
+.infoGrid p {
+    margin: 0;
+    font-weight: 500;
+}
+
+.linjeTabell {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.linjeTabell th, .linjeTabell td {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.linjeTabell th {
+    text-align: left;
+    color: var(--text-color-secondary);
+    font-weight: 600;
+}
+
+.linjeTabell tfoot td {
+    border-bottom: none;
+    font-weight: 700;
+}
+
+.alignRight {
+    text-align: right;
+}

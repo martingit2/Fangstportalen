@@ -4,6 +4,9 @@ public record SluttseddelLinjeDto(
         Long id,
         Long ordrelinjeId,
         String fiskeslag,
+        String produkttilstand,
+        String kvalitet,
+        String storrelse,
         Double faktiskKvantum,
         Double avtaltPrisPerKg,
         Double totalVerdi

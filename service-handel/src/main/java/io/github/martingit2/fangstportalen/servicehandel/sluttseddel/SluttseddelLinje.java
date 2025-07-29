@@ -28,6 +28,15 @@ public class SluttseddelLinje {
     @Column(nullable = false)
     private String fiskeslag;
 
+    @Column
+    private String produkttilstand;
+
+    @Column
+    private String kvalitet;
+
+    @Column
+    private String storrelse;
+
     @Column(nullable = false)
     private Double faktiskKvantum;
 

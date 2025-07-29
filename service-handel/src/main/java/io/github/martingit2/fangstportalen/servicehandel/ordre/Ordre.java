@@ -37,6 +37,9 @@ public class Ordre {
     @Column(name = "selger_organisasjon_id")
     private Long selgerOrganisasjonId;
 
+    @Column(name = "selger_bruker_id")
+    private String selgerBrukerId;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private OrdreStatus status;

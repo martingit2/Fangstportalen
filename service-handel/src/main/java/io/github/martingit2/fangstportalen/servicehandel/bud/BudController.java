@@ -3,6 +3,8 @@ package io.github.martingit2.fangstportalen.servicehandel.bud;
 import io.github.martingit2.fangstportalen.servicehandel.bud.dto.BudResponseDto;
 import io.github.martingit2.fangstportalen.servicehandel.bud.dto.CreateBudRequestDto;
 import io.github.martingit2.fangstportalen.servicehandel.config.UserPrincipal;
+import io.github.martingit2.fangstportalen.servicehandel.ordre.Ordre;
+import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.OrdreResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import java.util.List;
 public class BudController {
 
     private final BudService budService;
+    private final OrdreToDtoConverter ordreToDtoConverter;
 
     @PostMapping("/fangstmeldinger/{fangstmeldingId}/bud")
     @PreAuthorize("hasAnyRole('FISKEBRUK_ADMIN', 'FISKEBRUK_INNKJOPER')")
@@ -48,5 +51,18 @@ public class BudController {
         UserPrincipal principal = new UserPrincipal(jwt);
         List<BudResponseDto> bud = budService.getBudForFangstmelding(fangstmeldingId, principal.getOrganisasjonId());
         return ResponseEntity.ok(bud);
+    }
+
+    @PatchMapping("/bud/{budId}/aksepter")
+    @PreAuthorize("hasAnyRole('REDERI_ADMIN', 'REDERI_SKIPPER')")
+    public ResponseEntity<OrdreResponseDto> aksepterBud(
+            @PathVariable Long budId,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        UserPrincipal principal = new UserPrincipal(jwt);
+        String selgerBrukerId = jwt.getSubject();
+        Ordre opprettetOrdre = budService.aksepterBud(budId, principal.getOrganisasjonId(), selgerBrukerId);
+        OrdreResponseDto responseDto = ordreToDtoConverter.convertToResponseDto(opprettetOrdre);
+        return ResponseEntity.ok(responseDto);
     }
 }

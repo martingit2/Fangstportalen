@@ -1,21 +1,28 @@
 package io.github.martingit2.fangstportalen.servicehandel.sluttseddel;
 
+import io.github.martingit2.fangstportalen.servicehandel.fartoy.Fartoy;
+import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.Fangstmelding;
+import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.FangstmeldingRepository;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.Ordre;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.OrdreRepository;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.OrdreStatus;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.Ordrelinje;
-import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonType;
+import io.github.martingit2.fangstportalen.servicehandel.organisasjon.*;
 import io.github.martingit2.fangstportalen.servicehandel.sluttseddel.dto.CreateSluttseddelRequestDto;
 import io.github.martingit2.fangstportalen.servicehandel.sluttseddel.dto.SluttseddelLinjeDto;
 import io.github.martingit2.fangstportalen.servicehandel.sluttseddel.dto.SluttseddelResponseDto;
-
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -25,13 +32,16 @@ public class SluttseddelService {
 
     private final SluttseddelRepository sluttseddelRepository;
     private final OrdreRepository ordreRepository;
+    private final OrganisasjonRepository organisasjonRepository;
+    private final FangstmeldingRepository fangstmeldingRepository;
+    private final OrganisasjonBrukerRepository organisasjonBrukerRepository;
 
     @Transactional
     public SluttseddelResponseDto createSluttseddelFromOrdre(CreateSluttseddelRequestDto requestDto, Long selgerOrganisasjonId) {
         Ordre ordre = ordreRepository.findById(requestDto.ordreId())
                 .orElseThrow(() -> new EntityNotFoundException("Ordre ikke funnet med ID: " + requestDto.ordreId()));
 
-        if (ordre.getSelgerOrganisasjonId() == null || !ordre.getSelgerOrganisasjonId().equals(selgerOrganisasjonId)) {
+        if (!Objects.equals(ordre.getSelgerOrganisasjonId(), selgerOrganisasjonId)) {
             throw new AccessDeniedException("Du eier ikke denne ordren og kan ikke opprette sluttseddel for den.");
         }
         if (ordre.getStatus() != OrdreStatus.AVTALT) {
@@ -41,12 +51,43 @@ public class SluttseddelService {
             throw new IllegalStateException("Det eksisterer allerede en sluttseddel for denne ordren.");
         }
 
+        Organisasjon selger = organisasjonRepository.findById(selgerOrganisasjonId).orElseThrow();
+        Organisasjon kjoper = organisasjonRepository.findById(ordre.getKjoperOrganisasjonId()).orElseThrow();
+
+        String fartoyNavn;
+        String fartoyFiskerimerke;
+
+        if (ordre.getFangstmeldingId() != null) {
+            Fangstmelding fangstmelding = fangstmeldingRepository.findById(ordre.getFangstmeldingId()).orElseThrow();
+            fartoyNavn = fangstmelding.getFartoy().getNavn();
+            fartoyFiskerimerke = fangstmelding.getFartoy().getFiskerimerke();
+        } else {
+            OrganisasjonBruker selgerBruker = organisasjonBrukerRepository.findById_BrukerId(ordre.getSelgerBrukerId())
+                    .orElseThrow(() -> new IllegalStateException("Fant ikke brukeren som aksepterte ordren."));
+            Fartoy fartoy = selgerBruker.getTildeltFartoy();
+            if (fartoy == null) {
+                throw new IllegalStateException("Brukeren som aksepterte ordren er ikke tildelt et fartøy.");
+            }
+            fartoyNavn = fartoy.getNavn();
+            fartoyFiskerimerke = fartoy.getFiskerimerke();
+        }
+
+        String seddelnummer = String.format("%s-%d", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")), ordre.getId());
+
         Sluttseddel sluttseddel = Sluttseddel.builder()
                 .ordre(ordre)
-                .selgerOrganisasjonId(ordre.getSelgerOrganisasjonId())
-                .kjoperOrganisasjonId(ordre.getKjoperOrganisasjonId())
+                .seddelnummer(seddelnummer)
+                .selgerOrganisasjonId(selger.getId())
+                .selgerNavn(selger.getNavn())
+                .selgerOrgNr(selger.getOrganisasjonsnummer())
+                .kjoperOrganisasjonId(kjoper.getId())
+                .kjoperNavn(kjoper.getNavn())
+                .kjoperOrgNr(kjoper.getOrganisasjonsnummer())
+                .fartoyNavn(fartoyNavn)
+                .fartoyFiskerimerke(fartoyFiskerimerke)
                 .status(SluttseddelStatus.SIGNERT_AV_FISKER)
                 .landingsdato(requestDto.landingsdato())
+                .landingsklokkeslett(LocalTime.now())
                 .build();
 
         Map<Long, Ordrelinje> ordrelinjeMap = ordre.getOrdrelinjer().stream()
@@ -60,6 +101,8 @@ public class SluttseddelService {
             SluttseddelLinje linje = SluttseddelLinje.builder()
                     .ordrelinjeId(linjeDto.ordrelinjeId())
                     .fiskeslag(tilhorendeOrdrelinje.getFiskeslag())
+                    .kvalitet(tilhorendeOrdrelinje.getKvalitet())
+                    .storrelse(tilhorendeOrdrelinje.getStorrelse())
                     .faktiskKvantum(linjeDto.faktiskKvantum())
                     .avtaltPrisPerKg(tilhorendeOrdrelinje.getAvtaltPrisPerKg())
                     .build();
@@ -106,23 +149,26 @@ public class SluttseddelService {
                         linje.getId(),
                         linje.getOrdrelinjeId(),
                         linje.getFiskeslag(),
+                        linje.getProdukttilstand(),
+                        linje.getKvalitet(),
+                        linje.getStorrelse(),
                         linje.getFaktiskKvantum(),
                         linje.getAvtaltPrisPerKg(),
                         linje.getFaktiskKvantum() * linje.getAvtaltPrisPerKg()
                 )).collect(Collectors.toList());
 
         double totalVerdi = linjeDtos.stream().mapToDouble(SluttseddelLinjeDto::totalVerdi).sum();
-        String fartoyNavn = "Ukjent Fartøy";
-        if (sluttseddel.getOrdre() != null && sluttseddel.getOrdre().getSelgerOrganisasjonId() != null) {
-            // Denne logikken må forbedres for å hente fartøynavn
-        }
 
         return new SluttseddelResponseDto(
                 sluttseddel.getId(),
+                sluttseddel.getSeddelnummer(),
                 sluttseddel.getOrdre().getId(),
                 sluttseddel.getStatus(),
                 sluttseddel.getLandingsdato(),
-                fartoyNavn,
+                sluttseddel.getLandingsklokkeslett(),
+                sluttseddel.getSelgerNavn(),
+                sluttseddel.getKjoperNavn(),
+                sluttseddel.getFartoyNavn(),
                 sluttseddel.getOrdre().getLeveringssted(),
                 linjeDtos,
                 totalVerdi,

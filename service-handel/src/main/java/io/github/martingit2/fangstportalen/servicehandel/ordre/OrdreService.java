@@ -58,7 +58,7 @@ public class OrdreService {
                     .forventetKvantum(fangstlinje.getEstimertKvantum())
                     .kvalitet(fangstlinje.getKvalitet())
                     .storrelse(fangstlinje.getStorrelse())
-                    .avtaltPrisPerKg(0.0)
+                    .avtaltPrisPerKg(20.0)
                     .build();
             ordre.addOrdrelinje(ordrelinje);
         });
@@ -131,7 +131,7 @@ public class OrdreService {
     }
 
     @Transactional
-    public OrdreResponseDto aksepterOrdre(Long ordreId, Long selgerOrganisasjonId) {
+    public OrdreResponseDto aksepterOrdre(Long ordreId, Long selgerOrganisasjonId, String selgerBrukerId) {
         Ordre ordre = ordreRepository.findById(ordreId)
                 .orElseThrow(() -> new EntityNotFoundException("Finner ikke ordre med ID: " + ordreId));
 
@@ -140,6 +140,7 @@ public class OrdreService {
         }
 
         ordre.setSelgerOrganisasjonId(selgerOrganisasjonId);
+        ordre.setSelgerBrukerId(selgerBrukerId);
         ordre.setStatus(OrdreStatus.AVTALT);
         Ordre savedOrdre = ordreRepository.save(ordre);
 

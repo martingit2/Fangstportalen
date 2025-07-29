@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,9 @@ public class Sluttseddel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
+    private String seddelnummer;
+
     @OneToOne
     @JoinColumn(name = "ordre_id", referencedColumnName = "id", unique = true, nullable = false)
     private Ordre ordre;
@@ -39,8 +43,26 @@ public class Sluttseddel {
     @Column(name = "selger_organisasjon_id", nullable = false, updatable = false)
     private Long selgerOrganisasjonId;
 
+    @Column(name = "selger_navn", nullable = false)
+    private String selgerNavn;
+
+    @Column(name = "selger_org_nr", nullable = false)
+    private String selgerOrgNr;
+
     @Column(name = "kjoper_organisasjon_id", nullable = false, updatable = false)
     private Long kjoperOrganisasjonId;
+
+    @Column(name = "kjoper_navn", nullable = false)
+    private String kjoperNavn;
+
+    @Column(name = "kjoper_org_nr", nullable = false)
+    private String kjoperOrgNr;
+
+    @Column(name = "fartoy_navn", nullable = false)
+    private String fartoyNavn;
+
+    @Column(name = "fartoy_fiskerimerke", nullable = false)
+    private String fartoyFiskerimerke;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -48,6 +70,9 @@ public class Sluttseddel {
 
     @Column(nullable = false)
     private LocalDate landingsdato;
+
+    @Column
+    private LocalTime landingsklokkeslett;
 
     @CreationTimestamp
     @Column(name = "opprettet_tidspunkt", nullable = false, updatable = false)

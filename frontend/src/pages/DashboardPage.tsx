@@ -14,6 +14,7 @@ import { useClaims } from '../hooks/useClaims';
 import type { OrdreResponseDto } from '../types/ordre';
 import type { FangstmeldingResponseDto } from '../types/fangstmelding';
 import GiBudModal from '../components/GiBudModal';
+import SeBudModal from '../components/SeBudModal';
 
 const SkipperDashboard: React.FC = () => {
     const [mineFangstmeldinger, setMineFangstmeldinger] = useState<FangstmeldingResponseDto[]>([]);
@@ -22,8 +23,11 @@ const SkipperDashboard: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isAcceptingId, setIsAcceptingId] = useState<number | null>(null);
     const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
+    const [isSeBudModalOpen, setIsSeBudModalOpen] = useState(false);
+    const [selectedFangstmeldingId, setSelectedFangstmeldingId] = useState<number | null>(null);
 
     const fetchData = useCallback(async () => {
+        setIsLoading(true);
         try {
             const [fangstmeldingerRes, ordrerRes] = await Promise.all([
                 getMineFangstmeldinger(),
@@ -45,6 +49,21 @@ const SkipperDashboard: React.FC = () => {
         fetchData();
     }, [fetchData]);
 
+    const handleOpenSeBudModal = (fangstmeldingId: number) => {
+        setSelectedFangstmeldingId(fangstmeldingId);
+        setIsSeBudModalOpen(true);
+    };
+
+    const handleCloseSeBudModal = () => {
+        setSelectedFangstmeldingId(null);
+        setIsSeBudModalOpen(false);
+    };
+    
+    const handleBudAkseptert = () => {
+        alert("Bud akseptert! En bindende ordre er opprettet.");
+        fetchData();
+    };
+
     const handleAksepterOrdre = async (ordreId: number) => {
         setIsAcceptingId(ordreId);
         try {
@@ -60,9 +79,7 @@ const SkipperDashboard: React.FC = () => {
     };
 
     const handleDeleteFangstmelding = async (fangstmeldingId: number) => {
-        if (!window.confirm("Er du sikker på at du vil trekke denne fangstmeldingen fra markedet?")) {
-            return;
-        }
+        if (!window.confirm("Er du sikker på at du vil trekke denne fangstmeldingen fra markedet?")) return;
         setIsDeletingId(fangstmeldingId);
         try {
             await deleteFangstmelding(fangstmeldingId);
@@ -91,7 +108,7 @@ const SkipperDashboard: React.FC = () => {
                             </p>
                         </div>
                         <div className={styles.cardActions}>
-                             <Button variant="secondary" onClick={() => alert('Vis bud (TODO)')}>Se bud</Button>
+                             <Button variant="secondary" onClick={() => handleOpenSeBudModal(melding.id)}>Se bud</Button>
                              <Button variant="secondary" to={`/fangstmelding/${melding.id}/rediger`}>Rediger</Button>
                              <Button
                                 variant="danger"
@@ -153,24 +170,34 @@ const SkipperDashboard: React.FC = () => {
     }
 
     return (
-        <div className={styles.container}>
-            <header className={styles.header}>
-                <h1 className={styles.title}>Markedsplass</h1>
-                <Button to="/ny-fangstmelding">Annonser ny fangst</Button>
-            </header>
-            <div className={styles.marketplaceSection}>
-                <h2 className={styles.marketplaceTitle}>Mine Aktive Fangstmeldinger</h2>
-                <div className={styles.content}>
-                    {error ? <div className={styles.error}>{error}</div> : renderMineFangstmeldinger()}
+        <>
+            <div className={styles.container}>
+                <header className={styles.header}>
+                    <h1 className={styles.title}>Markedsplass</h1>
+                    <Button to="/ny-fangstmelding">Annonser ny fangst</Button>
+                </header>
+                <div className={styles.marketplaceSection}>
+                    <h2 className={styles.marketplaceTitle}>Mine Aktive Fangstmeldinger</h2>
+                    <div className={styles.content}>
+                        {error ? <div className={styles.error}>{error}</div> : renderMineFangstmeldinger()}
+                    </div>
+                </div>
+                <div className={styles.marketplaceSection}>
+                    <h2 className={styles.marketplaceTitle}>Etterspørsel i Markedet (Åpne Ordrer)</h2>
+                    <div className={styles.content}>
+                        {error ? <div className={styles.error}>{error}</div> : renderTilgjengeligeOrdrer()}
+                    </div>
                 </div>
             </div>
-            <div className={styles.marketplaceSection}>
-                <h2 className={styles.marketplaceTitle}>Etterspørsel i Markedet (Åpne Ordrer)</h2>
-                <div className={styles.content}>
-                    {error ? <div className={styles.error}>{error}</div> : renderTilgjengeligeOrdrer()}
-                </div>
-            </div>
-        </div>
+            {selectedFangstmeldingId && (
+                <SeBudModal
+                    isOpen={isSeBudModalOpen}
+                    onClose={handleCloseSeBudModal}
+                    onSuccess={handleBudAkseptert}
+                    fangstmeldingId={selectedFangstmeldingId}
+                />
+            )}
+        </>
     );
 };
 
