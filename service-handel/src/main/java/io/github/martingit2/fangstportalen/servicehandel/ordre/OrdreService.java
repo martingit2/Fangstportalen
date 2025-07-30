@@ -1,5 +1,6 @@
 package io.github.martingit2.fangstportalen.servicehandel.ordre;
 
+import io.github.martingit2.fangstportalen.servicehandel.fartoy.Fartoy;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.Fangstmelding;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.FangstmeldingRepository;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.FangstmeldingStatus;
@@ -7,18 +8,28 @@ import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.CreateOrdreRe
 import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.OrdreResponseDto;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.OrdrelinjeDto;
 import io.github.martingit2.fangstportalen.servicehandel.organisasjon.Organisasjon;
+import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonBruker;
+import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonBrukerRepository;
 import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonRepository;
+import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonType;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,6 +40,7 @@ public class OrdreService {
     private final OrdreRepository ordreRepository;
     private final FangstmeldingRepository fangstmeldingRepository;
     private final OrganisasjonRepository organisasjonRepository;
+    private final OrganisasjonBrukerRepository organisasjonBrukerRepository;
     private static final Logger logger = LoggerFactory.getLogger(OrdreService.class);
 
     @Transactional
@@ -41,12 +53,12 @@ public class OrdreService {
         }
 
         fangstmelding.setStatus(FangstmeldingStatus.SOLGT);
-        fangstmeldingRepository.save(fangstmelding);
 
         Ordre ordre = Ordre.builder()
                 .kjoperOrganisasjonId(kjoperOrganisasjonId)
                 .fangstmeldingId(fangstmelding.getId())
                 .selgerOrganisasjonId(fangstmelding.getSelgerOrganisasjonId())
+                .selgerBrukerId(fangstmelding.getSkipperBrukerId())
                 .status(OrdreStatus.AVTALT)
                 .leveringssted(fangstmelding.getLeveringssted())
                 .forventetLeveringsdato(fangstmelding.getTilgjengeligFraDato())
@@ -58,7 +70,7 @@ public class OrdreService {
                     .forventetKvantum(fangstlinje.getEstimertKvantum())
                     .kvalitet(fangstlinje.getKvalitet())
                     .storrelse(fangstlinje.getStorrelse())
-                    .avtaltPrisPerKg(20.0)
+                    .avtaltPrisPerKg(fangstlinje.getUtropsprisPerKg()) // Bruker utropspris som default
                     .build();
             ordre.addOrdrelinje(ordrelinje);
         });
@@ -112,9 +124,15 @@ public class OrdreService {
         return convertToResponseDto(ordre);
     }
 
-    public List<OrdreResponseDto> findMineOrdrer(Long kjoperOrganisasjonId) {
-        logger.info("Henter ordrer for organisasjon: {}", kjoperOrganisasjonId);
-        List<Ordre> ordrer = ordreRepository.findByKjoperOrganisasjonIdOrderByOpprettetTidspunktDesc(kjoperOrganisasjonId);
+    @Transactional(readOnly = true)
+    public List<OrdreResponseDto> findMineOrdrer(Long orgId, OrganisasjonType orgType) {
+        logger.info("Henter ordrer for organisasjon: {} av type {}", orgId, orgType);
+        List<Ordre> ordrer;
+        if (orgType == OrganisasjonType.REDERI) {
+            ordrer = ordreRepository.findBySelgerOrganisasjonIdOrderByOpprettetTidspunktDesc(orgId);
+        } else {
+            ordrer = ordreRepository.findByKjoperOrganisasjonIdOrderByOpprettetTidspunktDesc(orgId);
+        }
         return convertToResponseDtoList(ordrer);
     }
 
@@ -125,8 +143,25 @@ public class OrdreService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrdreResponseDto> findTilgjengeligeOrdrer(Long ekskluderOrgId) {
-        List<Ordre> ordrer = ordreRepository.findByStatusAndFangstmeldingIdIsNullAndKjoperOrganisasjonIdNot(OrdreStatus.AKTIV, ekskluderOrgId);
+    public List<OrdreResponseDto> findTilgjengeligeOrdrer(Long ekskluderOrgId, String leveringssted, String fiskeslag) {
+        Specification<Ordre> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(criteriaBuilder.equal(root.get("status"), OrdreStatus.AKTIV));
+            predicates.add(criteriaBuilder.isNull(root.get("fangstmeldingId")));
+            predicates.add(criteriaBuilder.notEqual(root.get("kjoperOrganisasjonId"), ekskluderOrgId));
+
+            if (StringUtils.hasText(leveringssted)) {
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("leveringssted")), "%" + leveringssted.toLowerCase() + "%"));
+            }
+            if (StringUtils.hasText(fiskeslag)) {
+                Join<Ordre, Ordrelinje> ordrelinjeJoin = root.join("ordrelinjer");
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(ordrelinjeJoin.get("fiskeslag")), "%" + fiskeslag.toLowerCase() + "%"));
+                query.distinct(true);
+            }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+
+        List<Ordre> ordrer = ordreRepository.findAll(spec);
         return convertToResponseDtoList(ordrer);
     }
 
@@ -217,27 +252,38 @@ public class OrdreService {
         if (ordrer.isEmpty()) {
             return List.of();
         }
-        List<Long> orgIds = ordrer.stream().map(Ordre::getKjoperOrganisasjonId).distinct().toList();
+
+        Set<Long> orgIds = new HashSet<>();
+        for (Ordre ordre : ordrer) {
+            orgIds.add(ordre.getKjoperOrganisasjonId());
+            if (ordre.getSelgerOrganisasjonId() != null) {
+                orgIds.add(ordre.getSelgerOrganisasjonId());
+            }
+        }
+
         Map<Long, Organisasjon> organisasjonMap = organisasjonRepository.findAllById(orgIds).stream()
                 .collect(Collectors.toMap(Organisasjon::getId, Function.identity()));
 
         return ordrer.stream()
-                .map(ordre -> {
-                    Organisasjon org = organisasjonMap.get(ordre.getKjoperOrganisasjonId());
-                    String orgNavn = (org != null) ? org.getNavn() : "Ukjent Kjøper";
-                    return convertToResponseDto(ordre, orgNavn);
-                })
+                .map(ordre -> convertToResponseDto(ordre, organisasjonMap))
                 .collect(Collectors.toList());
     }
 
     private OrdreResponseDto convertToResponseDto(Ordre ordre) {
-        String kjoperNavn = organisasjonRepository.findById(ordre.getKjoperOrganisasjonId())
-                .map(Organisasjon::getNavn)
-                .orElse("Ukjent Kjøper");
-        return convertToResponseDto(ordre, kjoperNavn);
+        Set<Long> orgIds = new HashSet<>();
+        orgIds.add(ordre.getKjoperOrganisasjonId());
+        if (ordre.getSelgerOrganisasjonId() != null) {
+            orgIds.add(ordre.getSelgerOrganisasjonId());
+        }
+        Map<Long, Organisasjon> organisasjonMap = organisasjonRepository.findAllById(orgIds)
+                .stream().collect(Collectors.toMap(Organisasjon::getId, Function.identity()));
+        return convertToResponseDto(ordre, organisasjonMap);
     }
 
-    private OrdreResponseDto convertToResponseDto(Ordre ordre, String kjoperNavn) {
+    private OrdreResponseDto convertToResponseDto(Ordre ordre, Map<Long, Organisasjon> organisasjonMap) {
+        String kjoperNavn = organisasjonMap.getOrDefault(ordre.getKjoperOrganisasjonId(), new Organisasjon()).getNavn();
+        String selgerNavn = ordre.getSelgerOrganisasjonId() != null ? organisasjonMap.getOrDefault(ordre.getSelgerOrganisasjonId(), new Organisasjon()).getNavn() : null;
+
         List<OrdrelinjeDto> linjeDtos = ordre.getOrdrelinjer().stream()
                 .map(linje -> new OrdrelinjeDto(
                         linje.getId(),
@@ -252,6 +298,7 @@ public class OrdreService {
                 ordre.getId(),
                 ordre.getStatus().name(),
                 kjoperNavn,
+                selgerNavn,
                 ordre.getLeveringssted(),
                 ordre.getForventetLeveringsdato(),
                 ordre.getForventetLeveringstidFra(),

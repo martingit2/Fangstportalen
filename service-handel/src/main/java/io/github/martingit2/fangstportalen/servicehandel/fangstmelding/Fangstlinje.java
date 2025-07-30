@@ -2,10 +2,7 @@ package io.github.martingit2.fangstportalen.servicehandel.fangstmelding;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "fangstlinjer")
@@ -22,6 +19,7 @@ public class Fangstlinje {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fangstmelding_id", nullable = false)
     @JsonIgnore
+    @ToString.Exclude
     private Fangstmelding fangstmelding;
 
     @Column(nullable = false)

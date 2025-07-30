@@ -23,6 +23,11 @@ interface CreateSluttseddelPayload {
     }[];
 }
 
+interface FilterParams {
+    leveringssted?: string;
+    fiskeslag?: string;
+}
+
 const apiClient = axios.create({
     baseURL: 'http://localhost:8080/api/v1',
     headers: {
@@ -52,7 +57,13 @@ export const setupInterceptors = (getAccessTokenSilently: (options?: GetTokenSil
 };
 
 export const getMineOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => apiClient.get('/ordrer/mine');
-export const getAktiveFangstmeldinger = (): Promise<AxiosResponse<FangstmeldingResponseDto[]>> => apiClient.get('/fangstmeldinger/aktive');
+export const getOrdrerKlareForSluttseddel = (): Promise<AxiosResponse<OrdreResponseDto[]>> => apiClient.get('/ordrer/klare-for-sluttseddel');
+export const getAktiveFangstmeldinger = (filters?: FilterParams): Promise<AxiosResponse<FangstmeldingResponseDto[]>> => {
+    const params = new URLSearchParams();
+    if (filters?.leveringssted) params.append('leveringssted', filters.leveringssted);
+    if (filters?.fiskeslag) params.append('fiskeslag', filters.fiskeslag);
+    return apiClient.get('/fangstmeldinger/aktive', { params });
+};
 export const createFangstmelding = (data: FangstmeldingFormData): Promise<AxiosResponse> => {
     const payload = {
         ...data,
@@ -65,7 +76,12 @@ export const createFangstmelding = (data: FangstmeldingFormData): Promise<AxiosR
     return apiClient.post('/fangstmeldinger', payload);
 };
 export const getMineFangstmeldinger = (): Promise<AxiosResponse<FangstmeldingResponseDto[]>> => apiClient.get('/fangstmeldinger/mine');
-export const getTilgjengeligeOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => apiClient.get('/ordrer/tilgjengelige');
+export const getTilgjengeligeOrdrer = (filters?: FilterParams): Promise<AxiosResponse<OrdreResponseDto[]>> => {
+    const params = new URLSearchParams();
+    if (filters?.leveringssted) params.append('leveringssted', filters.leveringssted);
+    if (filters?.fiskeslag) params.append('fiskeslag', filters.fiskeslag);
+    return apiClient.get('/ordrer/tilgjengelige', { params });
+};
 export const aksepterOrdre = (ordreId: number): Promise<AxiosResponse<OrdreResponseDto>> => apiClient.patch(`/ordrer/${ordreId}/aksepter`);
 export const deleteOrdre = (ordreId: number): Promise<AxiosResponse<void>> => apiClient.delete(`/ordrer/${ordreId}`);
 export const deleteFangstmelding = (fangstmeldingId: number): Promise<AxiosResponse<void>> => apiClient.delete(`/fangstmeldinger/${fangstmeldingId}`);
@@ -93,7 +109,6 @@ export const updateFangstmelding = (id: number, data: FangstmeldingFormData): Pr
     };
     return apiClient.put(`/fangstmeldinger/${id}`, payload);
 };
-export const getMineAvtalteOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => apiClient.get('/ordrer/mine/avtalte');
 export const createSluttseddel = (data: CreateSluttseddelPayload): Promise<AxiosResponse> => apiClient.post('/sluttsedler', data);
 export const getStatistikkOversikt = (): Promise<AxiosResponse<StatistikkResponseDto>> => apiClient.get('/statistikk/oversikt');
 export const createFartoy = (data: FartoyFormData): Promise<AxiosResponse<FartoyResponseDto>> => apiClient.post('/fartoy', data);

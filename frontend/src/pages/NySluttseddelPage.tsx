@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { getMineAvtalteOrdrer, createSluttseddel } from '../services/apiService';
+import { getOrdrerKlareForSluttseddel, createSluttseddel } from '../services/apiService';
 import type { OrdreResponseDto } from '../types/ordre';
 import styles from './NySluttseddelPage.module.css';
 import inputStyles from '../components/ui/Input.module.css';
 import Button from '../components/ui/Button';
 import { useClaims } from '../hooks/useClaims';
+import toast from 'react-hot-toast';
 
 interface SluttseddelFormData {
     ordreId: number;
@@ -30,9 +31,12 @@ const NySluttseddelPage: React.FC = () => {
 
     useEffect(() => {
         if (erSkipper) {
-            getMineAvtalteOrdrer()
+            getOrdrerKlareForSluttseddel()
                 .then(res => setAvtalteOrdrer(res.data))
-                .catch(err => console.error(err))
+                .catch(err => {
+                    console.error(err);
+                    toast.error("Kunne ikke hente ordrer klare for sluttseddel.");
+                })
                 .finally(() => setIsLoading(false));
         } else {
             setIsLoading(false);
@@ -59,9 +63,10 @@ const NySluttseddelPage: React.FC = () => {
         };
         try {
             await createSluttseddel(payload);
+            toast.success("Sluttseddel ble opprettet og signert.");
             navigate('/dashboard');
         } catch (error) {
-            alert('Kunne ikke opprette sluttseddel.');
+            toast.error('Kunne ikke opprette sluttseddel.');
         }
     };
     
@@ -82,7 +87,7 @@ const NySluttseddelPage: React.FC = () => {
         return (
             <div className={styles.container}>
                 <h1 className={styles.title}>Opprett sluttseddel - Velg ordre</h1>
-                {avtalteOrdrer.length === 0 ? (
+                {isLoading ? <p>Laster ordrer...</p> : avtalteOrdrer.length === 0 ? (
                     <div className={styles.emptyState}>
                         <p>Du har ingen avtalte ordrer som venter på sluttseddel.</p>
                         <Button variant="secondary" onClick={() => navigate('/dashboard')}>Tilbake til Markedsplass</Button>

@@ -2,10 +2,7 @@ package io.github.martingit2.fangstportalen.servicehandel.ordre;
 
 import io.github.martingit2.fangstportalen.servicehandel.sluttseddel.Sluttseddel;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
@@ -49,6 +46,7 @@ public class Ordre {
     private List<Ordrelinje> ordrelinjer = new ArrayList<>();
 
     @OneToOne(mappedBy = "ordre")
+    @ToString.Exclude
     private Sluttseddel sluttseddel;
 
     @Column(nullable = false)

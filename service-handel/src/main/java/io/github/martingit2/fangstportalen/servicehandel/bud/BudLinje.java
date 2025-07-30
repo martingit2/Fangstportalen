@@ -2,10 +2,7 @@ package io.github.martingit2.fangstportalen.servicehandel.bud;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "bud_linjer")
@@ -22,6 +19,7 @@ public class BudLinje {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bud_id", nullable = false)
     @JsonIgnore
+    @ToString.Exclude
     private Bud bud;
 
     @Column(name = "fangstlinje_id", nullable = false)

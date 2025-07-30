@@ -2,10 +2,7 @@ package io.github.martingit2.fangstportalen.servicehandel.ordre;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "ordrelinjer")
@@ -22,6 +19,7 @@ public class Ordrelinje {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ordre_id")
     @JsonIgnore
+    @ToString.Exclude
     private Ordre ordre;
 
     @Column(nullable = false)

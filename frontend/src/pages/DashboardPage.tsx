@@ -15,6 +15,9 @@ import type { OrdreResponseDto } from '../types/ordre';
 import type { FangstmeldingResponseDto } from '../types/fangstmelding';
 import GiBudModal from '../components/GiBudModal';
 import SeBudModal from '../components/SeBudModal';
+import { useDebounce } from '../hooks/useDebounce';
+import { FaMapMarkerAlt, FaFish } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 
 const SkipperDashboard: React.FC = () => {
     const [mineFangstmeldinger, setMineFangstmeldinger] = useState<FangstmeldingResponseDto[]>([]);
@@ -25,13 +28,15 @@ const SkipperDashboard: React.FC = () => {
     const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
     const [isSeBudModalOpen, setIsSeBudModalOpen] = useState(false);
     const [selectedFangstmeldingId, setSelectedFangstmeldingId] = useState<number | null>(null);
+    const [filters, setFilters] = useState({ leveringssted: '', fiskeslag: '' });
+    const debouncedFilters = useDebounce(filters, 500);
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
         try {
             const [fangstmeldingerRes, ordrerRes] = await Promise.all([
                 getMineFangstmeldinger(),
-                getTilgjengeligeOrdrer()
+                getTilgjengeligeOrdrer(debouncedFilters)
             ]);
             setMineFangstmeldinger(fangstmeldingerRes.data);
             setTilgjengeligeOrdrer(ordrerRes.data);
@@ -39,15 +44,24 @@ const SkipperDashboard: React.FC = () => {
         } catch (err) {
             console.error(err);
             setError("Kunne ikke laste inn data.");
+            toast.error("Kunne ikke laste inn data.");
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [debouncedFilters]);
 
     useEffect(() => {
-        setIsLoading(true);
         fetchData();
     }, [fetchData]);
+
+    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({ ...prev, [name]: value }));
+    };
+
+    const resetFilters = () => {
+        setFilters({ leveringssted: '', fiskeslag: '' });
+    };
 
     const handleOpenSeBudModal = (fangstmeldingId: number) => {
         setSelectedFangstmeldingId(fangstmeldingId);
@@ -60,7 +74,7 @@ const SkipperDashboard: React.FC = () => {
     };
     
     const handleBudAkseptert = () => {
-        alert("Bud akseptert! En bindende ordre er opprettet.");
+        toast.success("Bud akseptert! En bindende ordre er opprettet.");
         fetchData();
     };
 
@@ -68,10 +82,11 @@ const SkipperDashboard: React.FC = () => {
         setIsAcceptingId(ordreId);
         try {
             await aksepterOrdre(ordreId);
+            toast.success(`Ordre #${ordreId} er akseptert!`);
             await fetchData();
         } catch (err) {
             console.error(err);
-            alert("Kunne ikke akseptere ordren. Den kan ha blitt tatt av en annen skipper. Siden oppdateres.");
+            toast.error("Kunne ikke akseptere ordren. Den kan ha blitt tatt av en annen skipper.");
             await fetchData();
         } finally {
             setIsAcceptingId(null);
@@ -83,10 +98,11 @@ const SkipperDashboard: React.FC = () => {
         setIsDeletingId(fangstmeldingId);
         try {
             await deleteFangstmelding(fangstmeldingId);
+            toast.success("Fangstmeldingen ble trukket tilbake.");
             await fetchData();
         } catch (err) {
             console.error(err);
-            alert("Kunne ikke slette fangstmeldingen.");
+            toast.error("Kunne ikke slette fangstmeldingen.");
             await fetchData();
         } finally {
             setIsDeletingId(null);
@@ -126,7 +142,7 @@ const SkipperDashboard: React.FC = () => {
 
     const renderTilgjengeligeOrdrer = () => {
         if (isLoading) return <div className={styles.loading}>Laster...</div>;
-        if (tilgjengeligeOrdrer.length === 0) return <div className={styles.empty}>Ingen åpne ordrer i markedet.</div>;
+        if (tilgjengeligeOrdrer.length === 0) return <div className={styles.empty}>Ingen åpne ordrer i markedet som matcher filtrene.</div>;
 
         return (
              <table className={styles.table}>
@@ -185,6 +201,31 @@ const SkipperDashboard: React.FC = () => {
                 <div className={styles.marketplaceSection}>
                     <h2 className={styles.marketplaceTitle}>Etterspørsel i Markedet (Åpne Ordrer)</h2>
                     <div className={styles.content}>
+                        <div className={styles.filterBar}>
+                            <div className={styles.filterInputWrapper}>
+                                <FaMapMarkerAlt className={styles.filterIcon} />
+                                <input
+                                    type="text"
+                                    name="leveringssted"
+                                    placeholder="Filtrer på sted..."
+                                    className={styles.filterInput}
+                                    value={filters.leveringssted}
+                                    onChange={handleFilterChange}
+                                />
+                            </div>
+                            <div className={styles.filterInputWrapper}>
+                                <FaFish className={styles.filterIcon} />
+                                <input
+                                    type="text"
+                                    name="fiskeslag"
+                                    placeholder="Filtrer på fiskeslag..."
+                                    className={styles.filterInput}
+                                    value={filters.fiskeslag}
+                                    onChange={handleFilterChange}
+                                />
+                            </div>
+                            <Button variant="secondary" onClick={resetFilters}>Nullstill</Button>
+                        </div>
                         {error ? <div className={styles.error}>{error}</div> : renderTilgjengeligeOrdrer()}
                     </div>
                 </div>
@@ -202,6 +243,9 @@ const SkipperDashboard: React.FC = () => {
 };
 
 const InnkjoperDashboard: React.FC = () => {
+    const { claims } = useClaims();
+    const erAdmin = claims?.roles.some(r => r.endsWith('_ADMIN'));
+
     const [ordrer, setOrdrer] = useState<OrdreResponseDto[]>([]);
     const [fangstmeldinger, setFangstmeldinger] = useState<FangstmeldingResponseDto[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -209,13 +253,15 @@ const InnkjoperDashboard: React.FC = () => {
     const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
     const [isBudModalOpen, setIsBudModalOpen] = useState(false);
     const [selectedFangstmelding, setSelectedFangstmelding] = useState<FangstmeldingResponseDto | null>(null);
+    const [filters, setFilters] = useState({ leveringssted: '', fiskeslag: '' });
+    const debouncedFilters = useDebounce(filters, 500);
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
         try {
             const [ordrerResponse, fangstmeldingerResponse] = await Promise.all([
                 getMineOrdrer(),
-                getAktiveFangstmeldinger()
+                getAktiveFangstmeldinger(debouncedFilters)
             ]);
             setOrdrer(ordrerResponse.data);
             setFangstmeldinger(fangstmeldingerResponse.data);
@@ -223,14 +269,24 @@ const InnkjoperDashboard: React.FC = () => {
         } catch (err) {
             console.error(err);
             setError("Kunne ikke laste inn data.");
+            toast.error("Kunne ikke laste inn data.");
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [debouncedFilters]);
 
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({ ...prev, [name]: value }));
+    };
+
+    const resetFilters = () => {
+        setFilters({ leveringssted: '', fiskeslag: '' });
+    };
 
     const handleOpenBudModal = (fangstmelding: FangstmeldingResponseDto) => {
         setSelectedFangstmelding(fangstmelding);
@@ -243,7 +299,7 @@ const InnkjoperDashboard: React.FC = () => {
     };
 
     const handleBudSuccess = () => {
-        alert('Budet ditt er sendt!');
+        toast.success('Budet ditt er sendt!');
         fetchData();
     };
 
@@ -254,10 +310,11 @@ const InnkjoperDashboard: React.FC = () => {
         setIsDeletingId(ordreId);
         try {
             await deleteOrdre(ordreId);
+            toast.success("Ordren ble slettet.");
             await fetchData();
         } catch (err) {
             console.error(err);
-            alert("Kunne ikke slette ordren. Den kan ha blitt akseptert av en skipper.");
+            toast.error("Kunne ikke slette ordren. Den kan ha blitt akseptert av en skipper.");
             await fetchData();
         } finally {
             setIsDeletingId(null);
@@ -288,7 +345,7 @@ const InnkjoperDashboard: React.FC = () => {
                             </td>
                             <td className={styles.alignRight}>
                                 <div className={styles.actionsCell}>
-                                    {ordre.status === 'AKTIV' && (
+                                    {ordre.status === 'AKTIV' && erAdmin && (
                                         <>
                                             <Button variant="secondary" to={`/ordre/${ordre.id}/rediger`}>
                                                 Rediger
@@ -313,7 +370,7 @@ const InnkjoperDashboard: React.FC = () => {
     
     const renderMarketplaceContent = () => {
         if (isLoading) return <div className={styles.loading}>Laster markedsplass...</div>;
-        if (fangstmeldinger.length === 0) return <div className={styles.empty}>Ingen fangster er tilgjengelig i markedet akkurat nå.</div>;
+        if (fangstmeldinger.length === 0) return <div className={styles.empty}>Ingen fangster er tilgjengelig i markedet som matcher filtrene.</div>;
 
         return (
             <div className={styles.marketplaceGrid}>
@@ -345,6 +402,31 @@ const InnkjoperDashboard: React.FC = () => {
                 <div className={styles.marketplaceSection}>
                     <h2 className={styles.marketplaceTitle}>Tilgjengelig i Markedet (Fangstmeldinger)</h2>
                     <div className={styles.content}>
+                        <div className={styles.filterBar}>
+                            <div className={styles.filterInputWrapper}>
+                                <FaMapMarkerAlt className={styles.filterIcon} />
+                                <input
+                                    type="text"
+                                    name="leveringssted"
+                                    placeholder="Filtrer på sted..."
+                                    className={styles.filterInput}
+                                    value={filters.leveringssted}
+                                    onChange={handleFilterChange}
+                                />
+                            </div>
+                            <div className={styles.filterInputWrapper}>
+                                <FaFish className={styles.filterIcon} />
+                                <input
+                                    type="text"
+                                    name="fiskeslag"
+                                    placeholder="Filtrer på fiskeslag..."
+                                    className={styles.filterInput}
+                                    value={filters.fiskeslag}
+                                    onChange={handleFilterChange}
+                                />
+                            </div>
+                            <Button variant="secondary" onClick={resetFilters}>Nullstill</Button>
+                        </div>
                         {error ? <div className={styles.error}>{error}</div> : renderMarketplaceContent()}
                     </div>
                 </div>
@@ -372,8 +454,8 @@ const DashboardPage: React.FC = () => {
          return <div>Ukjent rolle. Kontakt administrator.</div>;
     }
     
-    const erInnkjoper = claims.roles.some(r => r.startsWith('FISKEBRUK_'));
-    const erSkipper = claims.roles.some(r => r.startsWith('REDERI_'));
+    const erInnkjoper = claims.org_type === 'FISKEBRUK';
+    const erSkipper = claims.org_type === 'REDERI';
 
     if (erInnkjoper) {
         return <InnkjoperDashboard />;

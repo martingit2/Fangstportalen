@@ -109,6 +109,8 @@ public class SluttseddelService {
             sluttseddel.addSluttseddelLinje(linje);
         });
 
+        ordre.setStatus(OrdreStatus.UNDER_OPPGJOR);
+
         Sluttseddel savedSluttseddel = sluttseddelRepository.save(sluttseddel);
         return convertToDto(savedSluttseddel);
     }

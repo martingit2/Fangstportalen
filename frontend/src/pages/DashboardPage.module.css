@@ -21,6 +21,7 @@
     background-color: var(--content-background-color);
     border: 1px solid var(--border-color);
     border-radius: 8px;
+    overflow: hidden;
 }
 
 .table {
@@ -137,4 +138,42 @@
 .actionsHeader {
     width: 1%;
     white-space: nowrap;
+}
+
+.filterBar {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    align-items: center;
+}
+
+.filterInputWrapper {
+    position: relative;
+    flex: 1 1 0%;
+}
+
+.filterIcon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-color-secondary);
+    pointer-events: none;
+}
+
+.filterInput {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background-color: #f9fafb;
+}
+
+.filterInput:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(95, 153, 177, 0.2);
+    background-color: #fff;
 }

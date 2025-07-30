@@ -4,6 +4,7 @@ public enum OrdreStatus {
     KLADD,
     AKTIV,
     AVTALT,
+    UNDER_OPPGJOR,
     FULLFØRT,
     AVBRUTT
 }

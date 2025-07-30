@@ -2,10 +2,7 @@ package io.github.martingit2.fangstportalen.servicehandel.sluttseddel;
 
 import io.github.martingit2.fangstportalen.servicehandel.ordre.Ordre;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
@@ -34,6 +31,7 @@ public class Sluttseddel {
 
     @OneToOne
     @JoinColumn(name = "ordre_id", referencedColumnName = "id", unique = true, nullable = false)
+    @ToString.Exclude
     private Ordre ordre;
 
     @OneToMany(mappedBy = "sluttseddel", cascade = CascadeType.ALL, orphanRemoval = true)

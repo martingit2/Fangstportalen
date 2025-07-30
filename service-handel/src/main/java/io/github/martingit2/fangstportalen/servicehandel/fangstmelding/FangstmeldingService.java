@@ -6,13 +6,18 @@ import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.dto.Creat
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.dto.FangstlinjeResponseDto;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.dto.FangstmeldingResponseDto;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -97,8 +102,23 @@ public class FangstmeldingService {
     }
 
     @Transactional(readOnly = true)
-    public List<FangstmeldingResponseDto> findAktiveFangstmeldinger() {
-        List<Fangstmelding> fangstmeldinger = fangstmeldingRepository.findByStatusOrderByTilgjengeligFraDatoAsc(FangstmeldingStatus.AAPEN_FOR_BUD);
+    public List<FangstmeldingResponseDto> findAktiveFangstmeldinger(String leveringssted, String fiskeslag) {
+        Specification<Fangstmelding> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(criteriaBuilder.equal(root.get("status"), FangstmeldingStatus.AAPEN_FOR_BUD));
+
+            if (StringUtils.hasText(leveringssted)) {
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("leveringssted")), "%" + leveringssted.toLowerCase() + "%"));
+            }
+            if (StringUtils.hasText(fiskeslag)) {
+                Join<Fangstmelding, Fangstlinje> fangstlinjeJoin = root.join("fangstlinjer");
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(fangstlinjeJoin.get("fiskeslag")), "%" + fiskeslag.toLowerCase() + "%"));
+                query.distinct(true);
+            }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+
+        List<Fangstmelding> fangstmeldinger = fangstmeldingRepository.findAll(spec);
         return fangstmeldinger.stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());

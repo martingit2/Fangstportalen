@@ -89,8 +89,10 @@ public class FangstmeldingController {
 
     @GetMapping("/aktive")
     @PreAuthorize("hasAnyRole('FISKEBRUK_INNKJOPER', 'FISKEBRUK_ADMIN')")
-    public ResponseEntity<List<FangstmeldingResponseDto>> getAktiveFangstmeldinger() {
-        List<FangstmeldingResponseDto> aktiveMeldinger = fangstmeldingService.findAktiveFangstmeldinger();
+    public ResponseEntity<List<FangstmeldingResponseDto>> getAktiveFangstmeldinger(
+            @RequestParam(required = false) String leveringssted,
+            @RequestParam(required = false) String fiskeslag) {
+        List<FangstmeldingResponseDto> aktiveMeldinger = fangstmeldingService.findAktiveFangstmeldinger(leveringssted, fiskeslag);
         return ResponseEntity.ok(aktiveMeldinger);
     }
 

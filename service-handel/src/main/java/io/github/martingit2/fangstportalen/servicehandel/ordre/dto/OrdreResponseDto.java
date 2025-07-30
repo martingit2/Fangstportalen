@@ -9,6 +9,7 @@ public record OrdreResponseDto(
         Long id,
         String status,
         String kjoperOrganisasjonNavn,
+        String selgerOrganisasjonNavn,
         String leveringssted,
         LocalDate forventetLeveringsdato,
         LocalTime forventetLeveringstidFra,

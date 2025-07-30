@@ -2,10 +2,7 @@ package io.github.martingit2.fangstportalen.servicehandel.organisasjon;
 
 import io.github.martingit2.fangstportalen.servicehandel.fartoy.Fartoy;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,6 +20,7 @@ public class OrganisasjonBruker {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("organisasjonId")
     @JoinColumn(name = "organisasjon_id")
+    @ToString.Exclude
     private Organisasjon organisasjon;
 
     @Column(nullable = false)
@@ -46,5 +44,6 @@ public class OrganisasjonBruker {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tildelt_fartoy_id")
+    @ToString.Exclude
     private Fartoy tildeltFartoy;
 }

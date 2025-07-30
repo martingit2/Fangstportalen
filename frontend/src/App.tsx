@@ -18,6 +18,7 @@ import InnstillingerPage from './pages/InnstillingerPage';
 import NyttFartoyPage from './pages/NyttFartoyPage';
 import SluttseddelArkivPage from './pages/SluttseddelArkivPage';
 import StatusPage from './pages/StatusPage';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const { isLoading, getAccessTokenSilently } = useAuth0();
@@ -31,32 +32,45 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/registrering/verifiser-epost" element={<StatusPage />} />
-        <Route path="/registrering/vellykket" element={<StatusPage />} />
-        <Route path="/feilmelding" element={<StatusPage />} />
+    <>
+      <Toaster position="bottom-right" toastOptions={{
+        className: '',
+        duration: 5000,
+        style: {
+          background: '#363636',
+          color: '#fff',
+        },
+        success: {
+          duration: 3000,
+        },
+      }} />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/registrering/verifiser-epost" element={<StatusPage />} />
+          <Route path="/registrering/vellykket" element={<StatusPage />} />
+          <Route path="/feilmelding" element={<StatusPage />} />
 
-        <Route element={<ProtectedRoute />}>
-          <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/ny-sluttseddel" element={<NySluttseddelPage />} />
-            <Route path="/ordrer" element={<OrdrerPage />} />
-            <Route path="/sluttseddelarkiv" element={<SluttseddelArkivPage />} />
-            <Route path="/statistikk" element={<StatistikkPage />} />
-            <Route path="/kart" element={<div>Kart Side (TODO)</div>} />
-            <Route path="/innstillinger" element={<InnstillingerPage />} />
-            <Route path="/innstillinger/nytt-fartoy" element={<NyttFartoyPage />} />
-            <Route path="/ny-ordre" element={<NyOrdrePage />} />
-            <Route path="/ny-fangstmelding" element={<NyFangstmeldingPage />} />
-            <Route path="/ordre/:id/rediger" element={<RedigerOrdrePage />} />
-            <Route path="/fangstmelding/:id/rediger" element={<RedigerFangstmeldingPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route element={<AppLayout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/ny-sluttseddel" element={<NySluttseddelPage />} />
+              <Route path="/ordrer" element={<OrdrerPage />} />
+              <Route path="/sluttseddelarkiv" element={<SluttseddelArkivPage />} />
+              <Route path="/statistikk" element={<StatistikkPage />} />
+              <Route path="/kart" element={<div>Kart Side (TODO)</div>} />
+              <Route path="/innstillinger" element={<InnstillingerPage />} />
+              <Route path="/innstillinger/nytt-fartoy" element={<NyttFartoyPage />} />
+              <Route path="/ny-ordre" element={<NyOrdrePage />} />
+              <Route path="/ny-fangstmelding" element={<NyFangstmeldingPage />} />
+              <Route path="/ordre/:id/rediger" element={<RedigerOrdrePage />} />
+              <Route path="/fangstmelding/:id/rediger" element={<RedigerFangstmeldingPage />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 

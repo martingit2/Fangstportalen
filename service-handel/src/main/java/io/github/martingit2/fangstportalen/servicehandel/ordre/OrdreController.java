@@ -3,6 +3,7 @@ package io.github.martingit2.fangstportalen.servicehandel.ordre;
 import io.github.martingit2.fangstportalen.servicehandel.config.UserPrincipal;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.CreateOrdreRequestDto;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.OrdreResponseDto;
+import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -28,13 +29,16 @@ public class OrdreController {
     private static final Logger logger = LoggerFactory.getLogger(OrdreController.class);
 
     @PostMapping("/fra-fangstmelding")
-    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
+    @PreAuthorize("hasAnyRole('FISKEBRUK_ADMIN', 'FISKEBRUK_INNKJOPER')")
     public ResponseEntity<OrdreResponseDto> createOrdreFromFangstmelding(
             @RequestBody Map<String, Long> payload,
             @AuthenticationPrincipal Jwt jwt) {
 
         UserPrincipal principal = new UserPrincipal(jwt);
         Long fangstmeldingId = payload.get("fangstmeldingId");
+        if (fangstmeldingId == null) {
+            return ResponseEntity.badRequest().build();
+        }
         Long kjoperOrganisasjonId = principal.getOrganisasjonId();
 
         OrdreResponseDto createdOrdre = ordreService.createOrdreFromFangstmelding(fangstmeldingId, kjoperOrganisasjonId);
@@ -47,7 +51,7 @@ public class OrdreController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
+    @PreAuthorize("hasAnyRole('FISKEBRUK_ADMIN', 'FISKEBRUK_INNKJOPER')")
     public ResponseEntity<?> createOrdre(
             @Valid @RequestBody CreateOrdreRequestDto dto,
             @AuthenticationPrincipal Jwt jwt) {
@@ -93,7 +97,7 @@ public class OrdreController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
+    @PreAuthorize("hasAnyRole('FISKEBRUK_ADMIN', 'FISKEBRUK_INNKJOPER')")
     public ResponseEntity<Void> deleteOrdre(
             @PathVariable Long id,
             @AuthenticationPrincipal Jwt jwt) {
@@ -107,7 +111,7 @@ public class OrdreController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
+    @PreAuthorize("hasAnyRole('FISKEBRUK_ADMIN', 'FISKEBRUK_INNKJOPER')")
     public ResponseEntity<OrdreResponseDto> updateOrdre(
             @PathVariable Long id,
             @Valid @RequestBody CreateOrdreRequestDto dto,
@@ -120,7 +124,7 @@ public class OrdreController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('FISKEBRUK_INNKJOPER')")
+    @PreAuthorize("hasAnyRole('FISKEBRUK_ADMIN', 'FISKEBRUK_INNKJOPER')")
     public ResponseEntity<OrdreResponseDto> getOrdreById(
             @PathVariable Long id,
             @AuthenticationPrincipal Jwt jwt) {
@@ -132,29 +136,32 @@ public class OrdreController {
     }
 
     @GetMapping("/mine")
-    @PreAuthorize("hasAnyRole('FISKEBRUK_INNKJOPER', 'FISKEBRUK_ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<OrdreResponseDto>> getMineOrdrer(@AuthenticationPrincipal Jwt jwt) {
         UserPrincipal principal = new UserPrincipal(jwt);
-        Long kjoperOrganisasjonId = principal.getOrganisasjonId();
-        List<OrdreResponseDto> ordrer = ordreService.findMineOrdrer(kjoperOrganisasjonId);
+        Map<String, Object> claims = jwt.getClaimAsMap("https://fangstportalen.no/claims");
+        OrganisasjonType orgType = OrganisasjonType.valueOf((String) claims.get("org_type"));
+        List<OrdreResponseDto> ordrer = ordreService.findMineOrdrer(principal.getOrganisasjonId(), orgType);
         return ResponseEntity.ok(ordrer);
     }
 
-    @GetMapping("/mine/avtalte")
-    @PreAuthorize("hasRole('REDERI_SKIPPER')")
-    public ResponseEntity<List<OrdreResponseDto>> getMineAvtalteOrdrer(@AuthenticationPrincipal Jwt jwt) {
+    @GetMapping("/klare-for-sluttseddel")
+    @PreAuthorize("hasAnyRole('REDERI_SKIPPER', 'REDERI_ADMIN')")
+    public ResponseEntity<List<OrdreResponseDto>> getOrdrerKlareForSluttseddel(@AuthenticationPrincipal Jwt jwt) {
         UserPrincipal principal = new UserPrincipal(jwt);
-        Long selgerOrganisasjonId = principal.getOrganisasjonId();
-        List<OrdreResponseDto> ordrer = ordreService.findMineAvtalteOrdrer(selgerOrganisasjonId);
+        List<OrdreResponseDto> ordrer = ordreService.findMineAvtalteOrdrer(principal.getOrganisasjonId());
         return ResponseEntity.ok(ordrer);
     }
 
     @GetMapping("/tilgjengelige")
     @PreAuthorize("hasRole('REDERI_SKIPPER')")
-    public ResponseEntity<List<OrdreResponseDto>> getTilgjengeligeOrdrer(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<List<OrdreResponseDto>> getTilgjengeligeOrdrer(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(required = false) String leveringssted,
+            @RequestParam(required = false) String fiskeslag) {
         UserPrincipal principal = new UserPrincipal(jwt);
         Long selgerOrganisasjonId = principal.getOrganisasjonId();
-        List<OrdreResponseDto> tilgjengeligeOrdrer = ordreService.findTilgjengeligeOrdrer(selgerOrganisasjonId);
+        List<OrdreResponseDto> tilgjengeligeOrdrer = ordreService.findTilgjengeligeOrdrer(selgerOrganisasjonId, leveringssted, fiskeslag);
         return ResponseEntity.ok(tilgjengeligeOrdrer);
     }
 }
