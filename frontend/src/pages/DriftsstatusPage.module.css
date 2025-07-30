@@ -1,0 +1,102 @@
+.pageWrapper {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.statusBanner {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    background-color: #dcfce7;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    border-radius: 12px;
+    margin-bottom: 3rem;
+}
+
+.bannerIcon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.bannerText h2 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.5rem;
+}
+
+.bannerText p {
+    margin: 0;
+    opacity: 0.8;
+}
+
+.componentList {
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.componentItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+}
+
+.componentItem:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.componentName {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+}
+
+.componentStatus {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #166534;
+    font-weight: 600;
+}
+
+.incidentHistory {
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-color-secondary);
+}
+
+.subscribeSection {
+    margin-top: 4rem;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    background-color: #f9fafb;
+    border-top: 1px solid var(--border-color);
+}
+
+.subscribeSection h3 {
+    font-size: 1.5rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.subscribeSection p {
+    color: var(--text-color-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.subscribeForm {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.subscribeForm input {
+    flex-grow: 1;
+}

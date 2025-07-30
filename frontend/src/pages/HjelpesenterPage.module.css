@@ -1,0 +1,32 @@
+.faqContainer {
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0 1.5rem;
+}
+
+.ctaSection {
+    background-color: #f9fafb;
+    padding: 4rem 1.5rem;
+    margin-top: 4rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.ctaContent {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.ctaContent h2 {
+    font-size: 2rem;
+    margin: 0 0 1rem 0;
+    color: var(--primary-color);
+}
+
+.ctaContent p {
+    font-size: 1.1rem;
+    color: var(--text-color-secondary);
+    margin: 0 auto 2rem auto;
+    max-width: 60ch;
+}

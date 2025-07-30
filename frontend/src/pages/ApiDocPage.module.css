@@ -1,0 +1,97 @@
+.authSection {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.authIcon {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-top: 0.5rem;
+}
+
+.authSection h3 {
+    margin-top: 0;
+}
+
+.endpointCard {
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.endpointHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background-color: #f9fafb;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.method {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    color: white;
+}
+
+.methodGet { background-color: #059669; }
+.methodPost { background-color: #2563eb; }
+.methodPatch { background-color: #d97706; }
+
+.endpointPath {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.endpointBody {
+    padding: 1.5rem;
+}
+
+.endpointBody p {
+    margin: 0 0 1rem 0;
+}
+
+.permissionBadge {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+
+.statusBox {
+    background-color: #f0f9ff;
+    border: 1px solid #e0f2fe;
+    border-left: 4px solid #0ea5e9;
+    border-radius: 6px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.statusBox svg {
+    font-size: 1.5rem;
+    color: #0ea5e9;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.statusBox h4 {
+    margin: 0 0 0.5rem 0;
+}
+
+.statusBox p {
+    margin: 0;
+    color: #374151;
+}

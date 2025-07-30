@@ -1,0 +1,37 @@
+.container {
+    position: relative;
+    background-color: #111827;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.container pre {
+    margin: 0;
+    padding: 1.5rem;
+    color: #d1d5db;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+}
+
+.copyButton {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #9ca3af;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.copyButton:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
