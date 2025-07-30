@@ -1,0 +1,96 @@
+.pageWrapper {
+    padding: 4rem 1.5rem;
+}
+
+.contentCard {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.summaryBox {
+    background-color: #f0f9ff;
+    border: 1px solid #e0f2fe;
+    border-left: 4px solid #0ea5e9;
+    border-radius: 6px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.summaryIcon {
+    font-size: 1.5rem;
+    color: #0ea5e9;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.summaryBox h4 {
+    margin: 0 0 0.5rem 0;
+}
+
+.summaryBox p {
+    margin: 0;
+    color: #374151;
+}
+
+.section {
+    padding: 2rem;
+}
+
+.section:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 0 0 1.5rem 0;
+}
+
+.section p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #374151;
+    max-width: 65ch;
+    margin-bottom: 1.5rem;
+}
+
+.section p:last-child {
+    margin-bottom: 0;
+}
+
+.section ul {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #374151;
+    padding-left: 1.5rem;
+}
+
+.section li {
+    margin-bottom: 0.75rem;
+}
+
+.section a {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.section a:hover {
+    text-decoration: underline;
+}
+
+@media (min-width: 768px) {
+    .contentCard {
+        padding: 2.5rem;
+    }
+}

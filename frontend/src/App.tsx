@@ -36,6 +36,8 @@ import ApiDocPage from './pages/ApiDocPage';
 import DriftsstatusPage from './pages/DriftsstatusPage';
 import BloggPage from './pages/BloggPage';
 import ArtikkelPage from './pages/ArtikkelPage';
+import PersonvernPage from './pages/PersonvernPage';
+import BrukervilkarPage from './pages/BrukervilkarPage';
 
 function App() {
   const { isLoading, getAccessTokenSilently } = useAuth0();
@@ -76,7 +78,9 @@ function App() {
           <Route path="/karriere" element={<KarrierePage />} />
           <Route path="/driftsstatus" element={<DriftsstatusPage />} />
           <Route path="/blogg" element={<BloggPage />} /> 
-          <Route path="/blogg/:slug" element={<ArtikkelPage />} /> 
+          <Route path="/blogg/:slug" element={<ArtikkelPage />} />
+          <Route path="/personvern" element={<PersonvernPage />} /> 
+          <Route path="/brukervilkar" element={<BrukervilkarPage />} />
           <Route path="/api-dokumentasjon" element={<ApiDocPage />} />
           <Route path="/presse" element={<PressePage />} />
           <Route path="/hjelpesenter" element={<HjelpesenterPage />} />

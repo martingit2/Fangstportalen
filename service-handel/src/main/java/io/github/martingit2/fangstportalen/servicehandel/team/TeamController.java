@@ -38,7 +38,6 @@ public class TeamController {
     public ResponseEntity<Void> inviterNyttMedlem(
             @Valid @RequestBody InviterMedlemRequestDto dto,
             @AuthenticationPrincipal Jwt jwt) {
-        log.info("Mottok invitasjonsforespørsel for e-post: {}", dto.email());
         UserPrincipal principal = new UserPrincipal(jwt);
         teamService.inviterMedlem(dto, principal.getOrganisasjonId());
         return ResponseEntity.ok().build();

@@ -63,7 +63,6 @@ public class Auth0ManagementService {
                 log.error("Klarte ikke å opprette bruker i Auth0. Status: {}, Body: {}", response.code(), responseBody);
                 throw new IOException("Auth0 API feilet under brukeropprettelse: " + responseBody);
             }
-            log.info("Opprettet bruker i Auth0 for e-post: {}", email);
             JsonNode jsonNode = objectMapper.readTree(responseBody);
             return jsonNode.get("user_id").asText();
         }
@@ -85,7 +84,6 @@ public class Auth0ManagementService {
                 log.error("Klarte ikke å opprette verifiseringsticket. Status: {}, Body: {}", response.code(), errorBody);
                 throw new IOException("Auth0 API feilet under opprettelse av verifiseringsticket: " + errorBody);
             }
-            log.info("Opprettet verifiseringsticket for bruker-ID: {}", userId);
         }
     }
 
