@@ -24,6 +24,7 @@ public class Auth0ManagementService {
     @Value("${auth0.management.clientId}") private String clientId;
     @Value("${auth0.management.clientSecret}") private String clientSecret;
     @Value("${auth0.management.audience}") private String audience;
+    @Value("${app.frontend.url}") private String frontendUrl;
 
     private String cachedToken;
     private Instant tokenExpiry;
@@ -31,7 +32,7 @@ public class Auth0ManagementService {
     public void createInvitation(String email, Long orgId, Set<String> roles) throws IOException {
         String accessToken = getAccessToken();
         String newUserId = createUser(accessToken, email, orgId, roles);
-        createPasswordChangeTicket(accessToken, newUserId);
+        createVerificationTicket(accessToken, newUserId);
     }
 
     private String createUser(String accessToken, String email, Long orgId, Set<String> roles) throws IOException {
@@ -55,7 +56,7 @@ public class Auth0ManagementService {
         try (Response response = httpClient.newCall(request).execute()) {
             String responseBody = response.body() != null ? response.body().string() : "No response body";
             if (!response.isSuccessful()) {
-                if (response.code() == 409) { // Conflict - User already exists
+                if (response.code() == 409) {
                     log.warn("Bruker med e-post {} eksisterer allerede i Auth0. Kan ikke invitere på nytt.", email);
                     throw new IOException("Bruker med denne e-posten eksisterer allerede.");
                 }
@@ -68,11 +69,12 @@ public class Auth0ManagementService {
         }
     }
 
-    private void createPasswordChangeTicket(String accessToken, String userId) throws IOException {
-        String url = "https://" + domain + "/api/v2/tickets/password-change";
+    private void createVerificationTicket(String accessToken, String userId) throws IOException {
+        String url = "https://" + domain + "/api/v2/tickets/email-verification";
 
         ObjectNode payload = objectMapper.createObjectNode();
         payload.put("user_id", userId);
+        payload.put("result_url", frontendUrl);
 
         RequestBody body = RequestBody.create(objectMapper.writeValueAsString(payload), MediaType.get("application/json; charset=utf-8"));
         Request request = new Request.Builder().url(url).header("Authorization", "Bearer " + accessToken).post(body).build();
@@ -80,10 +82,10 @@ public class Auth0ManagementService {
         try (Response response = httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 String errorBody = response.body() != null ? response.body().string() : "No response body";
-                log.error("Klarte ikke å opprette invitasjonsticket (password-change). Status: {}, Body: {}", response.code(), errorBody);
-                throw new IOException("Auth0 API feilet under opprettelse av ticket: " + errorBody);
+                log.error("Klarte ikke å opprette verifiseringsticket. Status: {}, Body: {}", response.code(), errorBody);
+                throw new IOException("Auth0 API feilet under opprettelse av verifiseringsticket: " + errorBody);
             }
-            log.info("Opprettet invitasjonsticket (password-change) for bruker-ID: {}", userId);
+            log.info("Opprettet verifiseringsticket for bruker-ID: {}", userId);
         }
     }
 

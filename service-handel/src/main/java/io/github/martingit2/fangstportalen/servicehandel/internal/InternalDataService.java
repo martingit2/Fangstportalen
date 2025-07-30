@@ -54,6 +54,7 @@ public class InternalDataService {
                 .id(new OrganisasjonBrukerId(dto.organisasjonId(), dto.brukerId()))
                 .organisasjon(org)
                 .roller(roller)
+                .navn(dto.navn())
                 .build();
 
         organisasjonBrukerRepository.save(nyBruker);

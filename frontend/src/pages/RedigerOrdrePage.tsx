@@ -8,6 +8,7 @@ import { getOrdreById, updateOrdre } from '../services/apiService';
 import styles from './NyOrdrePage.module.css';
 import inputStyles from '../components/ui/Input.module.css';
 import Button from '../components/ui/Button';
+import toast from 'react-hot-toast';
 
 const RedigerOrdrePage: React.FC = () => {
     const navigate = useNavigate();
@@ -48,7 +49,7 @@ const RedigerOrdrePage: React.FC = () => {
                 reset(formData);
             } catch (error) {
                 console.error("Kunne ikke hente ordredata", error);
-                alert("Kunne ikke laste inn ordredata for redigering.");
+                toast.error("Kunne ikke laste inn ordredata for redigering.");
                 navigate('/dashboard');
             }
         };
@@ -64,9 +65,10 @@ const RedigerOrdrePage: React.FC = () => {
     const onSubmit = async (data: OrdreFormData) => {
         try {
             await updateOrdre(ordreId, data);
+            toast.success("Ordren ble oppdatert!");
             navigate('/dashboard');
         } catch (error) {
-            alert('En feil oppstod under oppdatering av ordre.');
+            toast.error('En feil oppstod under oppdatering av ordre.');
             console.error(error);
         }
     };

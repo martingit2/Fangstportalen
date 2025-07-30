@@ -8,6 +8,7 @@ import { createFangstmelding } from '../services/apiService';
 import styles from './NyOrdrePage.module.css';
 import inputStyles from '../components/ui/Input.module.css';
 import Button from '../components/ui/Button';
+import toast from 'react-hot-toast';
 
 const NyFangstmeldingPage: React.FC = () => {
     const navigate = useNavigate();
@@ -33,9 +34,10 @@ const NyFangstmeldingPage: React.FC = () => {
     const onSubmit = async (data: FangstmeldingFormData) => {
         try {
             await createFangstmelding(data);
+            toast.success("Fangstmeldingen ble annonsert!");
             navigate('/dashboard');
         } catch (error) {
-            alert('En feil oppstod under annonsering av fangst.');
+            toast.error('En feil oppstod under annonsering av fangst.');
             console.error(error);
         }
     };

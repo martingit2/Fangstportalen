@@ -159,4 +159,10 @@ export const getMinOrganisasjon = () => apiClient.get('/organisasjoner/min');
 export const updateMinOrganisasjon = (data: any) => apiClient.put('/organisasjoner/min', data);
 export const inviterMedlem = (data: InvitasjonFormData) => apiClient.post('/team/inviter', data);
 
+export const tildelFartoy = (brukerId: string, fartoyId: number): Promise<AxiosResponse<void>> =>
+    apiClient.patch(`/team/medlemmer/${brukerId}/tildel-fartoy`, { fartoyId });
+
+export const fjernFartoy = (brukerId: string): Promise<AxiosResponse<void>> =>
+    apiClient.patch(`/team/medlemmer/${brukerId}/fjern-fartoy`);
+
 export default apiClient;

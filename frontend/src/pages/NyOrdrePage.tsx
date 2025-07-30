@@ -8,6 +8,7 @@ import apiClient from '../services/apiService';
 import styles from './NyOrdrePage.module.css';
 import inputStyles from '../components/ui/Input.module.css';
 import Button from '../components/ui/Button';
+import toast from 'react-hot-toast';
 
 const NyOrdrePage: React.FC = () => {
     const navigate = useNavigate();
@@ -43,9 +44,12 @@ const NyOrdrePage: React.FC = () => {
                 }))
             };
             await apiClient.post('/ordrer', payload);
-            navigate('/dashboard', { replace: true });
+            navigate('/dashboard', { 
+                replace: true,
+                state: { message: "Ordren ble publisert i markedet!" }
+            });
         } catch (error) {
-            alert('En feil oppstod under lagring av ordre.');
+            toast.error('En feil oppstod under lagring av ordre.');
             console.error(error);
         }
     };

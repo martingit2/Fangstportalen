@@ -9,6 +9,7 @@ import { invitasjonSchema, type InvitasjonFormData } from '../schemas/invitasjon
 import { inviterMedlem } from '../services/apiService';
 import { useClaims } from '../hooks/useClaims';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 interface InviterMedlemModalProps {
     isOpen: boolean;
@@ -46,7 +47,7 @@ const InviterMedlemModal: React.FC<InviterMedlemModalProps> = ({ isOpen, onClose
                 setError("email", { type: "manual", message: "En bruker med denne e-postadressen finnes allerede." });
             } else {
                 console.error("Invitasjon feilet:", error);
-                alert("En uventet feil oppstod under sending av invitasjon.");
+                toast.error("En uventet feil oppstod under sending av invitasjon.");
             }
         }
     };

@@ -11,6 +11,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { profilSchema, type ProfilFormData } from '../schemas/profilSchema';
 import { organisasjonSchema, type OrganisasjonFormData } from '../schemas/organisasjonSchema';
 import InviterMedlemModal from '../components/InviterMedlemModal';
+import { useAuth0 } from '@auth0/auth0-react';
+import toast from 'react-hot-toast';
+import TildelFartoyModal from '../components/TildelFartoyModal';
 
 const MinProfilSection: React.FC = () => {
     const [profil, setProfil] = useState<ProfilFormData | null>(null);
@@ -133,8 +136,12 @@ const FartoySection: React.FC = () => {
 };
 
 const TeamSection: React.FC = () => {
+    const { claims } = useClaims();
+    const { logout } = useAuth0();
     const [medlemmer, setMedlemmer] = useState<TeamMedlemResponseDto[]>([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isInviteModalOpen, setInviteModalOpen] = useState(false);
+    const [isAssignModalOpen, setAssignModalOpen] = useState(false);
+    const [selectedMedlem, setSelectedMedlem] = useState<TeamMedlemResponseDto | null>(null);
     
     const fetchData = useCallback(async () => {
         getMineTeamMedlemmer().then(res => setMedlemmer(res.data));
@@ -142,26 +149,72 @@ const TeamSection: React.FC = () => {
     
     useEffect(() => { fetchData(); }, [fetchData]);
 
-    const handleSuccess = () => {
-        alert("Invitasjon sendt!");
+    const handleInviteSuccess = () => {
+        toast.success("Invitasjon sendt!");
         fetchData();
     };
+
+    const handleAssignSuccess = () => {
+        toast.success('Endringen er lagret. For at endringen skal tre i kraft, må du logge ut og inn igjen. Du blir nå logget ut.', { duration: 6000 });
+        setAssignModalOpen(false);
+        setSelectedMedlem(null);
+        setTimeout(() => {
+            logout({ logoutParams: { returnTo: window.location.origin + '/innstillinger' } });
+        }, 6000);
+    };
+
+    const openAssignModal = (medlem: TeamMedlemResponseDto) => {
+        setSelectedMedlem(medlem);
+        setAssignModalOpen(true);
+    };
+
+    const erRederiAdmin = claims?.org_type === 'REDERI' && claims.roles.includes('REDERI_ADMIN');
 
     return (
         <>
             <section className={styles.section}>
                 <header className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>Team</h2>
-                    <Button variant="secondary" onClick={() => setIsModalOpen(true)}>+ Inviter nytt medlem</Button>
+                    <Button variant="secondary" onClick={() => setInviteModalOpen(true)}>+ Inviter nytt medlem</Button>
                 </header>
                 <div className={styles.sectionContent}>
                     <table className={styles.table}>
-                        <thead><tr><th>Bruker ID</th><th>Roller</th></tr></thead>
-                        <tbody>{medlemmer.map((m) => (<tr key={m.brukerId}><td className={styles.brukerIdCell}>{m.brukerId}</td><td>{m.roller.join(', ')}</td></tr>))}</tbody>
+                        <thead>
+                            <tr>
+                                <th>Bruker ID</th>
+                                <th>Roller</th>
+                                {erRederiAdmin && <th>Tildelt Fartøy</th>}
+                                {erRederiAdmin && <th style={{ textAlign: 'right' }}>Handlinger</th>}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {medlemmer.map((m) => (
+                                <tr key={m.brukerId}>
+                                    <td className={styles.brukerIdCell}>{m.brukerId}</td>
+                                    <td>{m.roller.join(', ')}</td>
+                                    {erRederiAdmin && <td>{m.tildeltFartoyNavn || 'Ikke tildelt'}</td>}
+                                    {erRederiAdmin && (
+                                        <td style={{ textAlign: 'right' }}>
+                                            {m.roller.includes('REDERI_SKIPPER') && (
+                                                <Button variant="secondary" onClick={() => openAssignModal(m)}>Administrer</Button>
+                                            )}
+                                        </td>
+                                    )}
+                                </tr>
+                            ))}
+                        </tbody>
                     </table>
                 </div>
             </section>
-            <InviterMedlemModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={handleSuccess} />
+            <InviterMedlemModal isOpen={isInviteModalOpen} onClose={() => setInviteModalOpen(false)} onSuccess={handleInviteSuccess} />
+            {selectedMedlem && (
+                <TildelFartoyModal 
+                    isOpen={isAssignModalOpen}
+                    onClose={() => setAssignModalOpen(false)}
+                    onSuccess={handleAssignSuccess}
+                    medlem={selectedMedlem}
+                />
+            )}
         </>
     );
 }

@@ -8,6 +8,7 @@ import { getFangstmeldingById, updateFangstmelding } from '../services/apiServic
 import styles from './NyOrdrePage.module.css';
 import inputStyles from '../components/ui/Input.module.css';
 import Button from '../components/ui/Button';
+import toast from 'react-hot-toast';
 
 const RedigerFangstmeldingPage: React.FC = () => {
     const navigate = useNavigate();
@@ -46,7 +47,7 @@ const RedigerFangstmeldingPage: React.FC = () => {
                 reset(formData);
             } catch (error) {
                 console.error("Kunne ikke hente fangstmelding", error);
-                alert("Kunne ikke laste inn fangstmelding for redigering.");
+                toast.error("Kunne ikke laste inn fangstmelding for redigering.");
                 navigate('/dashboard');
             }
         };
@@ -61,9 +62,10 @@ const RedigerFangstmeldingPage: React.FC = () => {
     const onSubmit = async (data: FangstmeldingFormData) => {
         try {
             await updateFangstmelding(fangstmeldingId, data);
+            toast.success("Endringene ble lagret!");
             navigate('/dashboard');
         } catch (error) {
-            alert('En feil oppstod under oppdatering.');
+            toast.error('En feil oppstod under oppdatering.');
             console.error(error);
         }
     };

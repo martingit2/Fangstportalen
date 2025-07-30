@@ -8,6 +8,7 @@ import { giBud } from '../services/apiService';
 import inputStyles from './ui/Input.module.css';
 import styles from './GiBudModal.module.css';
 import type { FangstmeldingResponseDto } from '../types/fangstmelding';
+import toast from 'react-hot-toast';
 
 interface GiBudModalProps {
     isOpen: boolean;
@@ -44,7 +45,7 @@ const GiBudModal: React.FC<GiBudModalProps> = ({ isOpen, onClose, onSuccess, fan
             onSuccess();
             onClose();
         } catch (error) {
-            alert('En feil oppstod under budgivning.');
+            toast.error('En feil oppstod under budgivning.');
         } finally {
             reset();
         }
@@ -76,6 +77,7 @@ const GiBudModal: React.FC<GiBudModalProps> = ({ isOpen, onClose, onSuccess, fan
                     })}
                 </div>
                 {errors.budLinjer && <p className={inputStyles.error}>{errors.budLinjer.message}</p>}
+                {errors.budLinjer?.root && <p className={inputStyles.error}>{errors.budLinjer.root.message}</p>}
 
                 <div className={styles.actions}>
                     <Button type="submit" disabled={isSubmitting}>

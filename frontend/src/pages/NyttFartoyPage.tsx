@@ -7,6 +7,7 @@ import { createFartoy } from '../services/apiService';
 import styles from './NyOrdrePage.module.css';
 import inputStyles from '../components/ui/Input.module.css';
 import Button from '../components/ui/Button';
+import toast from 'react-hot-toast';
 
 const NyttFartoyPage: React.FC = () => {
     const navigate = useNavigate();
@@ -21,9 +22,10 @@ const NyttFartoyPage: React.FC = () => {
     const onSubmit = async (data: FartoyFormData) => {
         try {
             await createFartoy(data);
+            toast.success("Nytt fartøy ble registrert!");
             navigate('/innstillinger');
         } catch (error) {
-            alert('En feil oppstod under registrering av fartøy.');
+            toast.error('En feil oppstod under registrering av fartøy.');
             console.error(error);
         }
     };

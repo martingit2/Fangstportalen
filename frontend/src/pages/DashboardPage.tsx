@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
     getMineOrdrer,
     getAktiveFangstmeldinger,
@@ -483,6 +484,15 @@ const InnkjoperDashboard: React.FC = () => {
 
 const DashboardPage: React.FC = () => {
     const { claims, isLoading } = useClaims();
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (location.state?.message) {
+            toast.success(location.state.message);
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [location, navigate]);
     
     if (isLoading) {
         return <div>Laster brukerinformasjon...</div>;

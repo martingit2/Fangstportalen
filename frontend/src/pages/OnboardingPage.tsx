@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createOnboardingSchema, type OnboardingFormData, type OrgType } from '../schemas/onboardingSchema';
+import toast from 'react-hot-toast';
 
 const OnboardingPage: React.FC = () => {
     const [orgType, setOrgType] = useState<OrgType | null>(null);
@@ -41,7 +42,7 @@ const OnboardingPage: React.FC = () => {
             window.location.assign('/dashboard');
 
         } catch (error) {
-            alert('En feil oppstod under registrering.');
+            toast.error('En feil oppstod under registrering.');
         }
     };
     
