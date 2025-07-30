@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styles from './Navbar.module.css';
-import logoSrc from '../assets/images/logo3.png';
 import { useScrollPosition } from '../hooks/useScrollPosition';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { useAuth0 } from '@auth0/auth0-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
     
@@ -30,19 +29,17 @@ const Navbar: React.FC = () => {
     return (
         <header className={styles.header} data-at-top={isAtTop ? '' : undefined}>
             <div className={styles.container}>
-                <div className={styles.logo}>
+                <Link to="/" className={styles.logo}>
                     <h1>Fangstportalen</h1>
-                    <img src={logoSrc} alt="Fangstportalen Logo" className={styles.logoImage} />
-                </div>
+                </Link>
                 
                 <nav className={styles.desktopNav}>
-                    <a href="#features" className={styles.navLink}>Funksjoner</a>
-                    <a href="#pricing" className={styles.navLink}>Priser</a>
-                    <a href="#contact" className={styles.navLink}>Kontakt</a>
+                    <Link to="/funksjoner" className={styles.navLink}>Funksjoner</Link>
+                    <Link to="/priser" className={styles.navLink}>Priser</Link>
+                    <Link to="/kontakt" className={styles.navLink}>Kontakt</Link>
                 </nav>
 
                 <div className={styles.actions}>
-                    {/* Håndter laste-tilstand først */}
                     {isLoading ? (
                         <>
                             <button className={styles.loginButton} disabled>Laster...</button>
@@ -79,9 +76,9 @@ const Navbar: React.FC = () => {
             
             {isMenuOpen && (
                 <div className={styles.mobileNav}>
-                    <a href="#features" className={styles.mobileNavLink} onClick={() => setMenuOpen(false)}>Funksjoner</a>
-                    <a href="#pricing" className={styles.mobileNavLink} onClick={() => setMenuOpen(false)}>Priser</a>
-                    <a href="#contact" className={styles.mobileNavLink} onClick={() => setMenuOpen(false)}>Kontakt</a>
+                    <Link to="/funksjoner" className={styles.mobileNavLink} onClick={() => setMenuOpen(false)}>Funksjoner</Link>
+                    <Link to="/priser" className={styles.mobileNavLink} onClick={() => setMenuOpen(false)}>Priser</Link>
+                    <Link to="/kontakt" className={styles.mobileNavLink} onClick={() => setMenuOpen(false)}>Kontakt</Link>
                     <hr className={styles.divider} />
                     {isAuthenticated ? (
                          <button className={styles.mobileCtaButton} onClick={handleDashboardClick}>

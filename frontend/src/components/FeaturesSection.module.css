@@ -9,7 +9,7 @@
 
 .container {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
 }
@@ -59,7 +59,7 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  margin-bottom: 4rem;
+  margin-bottom: 6rem;
 }
 
 .featureItem:last-child {
@@ -73,6 +73,8 @@
 
 .featureImageContainer {
   order: 1;
+  position: relative;
+  cursor: pointer;
 }
 
 .featureText h3 {
@@ -121,28 +123,48 @@
 }
 
 .featureImageContainer {
-  aspect-ratio: 4 / 3;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 40px rgba(4, 67, 75, 0.12);
+  border: 1px solid var(--border-color);
 }
 
 .featureImage {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  display: block;
+  transition: transform 0.3s ease;
 }
 
-.placeholderImage {
-  height: 100%;
-  border-radius: 12px;
-  background-color: #f3f4f6;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #9ca3af;
-  font-style: italic;
-  box-shadow: none;
+.featureImageContainer:hover .featureImage {
+    transform: scale(1.03);
+}
+
+.imageOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(4, 67, 75, 0.7);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.imageOverlay span {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
+
+.featureImageContainer:hover .imageOverlay {
+    opacity: 1;
 }
 
 @media (min-width: 900px) {
@@ -163,13 +185,16 @@
   }
   .featureItem {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: start;
+    grid-template-columns: 1.1fr 1fr;
+    align-items: center;
     gap: 5rem;
     margin-bottom: 8rem;
   }
-  .featureItem:nth-child(even) .featureImageContainer {
+  .featureItem:nth-child(even) .featureText {
     order: 2;
+  }
+  .featureItem:nth-child(even) .featureImageContainer {
+    order: 1;
   }
   .featureText h3 {
     font-size: 2.25rem;

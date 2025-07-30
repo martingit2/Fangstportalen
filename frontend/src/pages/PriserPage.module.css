@@ -1,0 +1,111 @@
+.pricingSection {
+    padding: 4rem 1.5rem;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: stretch;
+}
+
+.pricingCard {
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.pricingCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(4, 67, 75, 0.08);
+}
+
+.cardType {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cardPrice {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+    line-height: 1.1;
+}
+
+.cardPeriod {
+    color: var(--text-color-secondary);
+    margin: 0.25rem 0 2.5rem 0;
+}
+
+.featureList {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2.5rem 0;
+    text-align: left;
+    flex-grow: 1;
+}
+
+.featureList li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    color: #374151;
+}
+
+.featureList li svg {
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.ctaWrapper {
+    margin-top: auto;
+}
+
+.ctaWrapper > button {
+    width: 100%;
+}
+
+.featured {
+    position: relative;
+    border-color: var(--primary-color);
+    border-width: 2px;
+    background: linear-gradient(to top, #ffffff, #f7f9fa);
+    box-shadow: 0 20px 25px -5px rgba(4, 67, 75, 0.1), 0 10px 10px -5px rgba(4, 67, 75, 0.04);
+}
+
+.featured:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px -12px rgba(4, 67, 75, 0.25);
+}
+
+.featuredBadge {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.35rem 1rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+@media (min-width: 900px) {
+    .container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

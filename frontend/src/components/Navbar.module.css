@@ -27,6 +27,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  text-decoration: none;
 }
 
 .logo h1 {
@@ -34,10 +35,13 @@
   font-size: 1.25rem;
   color: white;
   font-weight: 600;
-}
-
-.logoImage {
+  background-image: url('../assets/images/logo3.png');
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: right center;
+  padding-right: 40px; 
   height: 32px;
+  line-height: 32px;
 }
 
 .desktopNav, .actions {
@@ -98,10 +102,9 @@
 
   .logo h1 {
     font-size: 1.5rem;
-  }
-
-  .logoImage {
     height: 40px;
+    line-height: 40px;
+    padding-right: 50px; 
   }
 
   .desktopNav {

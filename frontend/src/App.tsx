@@ -20,7 +20,10 @@ import SluttseddelArkivPage from './pages/SluttseddelArkivPage';
 import StatusPage from './pages/StatusPage';
 import { Toaster } from 'react-hot-toast';
 import SluttseddelDetaljerPage from './pages/SluttseddelDetaljerPage';
-
+import FunksjonerPage from './pages/FunksjonerPage';
+import PriserPage from './pages/PriserPage';
+import KontaktPage from './pages/KontaktPage';
+import TeknologiPage from './pages/TeknologiPage';
 
 function App() {
   const { isLoading, getAccessTokenSilently } = useAuth0();
@@ -49,6 +52,12 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/funksjoner" element={<FunksjonerPage />} />
+          <Route path="/priser" element={<PriserPage />} />
+          <Route path="/kontakt" element={<KontaktPage />} />
+          <Route path="/teknologi" element={<TeknologiPage />} />
+         
+
           <Route path="/registrering/verifiser-epost" element={<StatusPage />} />
           <Route path="/registrering/vellykket" element={<StatusPage />} />
           <Route path="/feilmelding" element={<StatusPage />} />

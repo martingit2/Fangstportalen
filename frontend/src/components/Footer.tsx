@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './Footer.module.css';
 import logoSrc from '../assets/images/logo3.png';
 import { FaFacebook, FaLinkedin, FaTwitter, FaServer, FaBuilding, FaBookOpen } from 'react-icons/fa'; 
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   return (
@@ -9,33 +10,33 @@ const Footer: React.FC = () => {
       <div className={styles.container}>
         <div className={styles.mainFooter}>
           <div className={styles.brandSection}>
-            <div className={styles.logo}>
+            <Link to="/" className={styles.logo}>
               <img src={logoSrc} alt="Fangstportalen Logo" className={styles.logoImage} />
               <h2>Fangstportalen</h2>
-            </div>
+            </Link>
             <p>Den komplette digitale løsningen for førstehåndsomsetning av fisk.</p>
           </div>
 
           <div className={styles.linksSection}>
             <div className={styles.linkColumn}>
               <h4><FaServer /> Plattform</h4>
-              <a href="#" className={styles.footerLink}>Teknologi</a>
-              <a href="#" className={styles.footerLink}>Sikkerhet</a>
-              <a href="#" className={styles.footerLink}>Integrasjoner</a>
-              <a href="#" className={styles.footerLink}>Systemkrav</a>
+              <Link to="/teknologi" className={styles.footerLink}>Teknologi</Link>
+              <Link to="/sikkerhet" className={styles.footerLink}>Sikkerhet</Link>
+              <Link to="/integrasjoner" className={styles.footerLink}>Integrasjoner</Link>
+              <Link to="/systemkrav" className={styles.footerLink}>Systemkrav</Link>
             </div>
             <div className={styles.linkColumn}>
               <h4><FaBuilding /> Selskap</h4>
-              <a href="#" className={styles.footerLink}>Om oss</a>
-              <a href="#" className={styles.footerLink}>Karriere</a>
-              <a href="#" className={styles.footerLink}>Presse</a>
+              <Link to="/om-oss" className={styles.footerLink}>Om oss</Link>
+              <Link to="/karriere" className={styles.footerLink}>Karriere</Link>
+              <Link to="/presse" className={styles.footerLink}>Presse</Link>
             </div>
             <div className={styles.linkColumn}>
               <h4><FaBookOpen /> Ressurser</h4>
-              <a href="#" className={styles.footerLink}>Hjelpesenter</a>
-              <a href="#" className={styles.footerLink}>API-dokumentasjon</a>
-              <a href="#" className={styles.footerLink}>Driftsstatus</a>
-              <a href="#" className={styles.footerLink}>Blogg</a>
+              <Link to="/hjelpesenter" className={styles.footerLink}>Hjelpesenter</Link>
+              <Link to="/api-dokumentasjon" className={styles.footerLink}>API-dokumentasjon</Link>
+              <Link to="/driftsstatus" className={styles.footerLink}>Driftsstatus</Link>
+              <Link to="/blogg" className={styles.footerLink}>Blogg</Link>
             </div>
           </div>
         </div>
@@ -43,8 +44,8 @@ const Footer: React.FC = () => {
         <div className={styles.subFooter}>
           <p className={styles.copyright}>© {new Date().getFullYear()} Fangstportalen. Alle rettigheter forbeholdt.</p>
           <div className={styles.legalLinks}>
-            <a href="#" className={styles.footerLink}>Brukervilkår</a>
-            <a href="#" className={styles.footerLink}>Personvern</a>
+            <Link to="/brukervilkar" className={styles.footerLink}>Brukervilkår</Link>
+            <Link to="/personvern" className={styles.footerLink}>Personvern</Link>
           </div>
           <div className={styles.socialLinks}>
             <a href="#" aria-label="Facebook"><FaFacebook /></a>

@@ -1,0 +1,57 @@
+.techGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.techCard {
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 2rem;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.techCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(4, 67, 75, 0.08);
+}
+
+.cardIcon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.techCard h3 {
+    font-size: 1.25rem;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+}
+
+.techCard p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--text-color-secondary);
+}
+
+@media (min-width: 768px) {
+    .techGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (min-width: 1024px) {
+    .techGrid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+   
+    .techGrid > :last-child:nth-child(3n - 1) {
+        grid-column-end: 3;
+    }
+}

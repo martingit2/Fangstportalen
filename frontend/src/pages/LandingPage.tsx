@@ -4,8 +4,6 @@ import Footer from '../components/Footer';
 import styles from './LandingPage.module.css';
 import heroImage from '../assets/images/fisk1.jpg';
 import FadeIn from '../components/FadeIn';
-import FeaturesSection from '../components/FeaturesSection';
-import DisclaimerSection from '../components/DisclaimerSection';
 import { useAuth0 } from '@auth0/auth0-react';
 import NotificationHandler from '../components/NotificationHandler'; 
 
@@ -43,8 +41,6 @@ const LandingPage: React.FC = () => {
             </FadeIn>
           </div>
         </div>
-        <FadeIn><FeaturesSection /></FadeIn>
-        <FadeIn><DisclaimerSection /></FadeIn>
       </main>
       <Footer />
     </>
