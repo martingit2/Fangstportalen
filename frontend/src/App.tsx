@@ -28,6 +28,8 @@ import SikkerhetPage from './pages/SikkerhetPage';
 import IntegrasjonerPage from './pages/IntegrasjonerPage';
 import SystemkravPage from './pages/SystemkravPage';
 import OmOssPage from './pages/OmOssPage';
+import KarrierePage from './pages/KarrierePage';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   const { isLoading, getAccessTokenSilently } = useAuth0();
@@ -54,6 +56,7 @@ function App() {
         },
       }} />
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/funksjoner" element={<FunksjonerPage />} />
@@ -64,8 +67,8 @@ function App() {
           <Route path="/integrasjoner" element={<IntegrasjonerPage />} />
           <Route path="/systemkrav" element={<SystemkravPage />} />
           <Route path="/om-oss" element={<OmOssPage />} />
-         
-
+          <Route path="/karriere" element={<KarrierePage />} />
+          
           <Route path="/registrering/verifiser-epost" element={<StatusPage />} />
           <Route path="/registrering/vellykket" element={<StatusPage />} />
           <Route path="/feilmelding" element={<StatusPage />} />

@@ -1,10 +1,9 @@
-/* --- Mobile-First Stiler (Standard) --- */
 .footer {
-  background-color: var(--footer-background);
+  background-color: #f9fafb;
   color: var(--text-color);
-  padding: 3rem 0; /* Mer kompakt padding på mobil */
+  padding: 3rem 0;
   font-size: 0.9rem;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+  border-top: 1px solid var(--border-color);
 }
 
 .container {
@@ -16,15 +15,19 @@
 
 .mainFooter {
   display: flex;
-  flex-direction: column; /* Stabler vertikalt på mobil */
+  flex-direction: column;
   gap: 3rem;
   padding-bottom: 2rem;
   border-bottom: 1px solid var(--border-color);
-  text-align: center; /* Sentrerer brand-seksjonen */
+  text-align: center;
 }
 
-.logo {
-  justify-content: center; /* Sentrerer logo-innhold */
+.logoLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  text-decoration: none;
   margin-bottom: 1rem;
 }
 
@@ -32,7 +35,7 @@
   height: 40px;
 }
 
-.brandSection h2 {
+.logoText {
   font-size: 1.5rem;
   margin: 0;
   color: var(--primary-color);
@@ -46,7 +49,7 @@
 
 .linksSection {
   display: flex;
-  flex-direction: column; /* Stabler link-kolonnene */
+  flex-direction: column;
   gap: 2rem;
   text-align: center;
 }
@@ -60,7 +63,7 @@
   letter-spacing: 0.5px;
   display: flex;
   align-items: center;
-  justify-content: center; /* Sentrerer overskrift */
+  justify-content: center;
   gap: 0.5rem;
 }
 
@@ -82,7 +85,7 @@
 .subFooter {
   padding-top: 2rem;
   display: flex;
-  flex-direction: column; /* Stabler sub-footer */
+  flex-direction: column;
   align-items: center;
   gap: 1.5rem;
 }
@@ -90,7 +93,7 @@
 .copyright {
   font-size: 0.85rem;
   opacity: 0.5;
-  order: 3; /* Copyright kommer nederst */
+  order: 3;
 }
 
 .legalLinks {
@@ -107,7 +110,7 @@
 .socialLinks {
   display: flex;
   gap: 1.5rem;
-  order: 1; /* Sosiale ikoner kommer øverst i sub-footer */
+  order: 1;
 }
 
 .socialLinks a {
@@ -123,7 +126,6 @@
   transform: translateY(-2px);
 }
 
-/* --- Desktop Stiler --- */
 @media (min-width: 900px) {
   .footer {
     padding: 4rem 0 2rem 0;
@@ -132,12 +134,12 @@
     padding: 0 2rem;
   }
   .mainFooter {
-    flex-direction: row; /* Tilbake til horisontal layout */
+    flex-direction: row;
     text-align: left;
     gap: 4rem;
     padding-bottom: 3rem;
   }
-  .logo {
+  .logoLink {
     justify-content: flex-start;
   }
   .linksSection {

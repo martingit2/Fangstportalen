@@ -10,9 +10,9 @@ const Footer: React.FC = () => {
       <div className={styles.container}>
         <div className={styles.mainFooter}>
           <div className={styles.brandSection}>
-            <Link to="/" className={styles.logo}>
+            <Link to="/" className={styles.logoLink}>
               <img src={logoSrc} alt="Fangstportalen Logo" className={styles.logoImage} />
-              <h2>Fangstportalen</h2>
+              <h2 className={styles.logoText}>Fangstportalen</h2>
             </Link>
             <p>Den komplette digitale løsningen for førstehåndsomsetning av fisk.</p>
           </div>
