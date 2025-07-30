@@ -19,5 +19,6 @@ public record SluttseddelResponseDto(
         String leveringssted,
         List<SluttseddelLinjeDto> linjer,
         Double totalVerdi,
+        String avvisningsbegrunnelse,
         LocalDateTime opprettetTidspunkt
 ) {}

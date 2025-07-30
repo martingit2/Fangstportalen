@@ -30,9 +30,9 @@ public class StatistikkService {
         boolean erSelger = orgType == OrganisasjonType.REDERI;
 
         if (erSelger) {
-            fullforteOrdrer = ordreRepository.findBySelgerOrganisasjonIdAndStatus(orgId, OrdreStatus.FULLFØRT);
+            fullforteOrdrer = ordreRepository.findAllBySelgerOrganisasjonIdAndStatus(orgId, OrdreStatus.FULLFØRT);
         } else {
-            fullforteOrdrer = ordreRepository.findByKjoperOrganisasjonIdAndStatus(orgId, OrdreStatus.FULLFØRT);
+            fullforteOrdrer = ordreRepository.findAllByKjoperOrganisasjonIdAndStatus(orgId, OrdreStatus.FULLFØRT);
         }
 
         if (fullforteOrdrer.isEmpty()) {

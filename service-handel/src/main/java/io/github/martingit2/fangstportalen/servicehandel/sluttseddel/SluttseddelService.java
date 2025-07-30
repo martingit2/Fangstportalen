@@ -117,12 +117,8 @@ public class SluttseddelService {
 
     @Transactional
     public SluttseddelResponseDto bekreftSluttseddel(Long sluttseddelId, Long kjoperOrganisasjonId) {
-        Sluttseddel sluttseddel = sluttseddelRepository.findById(sluttseddelId)
-                .orElseThrow(() -> new EntityNotFoundException("Sluttseddel ikke funnet med ID: " + sluttseddelId));
+        Sluttseddel sluttseddel = finnOgValiderEierskap(sluttseddelId, kjoperOrganisasjonId);
 
-        if (!sluttseddel.getKjoperOrganisasjonId().equals(kjoperOrganisasjonId)) {
-            throw new AccessDeniedException("Din organisasjon er ikke kjøper på denne sluttseddelen.");
-        }
         if (sluttseddel.getStatus() != SluttseddelStatus.SIGNERT_AV_FISKER) {
             throw new IllegalStateException("Kan kun bekrefte en sluttseddel som er signert av fisker.");
         }
@@ -134,6 +130,23 @@ public class SluttseddelService {
         return convertToDto(savedSluttseddel);
     }
 
+    @Transactional
+    public SluttseddelResponseDto avvisSluttseddel(Long sluttseddelId, Long kjoperOrganisasjonId, String begrunnelse) {
+        Sluttseddel sluttseddel = finnOgValiderEierskap(sluttseddelId, kjoperOrganisasjonId);
+
+        if (sluttseddel.getStatus() != SluttseddelStatus.SIGNERT_AV_FISKER) {
+            throw new IllegalStateException("Kan kun avvise en sluttseddel som er signert av fisker.");
+        }
+
+        sluttseddel.setStatus(SluttseddelStatus.AVVIST);
+        sluttseddel.setAvvisningsbegrunnelse(begrunnelse);
+        sluttseddel.getOrdre().setStatus(OrdreStatus.AVTALT); // Tilbakestill ordre til avtalt slik at ny sluttseddel kan opprettes
+
+        Sluttseddel savedSluttseddel = sluttseddelRepository.save(sluttseddel);
+        return convertToDto(savedSluttseddel);
+    }
+
+
     @Transactional(readOnly = true)
     public List<SluttseddelResponseDto> getMineSluttsedler(Long orgId, OrganisasjonType orgType) {
         List<Sluttseddel> sedler;
@@ -143,6 +156,22 @@ public class SluttseddelService {
             sedler = sluttseddelRepository.findByKjoperOrganisasjonIdOrderByLandingsdatoDesc(orgId);
         }
         return sedler.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public SluttseddelResponseDto getSluttseddelById(Long id, Long organisasjonId) {
+        Sluttseddel sluttseddel = finnOgValiderEierskap(id, organisasjonId);
+        return convertToDto(sluttseddel);
+    }
+
+    private Sluttseddel finnOgValiderEierskap(Long sluttseddelId, Long organisasjonId) {
+        Sluttseddel sluttseddel = sluttseddelRepository.findById(sluttseddelId)
+                .orElseThrow(() -> new EntityNotFoundException("Sluttseddel ikke funnet med ID: " + sluttseddelId));
+
+        if (!sluttseddel.getKjoperOrganisasjonId().equals(organisasjonId) && !sluttseddel.getSelgerOrganisasjonId().equals(organisasjonId)) {
+            throw new AccessDeniedException("Din organisasjon er ikke part i denne sluttseddelen.");
+        }
+        return sluttseddel;
     }
 
     private SluttseddelResponseDto convertToDto(Sluttseddel sluttseddel) {
@@ -174,6 +203,7 @@ public class SluttseddelService {
                 sluttseddel.getOrdre().getLeveringssted(),
                 linjeDtos,
                 totalVerdi,
+                sluttseddel.getAvvisningsbegrunnelse(),
                 sluttseddel.getOpprettetTidspunkt()
         );
     }

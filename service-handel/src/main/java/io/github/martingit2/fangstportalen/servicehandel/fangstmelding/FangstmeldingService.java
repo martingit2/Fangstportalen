@@ -11,6 +11,8 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -96,13 +98,11 @@ public class FangstmeldingService {
         });
 
         Fangstmelding updatedFangstmelding = fangstmeldingRepository.save(fangstmelding);
-        logger.info("Fangstmelding {} ble oppdatert av organisasjon {}", fangstmeldingId, selgerOrganisasjonId);
-
         return convertToResponseDto(updatedFangstmelding);
     }
 
     @Transactional(readOnly = true)
-    public List<FangstmeldingResponseDto> findAktiveFangstmeldinger(String leveringssted, String fiskeslag) {
+    public Page<FangstmeldingResponseDto> findAktiveFangstmeldinger(String leveringssted, String fiskeslag, Pageable pageable) {
         Specification<Fangstmelding> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(criteriaBuilder.equal(root.get("status"), FangstmeldingStatus.AAPEN_FOR_BUD));
@@ -118,41 +118,29 @@ public class FangstmeldingService {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
 
-        List<Fangstmelding> fangstmeldinger = fangstmeldingRepository.findAll(spec);
-        return fangstmeldinger.stream()
-                .map(this::convertToResponseDto)
-                .collect(Collectors.toList());
+        return fangstmeldingRepository.findAll(spec, pageable).map(this::convertToResponseDto);
     }
 
     @Transactional(readOnly = true)
-    public List<FangstmeldingResponseDto> findMineAktiveFangstmeldinger(Long selgerOrganisasjonId) {
-        List<Fangstmelding> fangstmeldinger = fangstmeldingRepository.findBySelgerOrganisasjonIdAndStatus(selgerOrganisasjonId, FangstmeldingStatus.AAPEN_FOR_BUD);
-        return fangstmeldinger.stream()
-                .map(this::convertToResponseDto)
-                .collect(Collectors.toList());
+    public Page<FangstmeldingResponseDto> findMineAktiveFangstmeldinger(Long selgerOrganisasjonId, Pageable pageable) {
+        return fangstmeldingRepository.findBySelgerOrganisasjonIdAndStatus(selgerOrganisasjonId, FangstmeldingStatus.AAPEN_FOR_BUD, pageable)
+                .map(this::convertToResponseDto);
     }
 
     @Transactional
     public void deleteFangstmelding(Long fangstmeldingId, Long selgerOrganisasjonId) {
-        logger.info("Forespørsel om å slette fangstmelding {} for organisasjon {}", fangstmeldingId, selgerOrganisasjonId);
-
         Fangstmelding fangstmelding = fangstmeldingRepository.findById(fangstmeldingId)
                 .orElseThrow(() -> new EntityNotFoundException("Finner ikke fangstmelding med ID: " + fangstmeldingId));
 
         if (!fangstmelding.getSelgerOrganisasjonId().equals(selgerOrganisasjonId)) {
-            logger.warn("Sikkerhetsbrudd! Organisasjon {} forsøkte å slette fangstmelding {} som tilhører {}.",
-                    selgerOrganisasjonId, fangstmeldingId, fangstmelding.getSelgerOrganisasjonId());
             throw new AccessDeniedException("Du har ikke tilgang til å slette denne fangstmeldingen.");
         }
 
         if (fangstmelding.getStatus() != FangstmeldingStatus.AAPEN_FOR_BUD) {
-            logger.warn("Ugyldig operasjon. Forsøkte å slette fangstmelding {} med status {}, men kun AAPEN_FOR_BUD kan slettes.",
-                    fangstmeldingId, fangstmelding.getStatus());
             throw new IllegalStateException("Kun fangstmeldinger som er åpne for bud kan slettes.");
         }
 
         fangstmeldingRepository.delete(fangstmelding);
-        logger.info("Fangstmelding {} ble slettet av organisasjon {}", fangstmeldingId, selgerOrganisasjonId);
     }
 
     private FangstmeldingResponseDto convertToResponseDto(Fangstmelding fangstmelding) {

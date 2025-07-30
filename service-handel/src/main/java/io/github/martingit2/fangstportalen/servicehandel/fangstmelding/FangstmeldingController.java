@@ -3,8 +3,11 @@ package io.github.martingit2.fangstportalen.servicehandel.fangstmelding;
 import io.github.martingit2.fangstportalen.servicehandel.config.UserPrincipal;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.dto.CreateFangstmeldingRequestDto;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.dto.FangstmeldingResponseDto;
+import io.github.martingit2.fangstportalen.servicehandel.util.PagedResultDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -80,7 +82,7 @@ public class FangstmeldingController {
     public ResponseEntity<FangstmeldingResponseDto> getFangstmeldingById(
             @PathVariable Long id,
             @AuthenticationPrincipal Jwt jwt) {
-        return fangstmeldingService.findMineAktiveFangstmeldinger(new UserPrincipal(jwt).getOrganisasjonId()).stream()
+        return fangstmeldingService.findMineAktiveFangstmeldinger(new UserPrincipal(jwt).getOrganisasjonId(), Pageable.unpaged()).stream()
                 .filter(f -> f.id().equals(id))
                 .findFirst()
                 .map(ResponseEntity::ok)
@@ -89,19 +91,21 @@ public class FangstmeldingController {
 
     @GetMapping("/aktive")
     @PreAuthorize("hasAnyRole('FISKEBRUK_INNKJOPER', 'FISKEBRUK_ADMIN')")
-    public ResponseEntity<List<FangstmeldingResponseDto>> getAktiveFangstmeldinger(
+    public ResponseEntity<PagedResultDto<FangstmeldingResponseDto>> getAktiveFangstmeldinger(
             @RequestParam(required = false) String leveringssted,
-            @RequestParam(required = false) String fiskeslag) {
-        List<FangstmeldingResponseDto> aktiveMeldinger = fangstmeldingService.findAktiveFangstmeldinger(leveringssted, fiskeslag);
-        return ResponseEntity.ok(aktiveMeldinger);
+            @RequestParam(required = false) String fiskeslag,
+            Pageable pageable) {
+        Page<FangstmeldingResponseDto> aktiveMeldingerPage = fangstmeldingService.findAktiveFangstmeldinger(leveringssted, fiskeslag, pageable);
+        return ResponseEntity.ok(new PagedResultDto<>(aktiveMeldingerPage));
     }
 
     @GetMapping("/mine")
     @PreAuthorize("hasAnyRole('REDERI_SKIPPER', 'REDERI_ADMIN')")
-    public ResponseEntity<List<FangstmeldingResponseDto>> getMineAktiveFangstmeldinger(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<PagedResultDto<FangstmeldingResponseDto>> getMineAktiveFangstmeldinger(
+            @AuthenticationPrincipal Jwt jwt, Pageable pageable) {
         UserPrincipal principal = new UserPrincipal(jwt);
         Long selgerOrganisasjonId = principal.getOrganisasjonId();
-        List<FangstmeldingResponseDto> aktiveMeldinger = fangstmeldingService.findMineAktiveFangstmeldinger(selgerOrganisasjonId);
-        return ResponseEntity.ok(aktiveMeldinger);
+        Page<FangstmeldingResponseDto> aktiveMeldingerPage = fangstmeldingService.findMineAktiveFangstmeldinger(selgerOrganisasjonId, pageable);
+        return ResponseEntity.ok(new PagedResultDto<>(aktiveMeldingerPage));
     }
 }

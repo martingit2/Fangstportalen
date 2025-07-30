@@ -1,6 +1,5 @@
 package io.github.martingit2.fangstportalen.servicehandel.ordre;
 
-import io.github.martingit2.fangstportalen.servicehandel.fartoy.Fartoy;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.Fangstmelding;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.FangstmeldingRepository;
 import io.github.martingit2.fangstportalen.servicehandel.fangstmelding.FangstmeldingStatus;
@@ -8,8 +7,6 @@ import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.CreateOrdreRe
 import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.OrdreResponseDto;
 import io.github.martingit2.fangstportalen.servicehandel.ordre.dto.OrdrelinjeDto;
 import io.github.martingit2.fangstportalen.servicehandel.organisasjon.Organisasjon;
-import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonBruker;
-import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonBrukerRepository;
 import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonRepository;
 import io.github.martingit2.fangstportalen.servicehandel.organisasjon.OrganisasjonType;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,6 +15,8 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -40,7 +39,6 @@ public class OrdreService {
     private final OrdreRepository ordreRepository;
     private final FangstmeldingRepository fangstmeldingRepository;
     private final OrganisasjonRepository organisasjonRepository;
-    private final OrganisasjonBrukerRepository organisasjonBrukerRepository;
     private static final Logger logger = LoggerFactory.getLogger(OrdreService.class);
 
     @Transactional
@@ -70,20 +68,17 @@ public class OrdreService {
                     .forventetKvantum(fangstlinje.getEstimertKvantum())
                     .kvalitet(fangstlinje.getKvalitet())
                     .storrelse(fangstlinje.getStorrelse())
-                    .avtaltPrisPerKg(fangstlinje.getUtropsprisPerKg()) // Bruker utropspris som default
+                    .avtaltPrisPerKg(fangstlinje.getUtropsprisPerKg())
                     .build();
             ordre.addOrdrelinje(ordrelinje);
         });
 
         Ordre savedOrdre = ordreRepository.save(ordre);
-        logger.info("Ordre med ID {} opprettet fra Fangstmelding ID {}", savedOrdre.getId(), fangstmelding.getId());
         return convertToResponseDto(savedOrdre);
     }
 
     @Transactional
     public OrdreResponseDto createOrdre(CreateOrdreRequestDto dto, Long kjoperOrganisasjonId) {
-        logger.info("OrdreService: Bygger ordre-entitet for organisasjon {}", kjoperOrganisasjonId);
-
         Ordre ordre = Ordre.builder()
                 .kjoperOrganisasjonId(kjoperOrganisasjonId)
                 .status(OrdreStatus.AKTIV)
@@ -104,9 +99,7 @@ public class OrdreService {
             ordre.addOrdrelinje(linje);
         });
 
-        logger.debug("Klar til å lagre bygget Ordre-entitet: {}", ordre);
         Ordre savedOrdre = ordreRepository.save(ordre);
-        logger.info("Ordre-entitet lagret med ID: {}", savedOrdre.getId());
         return convertToResponseDto(savedOrdre);
     }
 
@@ -116,8 +109,6 @@ public class OrdreService {
                 .orElseThrow(() -> new EntityNotFoundException("Finner ikke ordre med ID: " + ordreId));
 
         if (!ordre.getKjoperOrganisasjonId().equals(kjoperOrganisasjonId)) {
-            logger.warn("Sikkerhetsbrudd! Organisasjon {} forsøkte å hente ordre {} som tilhører {}.",
-                    kjoperOrganisasjonId, ordreId, ordre.getKjoperOrganisasjonId());
             throw new AccessDeniedException("Du har ikke tilgang til å se denne ordren.");
         }
 
@@ -125,15 +116,12 @@ public class OrdreService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrdreResponseDto> findMineOrdrer(Long orgId, OrganisasjonType orgType) {
-        logger.info("Henter ordrer for organisasjon: {} av type {}", orgId, orgType);
-        List<Ordre> ordrer;
+    public Page<Ordre> findMineOrdrer(Long orgId, OrganisasjonType orgType, Pageable pageable) {
         if (orgType == OrganisasjonType.REDERI) {
-            ordrer = ordreRepository.findBySelgerOrganisasjonIdOrderByOpprettetTidspunktDesc(orgId);
+            return ordreRepository.findBySelgerOrganisasjonId(orgId, pageable);
         } else {
-            ordrer = ordreRepository.findByKjoperOrganisasjonIdOrderByOpprettetTidspunktDesc(orgId);
+            return ordreRepository.findByKjoperOrganisasjonId(orgId, pageable);
         }
-        return convertToResponseDtoList(ordrer);
     }
 
     @Transactional(readOnly = true)
@@ -143,7 +131,7 @@ public class OrdreService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrdreResponseDto> findTilgjengeligeOrdrer(Long ekskluderOrgId, String leveringssted, String fiskeslag) {
+    public Page<Ordre> findTilgjengeligeOrdrer(Long ekskluderOrgId, String leveringssted, String fiskeslag, Pageable pageable) {
         Specification<Ordre> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(criteriaBuilder.equal(root.get("status"), OrdreStatus.AKTIV));
@@ -161,8 +149,7 @@ public class OrdreService {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
 
-        List<Ordre> ordrer = ordreRepository.findAll(spec);
-        return convertToResponseDtoList(ordrer);
+        return ordreRepository.findAll(spec, pageable);
     }
 
     @Transactional
@@ -179,49 +166,35 @@ public class OrdreService {
         ordre.setStatus(OrdreStatus.AVTALT);
         Ordre savedOrdre = ordreRepository.save(ordre);
 
-        logger.info("Organisasjon {} aksepterte ordre {}", selgerOrganisasjonId, ordreId);
         return convertToResponseDto(savedOrdre);
     }
 
     @Transactional
     public void deleteOrdre(Long ordreId, Long kjoperOrganisasjonId) {
-        logger.info("Forespørsel om å slette ordre {} for organisasjon {}", ordreId, kjoperOrganisasjonId);
-
         Ordre ordre = ordreRepository.findById(ordreId)
                 .orElseThrow(() -> new EntityNotFoundException("Finner ikke ordre med ID: " + ordreId));
 
         if (!ordre.getKjoperOrganisasjonId().equals(kjoperOrganisasjonId)) {
-            logger.warn("Sikkerhetsbrudd! Organisasjon {} forsøkte å slette ordre {} som tilhører organisasjon {}.",
-                    kjoperOrganisasjonId, ordreId, ordre.getKjoperOrganisasjonId());
             throw new AccessDeniedException("Du har ikke tilgang til å slette denne ordren.");
         }
 
         if (ordre.getStatus() != OrdreStatus.AKTIV) {
-            logger.warn("Ugyldig operasjon. Forsøkte å slette ordre {} med status {}, men kun AKTIV kan slettes.",
-                    ordreId, ordre.getStatus());
             throw new IllegalStateException("Kun aktive ordrer som ikke er akseptert kan slettes.");
         }
 
         ordreRepository.delete(ordre);
-        logger.info("Ordre {} ble slettet av organisasjon {}", ordreId, kjoperOrganisasjonId);
     }
 
     @Transactional
     public OrdreResponseDto updateOrdre(Long ordreId, CreateOrdreRequestDto dto, Long kjoperOrganisasjonId) {
-        logger.info("Forespørsel om å oppdatere ordre {} for organisasjon {}", ordreId, kjoperOrganisasjonId);
-
         Ordre ordre = ordreRepository.findById(ordreId)
                 .orElseThrow(() -> new EntityNotFoundException("Finner ikke ordre med ID: " + ordreId));
 
         if (!ordre.getKjoperOrganisasjonId().equals(kjoperOrganisasjonId)) {
-            logger.warn("Sikkerhetsbrudd! Organisasjon {} forsøkte å oppdatere ordre {} som tilhører {}.",
-                    kjoperOrganisasjonId, ordreId, ordre.getKjoperOrganisasjonId());
             throw new AccessDeniedException("Du har ikke tilgang til å redigere denne ordren.");
         }
 
         if (ordre.getStatus() != OrdreStatus.AKTIV) {
-            logger.warn("Ugyldig operasjon. Forsøkte å redigere ordre {} med status {}, men kun AKTIV kan redigeres.",
-                    ordreId, ordre.getStatus());
             throw new IllegalStateException("Kun aktive ordrer som ikke er akseptert kan redigeres.");
         }
 
@@ -243,9 +216,26 @@ public class OrdreService {
         });
 
         Ordre updatedOrdre = ordreRepository.save(ordre);
-        logger.info("Ordre {} ble oppdatert av organisasjon {}", ordreId, kjoperOrganisasjonId);
-
         return convertToResponseDto(updatedOrdre);
+    }
+
+    public Page<OrdreResponseDto> convertToResponseDtoPage(Page<Ordre> ordrePage) {
+        if (ordrePage.isEmpty()) {
+            return Page.empty(ordrePage.getPageable());
+        }
+
+        Set<Long> orgIds = new HashSet<>();
+        for (Ordre ordre : ordrePage.getContent()) {
+            orgIds.add(ordre.getKjoperOrganisasjonId());
+            if (ordre.getSelgerOrganisasjonId() != null) {
+                orgIds.add(ordre.getSelgerOrganisasjonId());
+            }
+        }
+
+        Map<Long, Organisasjon> organisasjonMap = organisasjonRepository.findAllById(orgIds).stream()
+                .collect(Collectors.toMap(Organisasjon::getId, Function.identity()));
+
+        return ordrePage.map(ordre -> convertToResponseDto(ordre, organisasjonMap));
     }
 
     private List<OrdreResponseDto> convertToResponseDtoList(List<Ordre> ordrer) {

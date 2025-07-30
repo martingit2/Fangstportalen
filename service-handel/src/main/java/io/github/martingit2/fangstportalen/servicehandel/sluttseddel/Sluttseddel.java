@@ -72,6 +72,9 @@ public class Sluttseddel {
     @Column
     private LocalTime landingsklokkeslett;
 
+    @Column
+    private String avvisningsbegrunnelse;
+
     @CreationTimestamp
     @Column(name = "opprettet_tidspunkt", nullable = false, updatable = false)
     private LocalDateTime opprettetTidspunkt;

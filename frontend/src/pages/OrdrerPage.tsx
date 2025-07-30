@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styles from './OrdrerPage.module.css';
-import { getMineOrdrer } from '../services/apiService'; 
+import { getMineOrdrer, type PagedResult } from '../services/apiService';
 import type { OrdreResponseDto } from '../types/ordre';
 import Button from '../components/ui/Button';
 import { useClaims } from '../hooks/useClaims';
 import toast from 'react-hot-toast';
+import Pagination from '../components/ui/Pagination';
 
 const OrdrerPage: React.FC = () => {
-    const [ordrer, setOrdrer] = useState<OrdreResponseDto[]>([]);
+    const [ordrer, setOrdrer] = useState<PagedResult<OrdreResponseDto> | null>(null);
+    const [currentPage, setCurrentPage] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [aktivFane, setAktivFane] = useState('AVTALT');
     const { claims } = useClaims();
@@ -17,7 +19,7 @@ const OrdrerPage: React.FC = () => {
     const fetchData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await getMineOrdrer(); 
+            const response = await getMineOrdrer(currentPage, 10);
             setOrdrer(response.data);
         } catch (error) {
             console.error("Kunne ikke hente ordrer", error);
@@ -25,19 +27,19 @@ const OrdrerPage: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [currentPage]);
 
     useEffect(() => {
         fetchData();
     }, [fetchData]);
-    
+
     useEffect(() => {
         if (erInnkjoper) {
             setAktivFane('AKTIV');
         }
     }, [erInnkjoper]);
 
-    const filtrerteOrdrer = ordrer.filter(o => o.status === aktivFane);
+    const filtrerteOrdrer = ordrer ? ordrer.content.filter(o => o.status === aktivFane) : [];
 
     return (
         <div className={styles.container}>
@@ -62,34 +64,43 @@ const OrdrerPage: React.FC = () => {
 
             <div className={styles.content}>
                 {isLoading ? <p className={styles.empty}>Laster...</p> : (
-                    <table className={styles.table}>
-                        <thead>
-                            <tr>
-                                <th>Ordre ID</th>
-                                <th>{erSkipper ? 'Kjøper' : 'Selger'}</th>
-                                <th>Leveringssted</th>
-                                <th>Dato</th>
-                                <th>Handling</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtrerteOrdrer.length === 0 ? (
-                                <tr><td colSpan={5} className={styles.empty}>Ingen ordrer i denne kategorien.</td></tr>
-                            ) : filtrerteOrdrer.map(ordre => (
-                                <tr key={ordre.id}>
-                                    <td>#{ordre.id}</td>
-                                    <td>{erSkipper ? ordre.kjoperOrganisasjonNavn : 'Ikke tildelt'}</td>
-                                    <td>{ordre.leveringssted}</td>
-                                    <td>{new Date(ordre.forventetLeveringsdato).toLocaleDateString('nb-NO')}</td>
-                                    <td>
-                                        {ordre.status === 'AVTALT' && erSkipper && (
-                                            <Button to="/ny-sluttseddel">Registrer landing</Button>
-                                        )}
-                                    </td>
+                    <>
+                        <table className={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th>Ordre ID</th>
+                                    <th>{erSkipper ? 'Kjøper' : 'Selger'}</th>
+                                    <th>Leveringssted</th>
+                                    <th>Dato</th>
+                                    <th>Handling</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filtrerteOrdrer.length === 0 ? (
+                                    <tr><td colSpan={5} className={styles.empty}>Ingen ordrer i denne kategorien.</td></tr>
+                                ) : filtrerteOrdrer.map(ordre => (
+                                    <tr key={ordre.id}>
+                                        <td>#{ordre.id}</td>
+                                        <td>{erSkipper ? ordre.kjoperOrganisasjonNavn : ordre.selgerOrganisasjonNavn || 'Ikke tildelt'}</td>
+                                        <td>{ordre.leveringssted}</td>
+                                        <td>{new Date(ordre.forventetLeveringsdato).toLocaleDateString('nb-NO')}</td>
+                                        <td>
+                                            {ordre.status === 'AVTALT' && erSkipper && (
+                                                <Button to="/ny-sluttseddel">Registrer landing</Button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {ordrer && (
+                            <Pagination
+                                currentPage={ordrer.pageNumber}
+                                totalPages={ordrer.totalPages}
+                                onPageChange={setCurrentPage}
+                            />
+                        )}
+                    </>
                 )}
             </div>
         </div>

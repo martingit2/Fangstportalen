@@ -14,6 +14,13 @@ import type { BudOversiktResponseDto, BudResponseDto } from '../types/bud';
 import type { BudFormData } from '../schemas/budSchema';
 import type { InvitasjonFormData } from '../schemas/invitasjonSchema';
 
+export interface PagedResult<T> {
+    content: T[];
+    pageNumber: number;
+    totalPages: number;
+    totalElements: number;
+}
+
 interface CreateSluttseddelPayload {
     ordreId: number;
     landingsdato: string;
@@ -21,6 +28,10 @@ interface CreateSluttseddelPayload {
         ordrelinjeId: number;
         faktiskKvantum: number;
     }[];
+}
+
+interface AvvisSluttseddelPayload {
+    begrunnelse: string;
 }
 
 interface FilterParams {
@@ -56,14 +67,20 @@ export const setupInterceptors = (getAccessTokenSilently: (options?: GetTokenSil
     );
 };
 
-export const getMineOrdrer = (): Promise<AxiosResponse<OrdreResponseDto[]>> => apiClient.get('/ordrer/mine');
+export const getMineOrdrer = (page = 0, size = 5): Promise<AxiosResponse<PagedResult<OrdreResponseDto>>> =>
+    apiClient.get('/ordrer/mine', { params: { page, size } });
+
 export const getOrdrerKlareForSluttseddel = (): Promise<AxiosResponse<OrdreResponseDto[]>> => apiClient.get('/ordrer/klare-for-sluttseddel');
-export const getAktiveFangstmeldinger = (filters?: FilterParams): Promise<AxiosResponse<FangstmeldingResponseDto[]>> => {
+
+export const getAktiveFangstmeldinger = (filters?: FilterParams, page = 0, size = 15): Promise<AxiosResponse<PagedResult<FangstmeldingResponseDto>>> => {
     const params = new URLSearchParams();
     if (filters?.leveringssted) params.append('leveringssted', filters.leveringssted);
     if (filters?.fiskeslag) params.append('fiskeslag', filters.fiskeslag);
+    params.append('page', String(page));
+    params.append('size', String(size));
     return apiClient.get('/fangstmeldinger/aktive', { params });
 };
+
 export const createFangstmelding = (data: FangstmeldingFormData): Promise<AxiosResponse> => {
     const payload = {
         ...data,
@@ -75,13 +92,19 @@ export const createFangstmelding = (data: FangstmeldingFormData): Promise<AxiosR
     };
     return apiClient.post('/fangstmeldinger', payload);
 };
-export const getMineFangstmeldinger = (): Promise<AxiosResponse<FangstmeldingResponseDto[]>> => apiClient.get('/fangstmeldinger/mine');
-export const getTilgjengeligeOrdrer = (filters?: FilterParams): Promise<AxiosResponse<OrdreResponseDto[]>> => {
+
+export const getMineFangstmeldinger = (page = 0, size = 5): Promise<AxiosResponse<PagedResult<FangstmeldingResponseDto>>> =>
+    apiClient.get('/fangstmeldinger/mine', { params: { page, size } });
+
+export const getTilgjengeligeOrdrer = (filters?: FilterParams, page = 0, size = 15): Promise<AxiosResponse<PagedResult<OrdreResponseDto>>> => {
     const params = new URLSearchParams();
     if (filters?.leveringssted) params.append('leveringssted', filters.leveringssted);
     if (filters?.fiskeslag) params.append('fiskeslag', filters.fiskeslag);
+    params.append('page', String(page));
+    params.append('size', String(size));
     return apiClient.get('/ordrer/tilgjengelige', { params });
 };
+
 export const aksepterOrdre = (ordreId: number): Promise<AxiosResponse<OrdreResponseDto>> => apiClient.patch(`/ordrer/${ordreId}/aksepter`);
 export const deleteOrdre = (ordreId: number): Promise<AxiosResponse<void>> => apiClient.delete(`/ordrer/${ordreId}`);
 export const deleteFangstmelding = (fangstmeldingId: number): Promise<AxiosResponse<void>> => apiClient.delete(`/fangstmeldinger/${fangstmeldingId}`);
@@ -115,7 +138,9 @@ export const createFartoy = (data: FartoyFormData): Promise<AxiosResponse<Fartoy
 export const getMineFartoy = (): Promise<AxiosResponse<FartoyResponseDto[]>> => apiClient.get('/fartoy');
 export const getMineTeamMedlemmer = (): Promise<AxiosResponse<TeamMedlemResponseDto[]>> => apiClient.get('/team/medlemmer');
 export const getMineSluttsedler = (): Promise<AxiosResponse<SluttseddelResponseDto[]>> => apiClient.get('/sluttsedler/mine');
+export const getSluttseddelById = (id: number): Promise<AxiosResponse<SluttseddelResponseDto>> => apiClient.get(`/sluttsedler/${id}`);
 export const bekreftSluttseddel = (id: number): Promise<AxiosResponse<SluttseddelResponseDto>> => apiClient.patch(`/sluttsedler/${id}/bekreft`);
+export const avvisSluttseddel = (id: number, data: AvvisSluttseddelPayload): Promise<AxiosResponse<SluttseddelResponseDto>> => apiClient.patch(`/sluttsedler/${id}/avvis`, data);
 export const giBud = (fangstmeldingId: number, data: BudFormData): Promise<AxiosResponse<BudResponseDto>> => {
     const payload = {
         budLinjer: data.budLinjer.map(linje => ({

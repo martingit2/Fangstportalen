@@ -25,5 +25,6 @@ export interface SluttseddelResponseDto {
     leveringssted: string;
     linjer: SluttseddelLinjeDto[];
     totalVerdi: number;
+    avvisningsbegrunnelse: string | null;
     opprettetTidspunkt: string;
 }

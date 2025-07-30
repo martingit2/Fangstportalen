@@ -1,15 +1,13 @@
 package io.github.martingit2.fangstportalen.servicehandel.fangstmelding;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
 public interface FangstmeldingRepository extends JpaRepository<Fangstmelding, Long>, JpaSpecificationExecutor<Fangstmelding> {
 
-    List<Fangstmelding> findByStatusOrderByTilgjengeligFraDatoAsc(FangstmeldingStatus status);
-
-    List<Fangstmelding> findBySelgerOrganisasjonIdAndStatus(Long selgerOrganisasjonId, FangstmeldingStatus status);
+    Page<Fangstmelding> findBySelgerOrganisasjonIdAndStatus(Long selgerOrganisasjonId, FangstmeldingStatus status, Pageable pageable);
 }

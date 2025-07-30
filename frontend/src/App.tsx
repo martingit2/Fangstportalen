@@ -19,6 +19,8 @@ import NyttFartoyPage from './pages/NyttFartoyPage';
 import SluttseddelArkivPage from './pages/SluttseddelArkivPage';
 import StatusPage from './pages/StatusPage';
 import { Toaster } from 'react-hot-toast';
+import SluttseddelDetaljerPage from './pages/SluttseddelDetaljerPage';
+
 
 function App() {
   const { isLoading, getAccessTokenSilently } = useAuth0();
@@ -58,6 +60,7 @@ function App() {
               <Route path="/ny-sluttseddel" element={<NySluttseddelPage />} />
               <Route path="/ordrer" element={<OrdrerPage />} />
               <Route path="/sluttseddelarkiv" element={<SluttseddelArkivPage />} />
+              <Route path="/sluttseddelarkiv/:id" element={<SluttseddelDetaljerPage />} />
               <Route path="/statistikk" element={<StatistikkPage />} />
               <Route path="/kart" element={<div>Kart Side (TODO)</div>} />
               <Route path="/innstillinger" element={<InnstillingerPage />} />

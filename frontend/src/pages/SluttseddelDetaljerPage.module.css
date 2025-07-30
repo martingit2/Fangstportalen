@@ -1,0 +1,123 @@
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.5rem;
+    background-color: #f9fafb;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.title {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.5rem;
+}
+
+.subtitle {
+    margin: 0;
+    color: var(--text-color-secondary);
+}
+
+.content {
+    padding: 1.5rem;
+}
+
+.section {
+    margin-bottom: 2rem;
+}
+
+.section:last-child {
+    margin-bottom: 0;
+}
+
+.sectionTitle {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-color-secondary);
+    letter-spacing: 0.5px;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.infoBlock h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.infoBlock p {
+    margin: 0;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.linjeTabell {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.linjeTabell th, .linjeTabell td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.linjeTabell th {
+    text-align: left;
+    color: var(--text-color-secondary);
+    font-weight: 600;
+}
+
+.linjeTabell tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.linjeTabell tfoot td {
+    border-top: 2px solid var(--text-color);
+    border-bottom: none;
+    font-weight: 700;
+    padding-top: 1rem;
+}
+
+.alignRight {
+    text-align: right;
+}
+
+.footer {
+    padding: 1rem 1.5rem;
+    background-color: #f9fafb;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.avvistSection {
+    background-color: #fff1f2;
+    border: 1px solid #ffdde0;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.avvistSection h2 {
+    color: #be123c;
+    border-bottom-color: #ffdde0;
+}

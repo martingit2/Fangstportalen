@@ -6,7 +6,8 @@ import {
     getTilgjengeligeOrdrer,
     aksepterOrdre,
     deleteOrdre,
-    deleteFangstmelding
+    deleteFangstmelding,
+    type PagedResult
 } from '../services/apiService';
 import styles from './DashboardPage.module.css';
 import Button from '../components/ui/Button';
@@ -18,10 +19,13 @@ import SeBudModal from '../components/SeBudModal';
 import { useDebounce } from '../hooks/useDebounce';
 import { FaMapMarkerAlt, FaFish } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import Pagination from '../components/ui/Pagination';
 
 const SkipperDashboard: React.FC = () => {
-    const [mineFangstmeldinger, setMineFangstmeldinger] = useState<FangstmeldingResponseDto[]>([]);
-    const [tilgjengeligeOrdrer, setTilgjengeligeOrdrer] = useState<OrdreResponseDto[]>([]);
+    const [mineFangstmeldinger, setMineFangstmeldinger] = useState<PagedResult<FangstmeldingResponseDto> | null>(null);
+    const [tilgjengeligeOrdrer, setTilgjengeligeOrdrer] = useState<PagedResult<OrdreResponseDto> | null>(null);
+    const [fangstmeldingerPage, setFangstmeldingerPage] = useState(0);
+    const [ordrerPage, setOrdrerPage] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isAcceptingId, setIsAcceptingId] = useState<number | null>(null);
@@ -35,8 +39,8 @@ const SkipperDashboard: React.FC = () => {
         setIsLoading(true);
         try {
             const [fangstmeldingerRes, ordrerRes] = await Promise.all([
-                getMineFangstmeldinger(),
-                getTilgjengeligeOrdrer(debouncedFilters)
+                getMineFangstmeldinger(fangstmeldingerPage, 5),
+                getTilgjengeligeOrdrer(debouncedFilters, ordrerPage, 15)
             ]);
             setMineFangstmeldinger(fangstmeldingerRes.data);
             setTilgjengeligeOrdrer(ordrerRes.data);
@@ -48,7 +52,7 @@ const SkipperDashboard: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [debouncedFilters]);
+    }, [debouncedFilters, fangstmeldingerPage, ordrerPage]);
 
     useEffect(() => {
         fetchData();
@@ -57,10 +61,12 @@ const SkipperDashboard: React.FC = () => {
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFilters(prev => ({ ...prev, [name]: value }));
+        setOrdrerPage(0);
     };
 
     const resetFilters = () => {
         setFilters({ leveringssted: '', fiskeslag: '' });
+        setOrdrerPage(0);
     };
 
     const handleOpenSeBudModal = (fangstmeldingId: number) => {
@@ -111,11 +117,11 @@ const SkipperDashboard: React.FC = () => {
     
     const renderMineFangstmeldinger = () => {
         if (isLoading) return <div className={styles.loading}>Laster...</div>;
-        if (mineFangstmeldinger.length === 0) return <div className={styles.empty}>Du har ingen aktive fangstmeldinger.</div>;
+        if (!mineFangstmeldinger || mineFangstmeldinger.content.length === 0) return <div className={styles.empty}>Du har ingen aktive fangstmeldinger.</div>;
 
         return (
             <div className={styles.marketplaceGrid}>
-                {mineFangstmeldinger.map(melding => (
+                {mineFangstmeldinger.content.map(melding => (
                     <div key={melding.id} className={styles.fangstmeldingCard}>
                          <div className={styles.fangstInfo}>
                             <h3>{melding.fartoyNavn} - {melding.leveringssted}</h3>
@@ -142,7 +148,7 @@ const SkipperDashboard: React.FC = () => {
 
     const renderTilgjengeligeOrdrer = () => {
         if (isLoading) return <div className={styles.loading}>Laster...</div>;
-        if (tilgjengeligeOrdrer.length === 0) return <div className={styles.empty}>Ingen åpne ordrer i markedet som matcher filtrene.</div>;
+        if (!tilgjengeligeOrdrer || tilgjengeligeOrdrer.content.length === 0) return <div className={styles.empty}>Ingen åpne ordrer i markedet som matcher filtrene.</div>;
 
         return (
              <table className={styles.table}>
@@ -156,7 +162,7 @@ const SkipperDashboard: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {tilgjengeligeOrdrer.map(ordre => (
+                    {tilgjengeligeOrdrer.content.map(ordre => (
                         <tr key={ordre.id}>
                             <td>{ordre.kjoperOrganisasjonNavn}</td>
                             <td>{ordre.leveringssted}</td>
@@ -196,6 +202,13 @@ const SkipperDashboard: React.FC = () => {
                     <h2 className={styles.marketplaceTitle}>Mine Aktive Fangstmeldinger</h2>
                     <div className={styles.content}>
                         {error ? <div className={styles.error}>{error}</div> : renderMineFangstmeldinger()}
+                        {mineFangstmeldinger && (
+                            <Pagination
+                                currentPage={mineFangstmeldinger.pageNumber}
+                                totalPages={mineFangstmeldinger.totalPages}
+                                onPageChange={setFangstmeldingerPage}
+                            />
+                        )}
                     </div>
                 </div>
                 <div className={styles.marketplaceSection}>
@@ -227,6 +240,13 @@ const SkipperDashboard: React.FC = () => {
                             <Button variant="secondary" onClick={resetFilters}>Nullstill</Button>
                         </div>
                         {error ? <div className={styles.error}>{error}</div> : renderTilgjengeligeOrdrer()}
+                        {tilgjengeligeOrdrer && (
+                            <Pagination
+                                currentPage={tilgjengeligeOrdrer.pageNumber}
+                                totalPages={tilgjengeligeOrdrer.totalPages}
+                                onPageChange={setOrdrerPage}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
@@ -246,8 +266,10 @@ const InnkjoperDashboard: React.FC = () => {
     const { claims } = useClaims();
     const erAdmin = claims?.roles.some(r => r.endsWith('_ADMIN'));
 
-    const [ordrer, setOrdrer] = useState<OrdreResponseDto[]>([]);
-    const [fangstmeldinger, setFangstmeldinger] = useState<FangstmeldingResponseDto[]>([]);
+    const [ordrer, setOrdrer] = useState<PagedResult<OrdreResponseDto> | null>(null);
+    const [fangstmeldinger, setFangstmeldinger] = useState<PagedResult<FangstmeldingResponseDto> | null>(null);
+    const [ordrerPage, setOrdrerPage] = useState(0);
+    const [fangstmeldingerPage, setFangstmeldingerPage] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
@@ -260,8 +282,8 @@ const InnkjoperDashboard: React.FC = () => {
         setIsLoading(true);
         try {
             const [ordrerResponse, fangstmeldingerResponse] = await Promise.all([
-                getMineOrdrer(),
-                getAktiveFangstmeldinger(debouncedFilters)
+                getMineOrdrer(ordrerPage, 5),
+                getAktiveFangstmeldinger(debouncedFilters, fangstmeldingerPage, 15)
             ]);
             setOrdrer(ordrerResponse.data);
             setFangstmeldinger(fangstmeldingerResponse.data);
@@ -273,7 +295,7 @@ const InnkjoperDashboard: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [debouncedFilters]);
+    }, [debouncedFilters, ordrerPage, fangstmeldingerPage]);
 
     useEffect(() => {
         fetchData();
@@ -282,10 +304,12 @@ const InnkjoperDashboard: React.FC = () => {
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFilters(prev => ({ ...prev, [name]: value }));
+        setFangstmeldingerPage(0);
     };
 
     const resetFilters = () => {
         setFilters({ leveringssted: '', fiskeslag: '' });
+        setFangstmeldingerPage(0);
     };
 
     const handleOpenBudModal = (fangstmelding: FangstmeldingResponseDto) => {
@@ -323,7 +347,7 @@ const InnkjoperDashboard: React.FC = () => {
 
     const renderOrdreContent = () => {
         if (isLoading) return <div className={styles.loading}>Laster dine ordrer...</div>;
-        if (ordrer.length === 0) return <div className={styles.empty}>Du har ingen aktive ordrer.</div>;
+        if (!ordrer || ordrer.content.length === 0) return <div className={styles.empty}>Du har ingen aktive ordrer.</div>;
 
         return (
             <table className={styles.table}>
@@ -336,7 +360,7 @@ const InnkjoperDashboard: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {ordrer.map((ordre) => (
+                    {ordrer.content.map((ordre) => (
                         <tr key={ordre.id}>
                             <td>#{ordre.id}</td>
                             <td>{ordre.status}</td>
@@ -370,11 +394,11 @@ const InnkjoperDashboard: React.FC = () => {
     
     const renderMarketplaceContent = () => {
         if (isLoading) return <div className={styles.loading}>Laster markedsplass...</div>;
-        if (fangstmeldinger.length === 0) return <div className={styles.empty}>Ingen fangster er tilgjengelig i markedet som matcher filtrene.</div>;
+        if (!fangstmeldinger || fangstmeldinger.content.length === 0) return <div className={styles.empty}>Ingen fangster er tilgjengelig i markedet som matcher filtrene.</div>;
 
         return (
             <div className={styles.marketplaceGrid}>
-                {fangstmeldinger.map(melding => (
+                {fangstmeldinger.content.map(melding => (
                     <div key={melding.id} className={styles.fangstmeldingCard}>
                         <div className={styles.fangstInfo}>
                             <h3>{melding.fartoyNavn} - {melding.leveringssted}</h3>
@@ -398,6 +422,13 @@ const InnkjoperDashboard: React.FC = () => {
                 </header>
                 <div className={styles.content}>
                     {error ? <div className={styles.error}>{error}</div> : renderOrdreContent()}
+                    {ordrer && (
+                         <Pagination
+                            currentPage={ordrer.pageNumber}
+                            totalPages={ordrer.totalPages}
+                            onPageChange={setOrdrerPage}
+                        />
+                    )}
                 </div>
                 <div className={styles.marketplaceSection}>
                     <h2 className={styles.marketplaceTitle}>Tilgjengelig i Markedet (Fangstmeldinger)</h2>
@@ -428,6 +459,13 @@ const InnkjoperDashboard: React.FC = () => {
                             <Button variant="secondary" onClick={resetFilters}>Nullstill</Button>
                         </div>
                         {error ? <div className={styles.error}>{error}</div> : renderMarketplaceContent()}
+                        {fangstmeldinger && (
+                             <Pagination
+                                currentPage={fangstmeldinger.pageNumber}
+                                totalPages={fangstmeldinger.totalPages}
+                                onPageChange={setFangstmeldingerPage}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
