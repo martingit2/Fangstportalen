@@ -36,9 +36,10 @@ const KontaktPage: React.FC = () => {
                     <div className={styles.infoWrapper}>
                         <div className={styles.infoBlock}>
                             <h3 className={styles.infoTitle}>Direkte Kontakt</h3>
+                            <p style={{marginBottom: '1rem'}}><strong>Martin Pettersen</strong></p>
                             <div className={styles.infoItem}>
                                 <FaEnvelope />
-                                <span>kontakt@fangstportalen.no</span>
+                                <a href="mailto:martinp@dubium.no" className={styles.contactLink}>martinp@dubium.no</a>
                             </div>
                             <div className={styles.infoItem}>
                                 <FaPhone />

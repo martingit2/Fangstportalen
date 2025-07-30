@@ -1,0 +1,97 @@
+.integrationGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.integrationCard {
+    display: flex;
+    gap: 1.5rem;
+    background-color: var(--content-background-color);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.iconWrapper {
+    height: 48px;
+    width: 48px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.cardContent {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.cardHeader h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.cardContent p {
+    margin: 0;
+    color: var(--text-color-secondary);
+    line-height: 1.6;
+}
+
+.statusBadge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    margin-top: 2px;
+}
+
+.planned {
+    background-color: #eef2ff;
+    color: #4338ca;
+}
+
+.ctaSection {
+    background-color: var(--primary-color);
+    padding: 4rem 1.5rem;
+    margin-top: 4rem;
+}
+
+.ctaContent {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+    color: white;
+}
+
+.ctaContent h2 {
+    font-size: 2rem;
+    margin: 0 0 1rem 0;
+}
+
+.ctaContent p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0 0 2rem 0;
+}
+
+@media (min-width: 768px) {
+    .integrationGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+}

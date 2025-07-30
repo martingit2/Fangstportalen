@@ -73,6 +73,17 @@
     font-size: 1.25rem;
 }
 
+.contactLink {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.contactLink:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
 .infoWrapper p {
     font-size: 1rem;
     line-height: 1.7;

@@ -24,6 +24,10 @@ import FunksjonerPage from './pages/FunksjonerPage';
 import PriserPage from './pages/PriserPage';
 import KontaktPage from './pages/KontaktPage';
 import TeknologiPage from './pages/TeknologiPage';
+import SikkerhetPage from './pages/SikkerhetPage';
+import IntegrasjonerPage from './pages/IntegrasjonerPage';
+import SystemkravPage from './pages/SystemkravPage';
+import OmOssPage from './pages/OmOssPage';
 
 function App() {
   const { isLoading, getAccessTokenSilently } = useAuth0();
@@ -56,6 +60,10 @@ function App() {
           <Route path="/priser" element={<PriserPage />} />
           <Route path="/kontakt" element={<KontaktPage />} />
           <Route path="/teknologi" element={<TeknologiPage />} />
+          <Route path="/sikkerhet" element={<SikkerhetPage />} />
+          <Route path="/integrasjoner" element={<IntegrasjonerPage />} />
+          <Route path="/systemkrav" element={<SystemkravPage />} />
+          <Route path="/om-oss" element={<OmOssPage />} />
          
 
           <Route path="/registrering/verifiser-epost" element={<StatusPage />} />

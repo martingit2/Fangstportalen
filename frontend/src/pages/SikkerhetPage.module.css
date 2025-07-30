@@ -1,0 +1,45 @@
+.securityGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.securityCard {
+    background-color: var(--content-background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.cardIcon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    display: inline-block;
+}
+
+.securityCard h3 {
+    font-size: 1.25rem;
+    margin: 0 0 0.75rem 0;
+    color: var(--text-color);
+}
+
+.securityCard p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--text-color-secondary);
+}
+
+@media (min-width: 768px) {
+    .securityGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (min-width: 1024px) {
+    .securityGrid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
