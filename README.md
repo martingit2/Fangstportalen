@@ -161,6 +161,3 @@ Prosjektet er fullt containerisert og kjøres enklest med Docker Compose.
 
 ---
 
-## Lisens
-
-Distribuert under MIT-lisensen.
