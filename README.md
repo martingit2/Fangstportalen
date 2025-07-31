@@ -1,4 +1,4 @@
-# FangstPortalen: Digital Markedsplass for Sjømat
+# Fangstportalen: Digital Markedsplass for Sjømat
 
 
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.4-6DB33F?logo=spring)
@@ -8,7 +8,7 @@
 ![Auth0](https://img.shields.io/badge/Auth0-Authenticated-EB5424?logo=auth0)
 ![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker)
 
-Velkommen til **FangstPortalen**, en fullstack webapplikasjon designet for å modernisere og sikre førstehåndsomsetningen av sjømat. Prosjektet fungerer som en digital markedsplass hvor rederier og fiskebruk kan handle direkte, basert på en transparent, sikker og effektiv arbeidsflyt.
+Velkommen til **Fangstportalen**, en fullstack webapplikasjon designet for å modernisere og sikre førstehåndsomsetningen av sjømat. Prosjektet fungerer som en digital markedsplass hvor rederier og fiskebruk kan handle direkte, basert på en transparent, sikker og effektiv arbeidsflyt.
 
 Dette er et **monorepo** som inneholder hele applikasjonen.
 
