@@ -36,7 +36,7 @@ Dette er et **monorepo** som inneholder hele applikasjonen.
 
 ## Om Prosjektet
 
-FangstPortalen ble utviklet for å adressere ineffektivitet og mangel på transparens i tradisjonell omsetning av fisk. Ved å digitalisere hele prosessen – fra fangstmelding til budrunde og endelig oppgjør via en digital sluttseddel – skaper plattformen et verifiserbart og uforanderlig system bygget på tillit.
+Fangstportalen ble utviklet for å adressere ineffektivitet og mangel på transparens i tradisjonell omsetning av fisk. Ved å digitalisere hele prosessen – fra fangstmelding til budrunde og endelig oppgjør via en digital sluttseddel – skaper plattformen et verifiserbart og uforanderlig system bygget på tillit.
 
 ### Prosjektstatus og Formål
 
