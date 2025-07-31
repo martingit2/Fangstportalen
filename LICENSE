@@ -1,21 +1,23 @@
-MIT License
+# FangstPortalen - Egendefinert Lisens
 
 Copyright (c) 2025 Martin Pettersen
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## Tillatelser
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Denne programvaren og tilhørende kildekode gjøres tilgjengelig ("source-available") under følgende betingelser:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+*   **Visning og Evaluering:** Du har tillatelse til å se, klone og kjøre denne koden lokalt for personlige, ikke-kommersielle formål, slik som læring, evaluering av ferdigheter, og testing.
+
+*   **Porteføljebruk:** Denne koden er ment å fungere som et porteføljeprosjekt for å demonstrere tekniske ferdigheter.
+
+## Begrensninger
+
+Følgende er **ikke** tillatt uten eksplisitt, skriftlig tillatelse fra rettighetshaver (Martin Pettersen):
+
+*   **Kommersiell Bruk:** Å bruke denne programvaren, eller deler av den, i et kommersielt produkt, tjeneste eller prosjekt.
+*   **Distribusjon:** Å redistribuere, videreselge eller på annen måte gjøre programvaren eller dens kildekode tilgjengelig for tredjeparter.
+*   **Modifikasjon for distribusjon:** Å lage modifiserte versjoner ("forks") av denne programvaren med formål om distribusjon eller kommersiell bruk.
+
+## Ansvarsfraskrivelse
+
+PROGRAMVAREN LEVERES "SOM DEN ER", UTEN NOEN FORM FOR GARANTI, VERKEN UTTRYKT ELLER UNDERFORSTÅTT.
