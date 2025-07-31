@@ -5,7 +5,6 @@ server {
   index index.html;
 
   location / {
-    # Denne linjen er nå rettet opp
     try_files $uri $uri/ /index.html;
   }
 }
