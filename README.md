@@ -1,6 +1,6 @@
 # FangstPortalen: Digital Markedsplass for Sjømat
 
-[![Java CI with Maven](https://github.com/martingit2/FangstPortalen/actions/workflows/build.yml/badge.svg)](https://github.com/martingit2/FangstPortalen/actions)
+
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.4-6DB33F?logo=spring)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript)
