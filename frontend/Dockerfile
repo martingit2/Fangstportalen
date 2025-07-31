@@ -2,23 +2,15 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Deklarer ARGs FØR de brukes
-ARG VITE_AUTH0_DOMAIN
-ARG VITE_AUTH0_CLIENT_ID
-ARG VITE_AUTH0_AUDIENCE
-ARG VITE_API_BASE_URL
-
-# Sett ENVs slik at de er tilgjengelige for `npm run build`
-ENV VITE_AUTH0_DOMAIN=${VITE_AUTH0_DOMAIN}
-ENV VITE_AUTH0_CLIENT_ID=${VITE_AUTH0_CLIENT_ID}
-ENV VITE_AUTH0_AUDIENCE=${VITE_AUTH0_AUDIENCE}
-ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
-
 COPY package*.json ./
 RUN npm install
 COPY . .
 
-# Kjør bygget
+# --- START DEBUGGING-LINJE ---
+# Skriv ut alle VITE-variabler for å se hva bygge-miljøet mottar
+RUN echo "--- DEBUG: Printing VITE environment variables ---" && printenv | grep VITE_
+# --- SLUTT DEBUGGING-LINJE ---
+
 RUN npm run build
 
 # Stage 2: Serve the application with Nginx
